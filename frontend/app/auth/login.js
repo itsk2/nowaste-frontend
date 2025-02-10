@@ -57,7 +57,7 @@ export default function Login() {
 
                                     const role = data.user.role;
                                     switch (role) {
-                                        case "farmer":
+                                        case "user":
                                             router.replace("/(tabs)");
                                             break;
                                         // case "composer":
