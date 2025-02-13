@@ -4,9 +4,11 @@ import { Text, View, StyleSheet, SafeAreaView, Pressable } from 'react-native';
 import { FontAwesome5 } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { runOnJS } from 'react-native-reanimated';
+import Constants from 'expo-constants';
 import { GestureHandlerRootView, GestureDetector, Gesture, Directions } from 'react-native-gesture-handler';
 
 import Animated, { FadeIn, FadeOut, SlideOutLeft, SlideInRight } from 'react-native-reanimated';
+import { useSelector } from 'react-redux';
 
 const onboardingSteps = [
   {
@@ -28,6 +30,7 @@ const onboardingSteps = [
 
 export default function OnboardingScreen() {
   const [screenIndex, setScreenIndex] = useState(0);
+  const { user } = useSelector((state) => state.auth);
   const data = onboardingSteps[screenIndex];
 
   const onContinue = () => {
@@ -50,25 +53,26 @@ export default function OnboardingScreen() {
 
   const endOnboarding = () => {
     setScreenIndex(0);
-    router.replace('/auth/login'); 
+    router.replace('/auth/login');
   };
 
   const swipes = Gesture.Simultaneous(
     Gesture.Fling()
       .direction(Directions.LEFT)
       .onEnd(() => runOnJS(onContinue)()), // Ginawang worklet
-  
+
     Gesture.Fling()
       .direction(Directions.RIGHT)
       .onEnd(() => runOnJS(onBack)()) // Ginawang worklet
   );
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{
+      flex: 1, paddingTop: Constants.statusBarHeight,
+    }}>
       <SafeAreaView style={styles.page}>
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar style="light" />
-
         <View style={styles.stepIndicatorContainer}>
           {onboardingSteps.map((step, index) => (
             <View key={index} style={[styles.stepIndicator, { backgroundColor: index === screenIndex ? '#CEF202' : 'grey' }]} />
@@ -137,7 +141,7 @@ const styles = StyleSheet.create({
     marginTop: 'auto',
   },
   buttonsRow: {
-    marginTop: 20,
+    marginBottom: 20,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 20,

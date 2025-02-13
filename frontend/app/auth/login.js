@@ -57,15 +57,15 @@ export default function Login() {
 
                                     const role = data.user.role;
                                     switch (role) {
-                                        case "user":
+                                        case "farmer":
                                             router.replace("/(tabs)");
                                             break;
-                                        // case "composer":
-                                        //     router.replace("/components/Composer/(tabs)");
-                                        //     break;
-                                        // case "stall":
-                                        //     router.replace("/components/Stall/(tabs)");
-                                        //     break;
+                                        case "composter":
+                                            router.replace("/(tabs)");
+                                            break;
+                                        case "vendor":
+                                            router.replace("/components/Vendor/(tabs)");
+                                            break;
                                         // case "super admin":
                                         //     router.replace("/components/SuperAdmin/(tabs)");
                                         //     break;
@@ -111,7 +111,7 @@ export default function Login() {
                                     <Text style={styles.errorText}>{errors.password}</Text>
                                 ) : null}
                                 <TouchableOpacity style={styles.button}
-                                onPress={handleSubmit}
+                                    onPress={handleSubmit}
                                 >
                                     <Text style={styles.buttonText}>Login</Text>
                                 </TouchableOpacity>

@@ -149,8 +149,9 @@ const Register = () => {
                       handleBlur("role");
                     }}
                   >
-                    <Picker.Item label="User" value="user" color='gray' />
-                    <Picker.Item label="Stall" value="stall" color='gray' />
+                    <Picker.Item label="Farmer" value="farmer" color='gray' />
+                    <Picker.Item label="Composter" value="composter" color='gray' />
+                    <Picker.Item label="Vendor" value="vendor" color='gray' />
                   </Picker>
                 </View>
                 <TouchableOpacity style={styles.button} onPress={handleSubmit}>

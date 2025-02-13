@@ -37,8 +37,8 @@ export default function RootLayout() {
                     <FontAwesome name='home' color={color} size={28} />
                 )
             }} />
-            <Tabs.Screen name="market" options={{
-                headerShown: false, title: 'Market', tabBarIcon: ({ color }) => (
+            <Tabs.Screen name="stall" options={{
+                headerShown: false, title: 'My Stall', tabBarIcon: ({ color }) => (
                     <Fontisto name="shopping-store" size={24} color={color} />
                 )
             }} />
