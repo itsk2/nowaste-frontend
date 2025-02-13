@@ -5,6 +5,7 @@ import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 import Fontisto from '@expo/vector-icons/Fontisto';
+import Entypo from '@expo/vector-icons/Entypo';
 
 export default function RootLayout() {
     const { user } = useSelector((state) => state.auth);
@@ -40,6 +41,11 @@ export default function RootLayout() {
             <Tabs.Screen name="market" options={{
                 headerShown: false, title: 'Market', tabBarIcon: ({ color }) => (
                     <Fontisto name="shopping-store" size={24} color={color} />
+                )
+            }} />
+            <Tabs.Screen name="map" options={{
+                headerShown: false, title: 'Map', tabBarIcon: ({ color }) => (
+                    <Entypo name="map" size={24} color="black" />
                 )
             }} />
             <Tabs.Screen name="profile" options={{
