@@ -55,16 +55,30 @@ export default function Login() {
                                 .then((data) => {
                                     dispatch(loginAction(data));
 
-                                    const role = data.user.role;
+                                    const role = data?.user?.role;
+                                    const noVenderData = data?.user?.stall || data?.user?.address || [];
+                                    const noUserData =  data?.user?.address || [];
                                     switch (role) {
                                         case "farmer":
-                                            router.replace("/(tabs)");
+                                            if (noVenderData.length === 0) {
+                                                router.replace("/components/User/addAddress");
+                                            } else {
+                                                router.replace("/(tabs)");
+                                            }
                                             break;
                                         case "composter":
-                                            router.replace("/(tabs)");
+                                            if (noVenderData.length === 0) {
+                                                router.replace("/components/User/addAddress");
+                                            } else {
+                                                router.replace("/(tabs)");
+                                            }
                                             break;
                                         case "vendor":
-                                            router.replace("/components/Vendor/(tabs)");
+                                            if (noVenderData.length === 0) {
+                                                router.replace("/components/User/addAddress");
+                                            } else {
+                                                router.replace("/components/Vendor/(tabs)");
+                                            }
                                             break;
                                         // case "super admin":
                                         //     router.replace("/components/SuperAdmin/(tabs)");

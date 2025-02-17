@@ -3,30 +3,25 @@ import baseURL from '../../../../assets/common/baseURL'
 
 const addVendorStall = async ({ _id, stallDescription, stallAddress, stallNumber, avatar }) => {
     try {
-
         const formData = new FormData();
-        formData.append('stallDescription', stallDescription);
-        formData.append('stallAddress', stallAddress);
-        formData.append('stallNumber', stallNumber);
+        formData.append("stallDescription", stallDescription);
+        formData.append("stallAddress", stallAddress);
+        formData.append("stallNumber", stallNumber);
 
         if (avatar) {
-            const fileName = avatar.split('/').pop();
-            formData.append('avatar', {
+            const fileName = avatar.split("/").pop();
+            formData.append("avatar", {
                 uri: avatar,
-                type: 'image/jpeg',
+                type: "image/jpeg",
                 name: fileName,
             });
         }
-        // console.log(_id)
 
-        const response = await axios.put(`${baseURL}/vendor/add-stall/${_id}`, formData,
-            {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                },
-            }
-
-        );
+        const response = await axios.put(`${baseURL}/vendor/add-stall/${_id}`, formData, {
+            headers: {
+                "Content-Type": "multipart/form-data",
+            },
+        });
 
         return response.data;
     } catch (error) {

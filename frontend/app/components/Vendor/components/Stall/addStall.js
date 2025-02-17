@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { Formik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUserAction } from '../../../../(redux)/authSlice';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import * as ImagePicker from 'expo-image-picker';
 import { addVendorStall } from '../../../../(services)/api/Vendor/addVendorStall';
 
@@ -13,7 +13,8 @@ const AddStall = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const [avatar, setAvatar] = useState(null);
+  const [avatar, setAvatar] = useState(null)
+  const router = useRouter();
 
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
@@ -43,20 +44,14 @@ const AddStall = () => {
                 _id: user?._id || user?.user?._id,
                 avatar,
               });
-
-              if (response && response.success) {
-                // console.log("Dispatching user update:", response.user);
-                dispatch(updateUserAction(response.vendor));
-              }
-
               Alert.alert(
                 "Stall Added Successfully",
-                "You need to login again",
+                "You can now proceed.",
                 [
                   {
                     text: "OK",
                     onPress: () => {
-                      navigation.push('(tabs)');
+                      router.push("/components/Vendor/(tabs)");
                     },
                   },
                 ]
@@ -107,7 +102,7 @@ const AddStall = () => {
               )}
               <TextInput
                 style={styles.input}
-                placeholder="Address"
+                placeholder="Stall Address"
                 onChangeText={handleChange("stallAddress")}
                 onBlur={handleBlur("stallAddress")}
                 value={values.stallAddress}

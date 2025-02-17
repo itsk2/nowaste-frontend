@@ -4,13 +4,15 @@ import Constants from 'expo-constants';
 import { Formik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUserAction } from '../../(redux)/authSlice';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { addUserAddress } from '../../(services)/api/Users/addUserAddress';
 
 const UserAddress = () => {
   const { user } = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const navigation = useNavigation();
+  const role = user.role || user.user.role
+  const router = useRouter();
 
   // console.log('User Data', user.user.address[0].lotNum)
 
@@ -29,11 +31,6 @@ const UserAddress = () => {
                 _id: user._id || user.user._id,
               });
 
-              if (response && response.success) {
-                // console.log("Dispatching user update:", response.user);
-                dispatch(updateUserAction(response.user));
-              }
-
               Alert.alert(
                 "Updated Successfully",
                 "Your profile has been updated.",
@@ -41,7 +38,11 @@ const UserAddress = () => {
                   {
                     text: "OK",
                     onPress: () => {
-                      navigation.push('(tabs)');
+                      if (role === 'farmer' || role === 'composer') {
+                        router.replace("/components/Vendor/(tabs)");
+                      } else {
+                        router.replace("/components/Vendor/components/Stall/addStall");
+                      }
                     },
                   },
                 ]
@@ -77,7 +78,7 @@ const UserAddress = () => {
               )}
               <TextInput
                 style={styles.input}
-                placeholder= "Street Name"
+                placeholder="Street Name"
                 onChangeText={handleChange("street")}
                 onBlur={handleBlur("street")}
                 value={values.street}
@@ -106,7 +107,7 @@ const UserAddress = () => {
                 <Text style={styles.errorText}>{errors.city}</Text>
               )}
               <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                <Text style={styles.buttonText}>Update My Address</Text>
+                <Text style={styles.buttonText}>Enter Home Address</Text>
               </TouchableOpacity>
             </View>
           )}
