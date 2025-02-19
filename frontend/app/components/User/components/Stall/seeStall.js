@@ -1,7 +1,12 @@
-import { StyleSheet, Text, View, Image } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
-import React from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
+import { router, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useMemo, useRef } from 'react';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import {
+    BottomSheetModal,
+    BottomSheetView,
+    BottomSheetModalProvider,
+} from '@gorhom/bottom-sheet';
 
 const SeeStall = () => {
     const { stall } = useLocalSearchParams();
@@ -19,6 +24,14 @@ const SeeStall = () => {
 
         return daysAgo >= 3 ? "❌ Not Available (Ready to Compost)" : "✅ Available";
     };
+
+    const bottomSheetModalRef = useRef(null);
+
+    const snapPoints = useMemo(() => ['25%', '50%', '75'], []);
+
+    const handlePresentModalPress = useCallback(() => {
+        bottomSheetModalRef.current?.present();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -45,6 +58,14 @@ const SeeStall = () => {
                     >
                         <Text style={styles.statusText}>{getAvailabilityStatus(sackData.postedDate)}</Text>
                     </View>
+                    <TouchableOpacity
+                        style={styles.button}
+                        onPress={() => router.push({
+                            pathname: "/components/User/components/map",
+                        })}
+                    >
+                        <Text style={styles.buttonText}>Pickup</Text>
+                    </TouchableOpacity>
                 </View>
             </View>
         </View>
@@ -93,7 +114,7 @@ const styles = StyleSheet.create({
         borderRadius: 50,
         justifyContent: 'center',
         alignItems: 'center',
-        position: 'relative', 
+        position: 'relative',
     },
     halfBackground: {
         position: 'absolute',
@@ -137,6 +158,18 @@ const styles = StyleSheet.create({
         color: "white",
         fontWeight: "bold",
         fontSize: 14,
+    },
+    button: {
+        marginTop: 10,
+        backgroundColor: '#ff6f00',
+        paddingVertical: 10,
+        borderRadius: 8,
+        alignItems: 'center',
+    },
+    buttonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: 'bold',
     },
 });
 

@@ -5,6 +5,7 @@ import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { getVendorStall } from '../../../(services)/api/Vendor/getVendorStall';
 import { getAllStalls } from '../../../(services)/api/Users/getAllStalls';
+import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 
 const Stall = () => {
   const { user } = useSelector((state) => state.auth);
@@ -12,7 +13,7 @@ const Stall = () => {
   const [allStalls, setAllStalls] = useState([]);
   const [showMyStall, setShowMyStall] = useState(false);
   const userId = user?._id || user?.user?._id;
-  const navigation = useNavigation()
+  const navigation = useNavigation();
   const router = useRouter();
 
   const fetchSellerStore = async () => {
@@ -32,7 +33,6 @@ const Stall = () => {
       console.error("Error fetching stalls:", error);
     }
   };
-  // console.log(allStalls)
 
   useFocusEffect(
     useCallback(() => {
@@ -68,11 +68,10 @@ const Stall = () => {
                 <Image source={{ uri: stallData.stallImage.url }} style={styles.image} />
               )}
               <View style={styles.cardContent}>
-                <Text style={styles.text}>🔢 Stall Number: {stallData.stallNumber || "N/A"}</Text>
+                <Text style={styles.text}><FontAwesome6 name="house" size={14} color="green" /> Stall Number: {stallData.stallNumber || "N/A"}</Text>
 
                 <TouchableOpacity
                   style={styles.button}
-                  // onPress={() => navigation.navigate("components/Vendor/components/Stall/seeStall", { stallData })}
                   onPress={() => router.push({
                     pathname: "/components/Vendor/components/Stall/seeStall",
                     params: { stall: JSON.stringify(stallData) }, 
@@ -86,7 +85,6 @@ const Stall = () => {
         }}
         showsVerticalScrollIndicator={false}
       />
-
     </View>
   );
 };
@@ -97,15 +95,15 @@ const styles = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
     padding: 15,
-    backgroundColor: '#f4f4f4',
+    backgroundColor: '#F4F4F4',  // Light background color
     flex: 1,
   },
   toggleButton: {
-    backgroundColor: '#007bff',
-    paddingVertical: 10,
+    backgroundColor: '#FF5A5F', // Airbnb red
+    paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 15,
   },
   toggleButtonText: {
     color: '#fff',
@@ -113,52 +111,42 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   heading: {
-    fontSize: 22,
-    fontWeight: 'bold',
+    fontSize: 24,
+    fontWeight: '700',
     textAlign: 'center',
-    marginBottom: 15,
-    color: '#333',
+    marginBottom: 20,
+    color: '#333',  // Dark text for readability
   },
   card: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 15,
+    borderRadius: 15,
+    marginBottom: 20,
     overflow: 'hidden',
-    elevation: 3,
+    elevation: 5,  // Slight shadow for a card-like effect
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
   },
   image: {
     width: '100%',
-    height: 180,
+    height: 200,
+    borderTopLeftRadius: 15,
+    borderTopRightRadius: 15,
   },
   cardContent: {
     padding: 15,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 5,
-  },
   text: {
     fontSize: 14,
     color: '#444',
-    marginBottom: 5,
+    marginBottom: 8,
   },
   button: {
-    marginTop: 10,
-    backgroundColor: '#ff6f00',
-    paddingVertical: 10,
-    borderRadius: 8,
+    marginTop: 12,
+    backgroundColor: '#FF5A5F',  // Airbnb red
+    paddingVertical: 12,
+    borderRadius: 10,
     alignItems: 'center',
   },
   buttonText: {
