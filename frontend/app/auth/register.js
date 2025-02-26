@@ -38,130 +38,150 @@ const Register = () => {
   return (
     <>
       <StatusBar translucent backgroundColor="transparent" />
-      <View style={styles.container}>
+      <ImageBackground
+        source={require("../../assets/bg-leaf.png")}
+        style={styles.background}
+        resizeMode="cover"
+      >
+        <View style={styles.container}>
+          <Text style={styles.registerText}>Register</Text>
+          <Text style={styles.subText}>Create your new account</Text>
 
-        <View style={styles.overlay}>
-          <Formik
-            initialValues={{ email: "", password: "", confirmPassword: "", name: "", role: "" }}
-            onSubmit={async (values) => {
-              try {
-                const response = await registerUser({
-                  ...values,
-                  avatar,
-                });
-                Alert.alert(
-                  "Registered Successfully",
-                  "You have been registered.",
-                  [
-                    {
-                      text: "OK",
-                      onPress: () => {
-                        router.push('/auth/login');
+          <View style={styles.card}>
+            <Formik
+              initialValues={{ email: "", password: "", confirmPassword: "", name: "", role: "" }}
+              onSubmit={async (values) => {
+                try {
+                  const response = await registerUser({
+                    ...values,
+                    avatar,
+                  });
+                  Alert.alert(
+                    "Registered Successfully",
+                    "You have been registered.",
+                    [
+                      {
+                        text: "OK",
+                        onPress: () => {
+                          router.push('/auth/login');
+                        },
                       },
-                    },
-                  ]
-                );
-              } catch (error) {
-                console.error('Registration failed:', error.response?.data?.message || error.message);
-                Alert.alert(
-                  "Registration Failed",
-                  error.response?.data?.message || "An error occurred during registration. Please try again.",
-                  [
-                    {
-                      text: "OK",
-                    },
-                  ]
-                );
-              }
-            }}
-            validationSchema={RegisterSchema}
-          >
-            {({
-              handleChange,
-              handleBlur,
-              handleSubmit,
-              values,
-              errors,
-              touched,
-            }) => (
-              <View style={styles.form}>
-                <View style={styles.imageContainer}>
-                  <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-                    {avatar ? (
-                      <Image source={{ uri: avatar }} style={styles.roundImage} />
-                    ) : (
-                      <>
-                        <Text style={styles.placeholderText}>No File Upload</Text>
-                        <Text style={styles.placeholderBellowText}>Select Avatar</Text>
-                      </>
-                    )}
+                    ]
+                  );
+                } catch (error) {
+                  console.error('Registration failed:', error.response?.data?.message || error.message);
+                  Alert.alert(
+                    "Registration Failed",
+                    error.response?.data?.message || "An error occurred during registration. Please try again.",
+                    [
+                      {
+                        text: "OK",
+                      },
+                    ]
+                  );
+                }
+              }}
+              validationSchema={RegisterSchema}
+            >
+              {({
+                handleChange,
+                handleBlur,
+                handleSubmit,
+                values,
+                errors,
+                touched,
+              }) => (
+                <View style={styles.form}>
+                  <View style={styles.imageContainer}>
+                    <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
+                      {avatar ? (
+                        <Image source={{ uri: avatar }} style={styles.roundImage} />
+                      ) : (
+                        <>
+                          <Text style={styles.placeholderText}>No File Upload</Text>
+                          <Text style={styles.placeholderBellowText}>Select Avatar</Text>
+                        </>
+                      )}
+                    </TouchableOpacity>
+                  </View>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Full name"
+                    onChangeText={handleChange("name")}
+                    onBlur={handleBlur("name")}
+                    value={values.name}
+                  />
+                  {errors.name && touched.name && (
+                    <Text style={styles.errorText}>{errors.name}</Text>
+                  )}
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Your email address"
+                    onChangeText={handleChange("email")}
+                    onBlur={handleBlur("email")}
+                    value={values.email}
+                    keyboardType="email-address"
+                  />
+                  {errors.email && touched.email && (
+                    <Text style={styles.errorText}>{errors.email}</Text>
+                  )}
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Password"
+                    onChangeText={handleChange("password")}
+                    onBlur={handleBlur("password")}
+                    value={values.password}
+                    secureTextEntry
+                  />
+                  {errors.password && touched.password && (
+                    <Text style={styles.errorText}>{errors.password}</Text>
+                  )}
+
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Confirm password"
+                    onChangeText={handleChange("confirmPassword")}
+                    onBlur={handleBlur("confirmPassword")}
+                    value={values.confirmPassword}
+                    secureTextEntry
+                  />
+                  {errors.confirmPassword && touched.confirmPassword && (
+                    <Text style={styles.errorText}>{errors.confirmPassword}</Text>
+                  )}
+
+                  <View style={styles.pickerContainer}>
+                    <Picker
+                      style={styles.picker}
+                      selectedValue={values.role}
+                      onValueChange={(itemValue) => {
+                        handleChange("role")(itemValue);
+                        handleBlur("role");
+                      }}
+                    >
+                      <Picker.Item label="Farmer" value="farmer" color='gray' />
+                      <Picker.Item label="Composter" value="composter" color='gray' />
+                      <Picker.Item label="Vendor" value="vendor" color='gray' />
+                    </Picker>
+                  </View>
+
+                  <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                    <Text style={styles.buttonText}>Sign up</Text>
                   </TouchableOpacity>
+
+                  <View style={styles.signInContainer}>
+                    <Text style={styles.signInText}>Back to </Text>
+                    <TouchableOpacity onPress={() => router.push("/auth/login")}>
+                      <Text style={styles.signInLink}>Sign in</Text>
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Name"
-                  onChangeText={handleChange("name")}
-                  onBlur={handleBlur("name")}
-                  value={values.name}
-                />
-                {errors.name && touched.name && (
-                  <Text style={styles.errorText}>{errors.name}</Text>
-                )}
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  onChangeText={handleChange("email")}
-                  onBlur={handleBlur("email")}
-                  value={values.email}
-                  keyboardType="email-address"
-                />
-                {errors.email && touched.email && (
-                  <Text style={styles.errorText}>{errors.email}</Text>
-                )}
-                <TextInput
-                  style={styles.input}
-                  placeholder="Password"
-                  onChangeText={handleChange("password")}
-                  onBlur={handleBlur("password")}
-                  value={values.password}
-                  secureTextEntry
-                />
-                {errors.password && touched.password && (
-                  <Text style={styles.errorText}>{errors.password}</Text>
-                )}
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm Password"
-                  onChangeText={handleChange("confirmPassword")}
-                  onBlur={handleBlur("confirmPassword")}
-                  value={values.confirmPassword}
-                  secureTextEntry
-                />
-                {errors.confirmPassword && touched.confirmPassword && (
-                  <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-                )}
-                <View style={styles.pickerContainer}>
-                  <Picker
-                    style={styles.picker}
-                    selectedValue={values.role}
-                    onValueChange={(itemValue) => {
-                      handleChange("role")(itemValue);
-                      handleBlur("role");
-                    }}
-                  >
-                    <Picker.Item label="Farmer" value="farmer" color='gray' />
-                    <Picker.Item label="Composter" value="composter" color='gray' />
-                    <Picker.Item label="Vendor" value="vendor" color='gray' />
-                  </Picker>
-                </View>
-                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                  <Text style={styles.buttonText}>Register</Text>
-                </TouchableOpacity>
-              </View>
-            )}
-          </Formik>
+              )}
+            </Formik>
+          </View>
         </View>
-      </View>
+      </ImageBackground>
     </>
   );
 };
@@ -169,55 +189,78 @@ const Register = () => {
 export default Register;
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: Constants.statusBarHeight, // Push the content down by the status bar height
-  },
-  backgroundImage: {
-    flex: 1,
-    resizeMode: 'cover',
-  },
-  overlay: {
+  background: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    padding: 16,
   },
-  title: {
-    fontSize: 32,
+  container: {
+    width: "100%",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  registerText: {
+    fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 24,
-    color: '#fff',
+    color: "#fff",
+  },
+  subText: {
+    fontSize: 16,
+    color: "#ddd",
+    marginBottom: 20,
+  },
+  card: {
+    backgroundColor: "#fff",
+    width: "100%",
+    padding: 20,
+    borderRadius: 20,
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
   },
   form: {
     width: "100%",
-    borderRadius: 10,
-    padding: 20,
   },
   input: {
+    width: "100%",
     height: 50,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderBottomColor: "#ddd",
+    marginBottom: 10,
+    fontSize: 16,
+    paddingHorizontal: 10,
   },
   errorText: {
     color: "red",
-    marginBottom: 16,
+    fontSize: 12,
+    marginBottom: 5,
   },
   button: {
-    height: 50,
-    backgroundColor: "#6200ea",
-    justifyContent: "center",
+    backgroundColor: "#008060",
+    paddingVertical: 15,
+    borderRadius: 25,
+    marginTop: 20,
     alignItems: "center",
-    borderRadius: 8,
-    marginTop: 16,
   },
   buttonText: {
     color: "#fff",
     fontSize: 18,
+    fontWeight: "bold",
+  },
+  signInContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 15,
+  },
+  signInText: {
+    fontSize: 14,
+    color: "#666",
+  },
+  signInLink: {
+    fontSize: 14,
+    color: "#008060",
     fontWeight: "bold",
   },
   imageContainer: {
@@ -248,21 +291,5 @@ const styles = StyleSheet.create({
     color: "#888",
     textAlign: "center",
     fontSize: 12,
-  },
-  pickerContainer: {
-    borderRadius: 10,
-    overflow: 'hidden',
-    borderColor: '#ccc',
-    marginBottom: 15
-  },
-  picker: {
-    height: 50,
-    width: "70%",
-    borderColor: "black",
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 16,
-    marginBottom: 16,
-    backgroundColor: "#fff",
   },
 });

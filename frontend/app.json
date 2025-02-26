@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "frontend",
+    "name": "nowaste",
     "slug": "frontend",
     "scheme": "nowaste",
     "version": "1.0.0",
@@ -14,17 +14,36 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs access to your location to show your position on the map."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kellyncodon.frontend"
+      "package": "com.kellyncodon.frontend",
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaAIzaSyAQ0HexX01OZ_JrbaWLWALOowguElQ6A6k"
+        }
+      }
+      ,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "8ec4a48f-d37e-4a43-b1f3-bdbfd42ba9d7"
+      }
+    },
+    "owner": "nowaste"
   }
-}
+} 

@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
     View,
     StyleSheet,
@@ -16,8 +16,6 @@ import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "../(services)/api/Users/loginUserAPI";
 import { useDispatch, useSelector } from "react-redux";
 import { loginAction } from "../(redux)/authSlice";
-import Constants from 'expo-constants';
-// import { setUserId } from "../(redux)/cartSlice";
 
 const LoginSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Required"),
@@ -31,166 +29,215 @@ export default function Login() {
         mutationFn: loginUser,
         mutationKey: ["login"],
     });
+    const [isLoading, setIsLoading] = useState(false);
 
     const user = useSelector((state) => state.auth.user);
 
     useEffect(() => {
-        if (user) {
-            router.push("/(tabs)");
+        if (!user) return;
+
+        const role = user?.user?.role || user.role;
+        const noVenderData = user?.user?.stall || user?.user?.address || [];
+        const noUserData = user?.user?.address || [];
+        switch (role) {
+            case "farmer":
+
+                if (noVenderData.length === 0 || noUserData.length === 0) {
+                    router.replace("/components/User/addAddress");
+                } else {
+                    router.replace("/(tabs)");
+                }
+                break;
+            case "composter":
+                if (noVenderData.length === 0 || noUserData.length === 0) {
+                    router.replace("/components/User/addAddress");
+                } else {
+                    router.replace("/(tabs)");
+                }
+                break;
+            case "vendor":
+                if (noVenderData.length === 0) {
+                    router.replace("/components/User/addAddress");
+                } else {
+                    router.replace("/components/Vendor/(tabs)");
+                }
+                break;
+            // case "super admin":
+            //     router.replace("/components/SuperAdmin/(tabs)");
+            //     break;
+            // default:
+            //     break;
         }
     }, [user, router]);
 
     return (
         <>
             <StatusBar translucent backgroundColor="transparent" />
-            <View style={styles.container}>
-                <View style={styles.overlay}>
-                    <Text style={styles.title}>Login</Text>
-                    <Formik
-                        initialValues={{ email: "", password: "" }}
-                        validationSchema={LoginSchema}
-                        onSubmit={(values) => {
-                            mutation
-                                .mutateAsync(values)
-                                .then((data) => {
-                                    dispatch(loginAction(data));
+            <ImageBackground
+                source={require("../../assets/bg-leaf.png")}
+                style={styles.background}
+                resizeMode="cover"
+            >
+                <View style={styles.container}>
+                    <Text style={styles.welcomeText}>No Waste</Text>
+                    <Text style={styles.subText}>Login to your account</Text>
 
-                                    const role = data?.user?.role;
-                                    const noVenderData = data?.user?.stall || data?.user?.address || [];
-                                    const noUserData =  data?.user?.address || [];
-                                    switch (role) {
-                                        case "farmer":
-                                            if (noVenderData.length === 0) {
-                                                router.replace("/components/User/addAddress");
-                                            } else {
-                                                router.replace("/(tabs)");
-                                            }
-                                            break;
-                                        case "composter":
-                                            if (noVenderData.length === 0) {
-                                                router.replace("/components/User/addAddress");
-                                            } else {
-                                                router.replace("/(tabs)");
-                                            }
-                                            break;
-                                        case "vendor":
-                                            if (noVenderData.length === 0) {
-                                                router.replace("/components/User/addAddress");
-                                            } else {
-                                                router.replace("/components/Vendor/(tabs)");
-                                            }
-                                            break;
-                                        // case "super admin":
-                                        //     router.replace("/components/SuperAdmin/(tabs)");
-                                        //     break;
-                                        // default:
-                                        //     break;
-                                    }
-                                })
-                                .catch((err) => {
-                                    Alert.alert("Login Failed", "Your Email or Password is Incorrect. Try Again", [{ text: "OK" }]);
-                                    console.log(err);
-                                });
-                        }}
-                    >
-                        {({
-                            handleChange,
-                            handleBlur,
-                            handleSubmit,
-                            values,
-                            errors,
-                            touched,
-                        }) => (
-                            <View style={styles.form}>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Email"
-                                    onChangeText={handleChange("email")}
-                                    onBlur={handleBlur("email")}
-                                    value={values.email}
-                                    keyboardType="email-address"
-                                />
-                                {errors.email && touched.email ? (
-                                    <Text style={styles.errorText}>{errors.email}</Text>
-                                ) : null}
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Password"
-                                    onChangeText={handleChange("password")}
-                                    onBlur={handleBlur("password")}
-                                    value={values.password}
-                                    secureTextEntry
-                                />
-                                {errors.password && touched.password ? (
-                                    <Text style={styles.errorText}>{errors.password}</Text>
-                                ) : null}
-                                <TouchableOpacity style={styles.button}
-                                    onPress={handleSubmit}
-                                >
-                                    <Text style={styles.buttonText}>Login</Text>
-                                </TouchableOpacity>
-                                <TouchableOpacity
-                                    onPress={() => router.push('/auth/register')}
-                                >
-                                    <Text style={{ textAlign: 'right', color: 'black', marginTop: 15, marginRight: 7 }}>Register</Text>
-                                </TouchableOpacity>
-                            </View>
-                        )}
-                    </Formik>
+                    <View style={styles.card}>
+                        <Formik
+                            initialValues={{ email: "", password: "" }}
+                            validationSchema={LoginSchema}
+                            onSubmit={(values) => {
+                                setIsLoading(true);
+                                mutation.mutateAsync(values)
+                                    .then((data) => {
+                                        dispatch(loginAction(data));
+                                    })
+                                    .catch((error) => {
+                                        setIsLoading(false);
+                                        Alert.alert(
+                                            "Login Failed", "Your Email or Password is Incorrent. Try Again",
+                                            [{ text: "OK" }]
+                                        );
+                                    });
+                            }}
+                        >
+                            {({
+                                handleChange,
+                                handleBlur,
+                                handleSubmit,
+                                values,
+                                errors,
+                                touched,
+                            }) => (
+                                <View style={styles.form}>
+                                    <TextInput
+                                        style={styles.input}
+                                        placeholder="Email"
+                                        onChangeText={handleChange("email")}
+                                        onBlur={handleBlur("email")}
+                                        value={values.email}
+                                        keyboardType="email-address"
+                                    />
+                                    {errors.email && touched.email && (
+                                        <Text style={styles.errorText}>{errors.email}</Text>
+                                    )}
+
+                                    <View style={styles.passwordContainer}>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Password"
+                                            onChangeText={handleChange("password")}
+                                            onBlur={handleBlur("password")}
+                                            value={values.password}
+                                            secureTextEntry
+                                        />
+                                    </View>
+                                    {errors.password && touched.password && (
+                                        <Text style={styles.errorText}>{errors.password}</Text>
+                                    )}
+
+                                    <TouchableOpacity style={styles.button} onPress={handleSubmit}>
+                                        <Text style={styles.buttonText}>Sign in</Text>
+                                    </TouchableOpacity>
+
+                                    <View style={styles.registerContainer}>
+                                        <Text style={styles.registerText}>Create account? </Text>
+                                        <TouchableOpacity onPress={() => router.push("/auth/register")}>
+                                            <Text style={styles.signUpText}>Sign up</Text>
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
+                            )}
+                        </Formik>
+                    </View>
                 </View>
-            </View>
+            </ImageBackground>
         </>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        paddingTop: Constants.statusBarHeight,
-    },
-    backgroundImage: {
-        flex: 1,
-        resizeMode: 'cover',
-    },
-    overlay: {
+    background: {
         flex: 1,
         justifyContent: "center",
         alignItems: "center",
-        padding: 16,
     },
-    title: {
-        fontSize: 32,
+    container: {
+        width: "100%",
+        alignItems: "center",
+        paddingHorizontal: 20,
+    },
+    welcomeText: {
+        fontSize: 28,
         fontWeight: "bold",
-        marginBottom: 24,
-        color: '#FFAC1C'
+        color: "#d4ffb2",
+    },
+    subText: {
+        fontSize: 16,
+        color: "#85ff7a",
+        marginBottom: 20,
+    },
+    card: {
+        backgroundColor: "#fff",
+        width: "100%",
+        padding: 20,
+        borderRadius: 20,
+        elevation: 5,
+        shadowColor: "#000",
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: 5 },
     },
     form: {
         width: "100%",
     },
     input: {
+        width: "100%",
         height: 50,
-        borderColor: "#ccc",
-        borderWidth: 1,
-        borderRadius: 8,
-        paddingHorizontal: 16,
-        marginBottom: 16,
-        backgroundColor: "#fff",
+        borderBottomWidth: 1,
+        borderBottomColor: "#ddd",
+        marginBottom: 10,
+        fontSize: 16,
+        paddingHorizontal: 10,
     },
     errorText: {
         color: "red",
-        marginBottom: 16,
+        fontSize: 12,
+        marginBottom: 5,
+    },
+    passwordContainer: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+    },
+    forgotText: {
+        color: "#009688",
+        fontSize: 14,
     },
     button: {
-        height: 50,
-        backgroundColor: "#FFAC1C",
-        justifyContent: "center",
+        backgroundColor: "#008060",
+        paddingVertical: 15,
+        borderRadius: 25,
+        marginTop: 20,
         alignItems: "center",
-        borderRadius: 8,
-        marginTop: 16,
     },
     buttonText: {
         color: "#fff",
         fontSize: 18,
+        fontWeight: "bold",
+    },
+    registerContainer: {
+        flexDirection: "row",
+        justifyContent: "center",
+        marginTop: 15,
+    },
+    registerText: {
+        fontSize: 14,
+        color: "#666",
+    },
+    signUpText: {
+        fontSize: 14,
+        color: "#008060",
         fontWeight: "bold",
     },
 });

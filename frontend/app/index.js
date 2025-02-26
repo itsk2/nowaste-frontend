@@ -6,25 +6,25 @@ import { StatusBar } from 'expo-status-bar';
 import { runOnJS } from 'react-native-reanimated';
 import Constants from 'expo-constants';
 import { GestureHandlerRootView, GestureDetector, Gesture, Directions } from 'react-native-gesture-handler';
-
 import Animated, { FadeIn, FadeOut, SlideOutLeft, SlideInRight } from 'react-native-reanimated';
 import { useSelector } from 'react-redux';
 
+// Onboarding steps with updated content
 const onboardingSteps = [
   {
-    icon: 'snowflake',
-    title: 'Welcome Nowaste',
-    description: 'Turn market waste into farm gold! 🌱🐖',
+    icon: 'leaf',
+    title: 'Welcome to Nowaste!',
+    description: 'Turn market waste into valuable farm resources. Join us in reducing waste efficiently! 🌱🐖',
   },
   {
-    icon: 'people-arrows',
-    title: 'Learn and grow together',
-    description: 'Learn by building 24 projects with React Native and Expo',
+    icon: 'handshake',
+    title: 'Connecting Markets & Farmers',
+    description: 'Easily link vegetable stalls with pig farmers and composters for optimized waste collection.',
   },
   {
-    icon: 'book-reader',
-    title: 'Education for Children',
-    description: 'Contribute to the fundraiser "Education for Children" to help Save the Children in their effort of providing education to every child',
+    icon: 'recycle',
+    title: 'Be Part of the Solution',
+    description: 'Help reduce waste by ensuring vegetable scraps are efficiently collected and used.',
   },
 ];
 
@@ -34,8 +34,7 @@ export default function OnboardingScreen() {
   const data = onboardingSteps[screenIndex];
 
   const onContinue = () => {
-    const isLastScreen = screenIndex === onboardingSteps.length - 1;
-    if (isLastScreen) {
+    if (screenIndex === onboardingSteps.length - 1) {
       endOnboarding();
     } else {
       setScreenIndex(screenIndex + 1);
@@ -43,8 +42,7 @@ export default function OnboardingScreen() {
   };
 
   const onBack = () => {
-    const isFirstScreen = screenIndex === 0;
-    if (isFirstScreen) {
+    if (screenIndex === 0) {
       endOnboarding();
     } else {
       setScreenIndex(screenIndex - 1);
@@ -59,32 +57,34 @@ export default function OnboardingScreen() {
   const swipes = Gesture.Simultaneous(
     Gesture.Fling()
       .direction(Directions.LEFT)
-      .onEnd(() => runOnJS(onContinue)()), // Ginawang worklet
+      .onEnd(() => runOnJS(onContinue)()),
 
     Gesture.Fling()
       .direction(Directions.RIGHT)
-      .onEnd(() => runOnJS(onBack)()) // Ginawang worklet
+      .onEnd(() => runOnJS(onBack)())
   );
 
   return (
-    <GestureHandlerRootView style={{
-      flex: 1, paddingTop: Constants.statusBarHeight,
-    }}>
+    <GestureHandlerRootView style={styles.container}>
       <SafeAreaView style={styles.page}>
         <Stack.Screen options={{ headerShown: false }} />
         <StatusBar style="light" />
+
+        {/* Step Indicator */}
         <View style={styles.stepIndicatorContainer}>
-          {onboardingSteps.map((step, index) => (
+          {onboardingSteps.map((_, index) => (
             <View key={index} style={[styles.stepIndicator, { backgroundColor: index === screenIndex ? '#CEF202' : 'grey' }]} />
           ))}
         </View>
 
+        {/* Swipe Gesture Handler */}
         <GestureDetector gesture={swipes}>
           <View style={styles.pageContent} key={screenIndex}>
             <Animated.View entering={FadeIn} exiting={FadeOut}>
               <FontAwesome5 style={styles.image} name={data.icon} size={150} color="#CEF202" />
             </Animated.View>
 
+            {/* Onboarding Text */}
             <View style={styles.footer}>
               <Animated.Text entering={SlideInRight} exiting={SlideOutLeft} style={styles.title}>
                 {data.title}
@@ -93,6 +93,7 @@ export default function OnboardingScreen() {
                 {data.description}
               </Animated.Text>
 
+              {/* Buttons */}
               <View style={styles.buttonsRow}>
                 <Text onPress={endOnboarding} style={styles.buttonText}>
                   Skip
@@ -110,9 +111,13 @@ export default function OnboardingScreen() {
 }
 
 const styles = StyleSheet.create({
-  page: {
-    justifyContent: 'center',
+  container: {
     flex: 1,
+    paddingTop: Constants.statusBarHeight,
+  },
+  page: {
+    flex: 1,
+    justifyContent: 'center',
     backgroundColor: '#15141A',
   },
   pageContent: {
