@@ -61,7 +61,8 @@ const Stall = () => {
         keyExtractor={(item, index) => item?._id || index.toString()}
         renderItem={({ item }) => {
           const stallData = item.stall || item;
-
+          const stallUser = stallData.user
+          // console.log(stallData.user,'Stall User')
           return (
             <View style={styles.card}>
               {stallData.stallImage?.url && (
@@ -74,7 +75,7 @@ const Stall = () => {
                   style={styles.button}
                   onPress={() => router.push({
                     pathname: "/components/Vendor/components/Stall/seeStall",
-                    params: { stall: JSON.stringify(stallData) }, 
+                    params: { stall: JSON.stringify(stallData), userNum: JSON.stringify(stallUser) }, 
                   })}
                 >
                   <Text style={styles.buttonText}>View More</Text>

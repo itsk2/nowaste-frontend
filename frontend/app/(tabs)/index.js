@@ -57,7 +57,7 @@ const index = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f5f5f5' },
+  container: { flex: 1, backgroundColor: '#f5f5f5', },
   banner: { alignItems: 'center', padding: 20, backgroundColor: '#4CAF50' },
   bannerImage: { width: '100%', height: 200, borderRadius: 10 },
   bannerText: { fontSize: 20, fontWeight: 'bold', color: 'white', textAlign: 'center', marginTop: 10 },

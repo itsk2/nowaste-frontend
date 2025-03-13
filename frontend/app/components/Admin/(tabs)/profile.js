@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import {
     StyleSheet,
     Text,
@@ -7,46 +7,23 @@ import {
     TouchableOpacity,
     Image,
     ImageBackground,
-    Switch
 } from "react-native";
 import Constants from "expo-constants";
 import { useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { logoutAction } from "../../../(redux)/authSlice";
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import axios from 'axios';
-import baseURL from '../../../../assets/common/baseURL';
 
 const Profile = () => {
     const router = useRouter();
     const dispatch = useDispatch();
     const { user } = useSelector((state) => state.auth);
-    const sellerId = user?.user?._id
     const navigation = useNavigation();
-    const [stallStatus, setStallStatus] = useState(user?.user?.stall?.status === "open");
 
     const handleLogout = () => {
         dispatch(logoutAction());
         router.replace("/auth/login");
     };
-    const toggleStallStatus = async () => {
-        const newStatus = stallStatus ? "closed" : "open";
-        setStallStatus(!stallStatus);
-
-        try {
-            const response = await axios.put(`${baseURL}/stall-status/${sellerId}`, {
-                status: newStatus,
-            });
-
-            console.log("Updated Stall Status:", response.data);
-        } catch (error) {
-            console.error("Error updating stall status:", error);
-            setStallStatus(stallStatus);
-        }
-    };
-
-
     // console.log(user)
     return (
         <>
@@ -89,12 +66,12 @@ const Profile = () => {
                                 <Icon name="user" size={20} color="#000" />
                                 <Text style={styles.menuText}>Profile</Text>
                             </TouchableOpacity>
-                            {/* <TouchableOpacity style={styles.menuItem}
+                            <TouchableOpacity style={styles.menuItem}
                                 onPress={() => navigation.navigate('components/User/addAddress', { user })}
                             >
                                 <Icon name="book" size={20} color="#000" />
                                 <Text style={styles.menuText}>Address Book</Text>
-                            </TouchableOpacity> */}
+                            </TouchableOpacity>
                             <TouchableOpacity style={styles.menuItem}>
                                 <Icon name="info-circle" size={20} color="#000" />
                                 <Text style={styles.menuText}>About Us</Text>
@@ -102,14 +79,6 @@ const Profile = () => {
                             <TouchableOpacity style={styles.menuItem}>
                                 <Icon name="question-circle" size={20} color="#000" />
                                 <Text style={styles.menuText}>FAQ</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.menuItem}>
-                                <FontAwesome6 name="store" size={20} color="black" />
-                                <Text style={styles.menuText}>Store Status</Text>
-                                <Switch
-                                    value={stallStatus}
-                                    onValueChange={toggleStallStatus}
-                                />
                             </TouchableOpacity>
                         </View>
                         <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
