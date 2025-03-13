@@ -36,37 +36,37 @@ export default function Login() {
     useEffect(() => {
         if (!user) return;
 
+        console.log("User data:", user); // Debugging: Check user structure
         const role = user?.user?.role || user.role;
-        const noVenderData = user?.user?.stall || user?.user?.address || [];
-        const noUserData = user?.user?.address || [];
+        const stall = user?.user?.stall || user.stall || {}; // Ensure correct stall path
+        const address = user?.user?.address || user.address || {}; // Ensure correct address path
+        console.log("Stall Data:", stall); // Debugging: Check stall structure
+
         switch (role) {
             case "farmer":
-
-                if (noVenderData.length === 0 || noUserData.length === 0) {
+                if (stall.length === 0 || address.address === 0) {
                     router.replace("/components/User/addAddress");
                 } else {
                     router.replace("/(tabs)");
                 }
                 break;
             case "composter":
-                if (noVenderData.length === 0 || noUserData.length === 0) {
+                if (stall.length === 0 || stall.address === 0) {
                     router.replace("/components/User/addAddress");
                 } else {
                     router.replace("/(tabs)");
                 }
                 break;
             case "vendor":
-                if (noVenderData.length === 0) {
+                if (Object.keys(stall).length === 1 && "status" in stall) {
                     router.replace("/components/User/addAddress");
                 } else {
                     router.replace("/components/Vendor/(tabs)");
                 }
                 break;
-            // case "super admin":
-            //     router.replace("/components/SuperAdmin/(tabs)");
-            //     break;
-            // default:
-            //     break;
+            case "admin":
+                router.replace("/components/Admin/(tabs)");
+                break;
         }
     }, [user, router]);
 

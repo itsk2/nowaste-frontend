@@ -1,74 +1,113 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity } from 'react-native';
-import { router, useLocalSearchParams } from 'expo-router';
-import React, { useCallback, useMemo, useRef } from 'react';
+import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, StatusBar, ScrollView, Alert } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import {
     BottomSheetModal,
     BottomSheetView,
     BottomSheetModalProvider,
 } from '@gorhom/bottom-sheet';
+import Constants from 'expo-constants';
+import baseURL from '../../../../../assets/common/baseURL';
+import axios from 'axios';
+import { useSelector } from 'react-redux';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { FontAwesome } from '@expo/vector-icons';
 
 const SeeStall = () => {
     const { stall } = useLocalSearchParams();
     const stallData = stall ? JSON.parse(stall) : {};
+    const sellerId = stallData?.user || []
+    const { user } = useSelector((state) => state.auth);
+    const userId = user.user._id
+    const [sackData, setStoreSacks] = useState([]);
 
-    const sackData = {
-        description: "A sack filled with mixed vegetable waste, currently at 50% capacity.",
-        location: "📍 Taytay Market, Rizal City",
-        postedDate: "2024-02-13",
+    const fetchStoreSacks = async () => {
+        try {
+            const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${sellerId}`);
+            const filteredSacks = data.sacks.filter(sack => sack.status === "posted");
+
+            setStoreSacks(filteredSacks);
+        } catch (error) {
+            console.error("Error fetching:", error);
+        }
     };
-    const getAvailabilityStatus = (postedDate) => {
-        const today = new Date();
-        const postDate = new Date(postedDate);
-        const daysAgo = Math.floor((today - postDate) / (1000 * 60 * 60 * 24));
 
-        return daysAgo >= 3 ? "❌ Not Available (Ready to Compost)" : "✅ Available";
+    useFocusEffect(
+        useCallback(() => {
+            if (userId) {
+                fetchStoreSacks();
+
+                const interval = setInterval(() => {
+                    fetchStoreSacks();
+                }, 5000);
+
+                return () => clearInterval(interval);
+            }
+        }, [userId])
+    );
+
+    const handleAddtoSack = async (item) => {
+        console.log("Adding to Sack:", item);
+        try {
+            const { data } = await axios.post(`${baseURL}/sack/add-to-sack/${userId}`, item);
+
+            if (data.message) {
+                Alert.alert("Success", data.message);
+            }
+        } catch (error) {
+            // console.error("Error Adding to Sack:", error.response?.data || error.message);
+            Alert.alert("Cannot Proceed", error.response?.data?.message);
+        }
     };
-
-    const bottomSheetModalRef = useRef(null);
-
-    const snapPoints = useMemo(() => ['25%', '50%', '75'], []);
-
-    const handlePresentModalPress = useCallback(() => {
-        bottomSheetModalRef.current?.present();
-    }, []);
 
     return (
-        <View style={styles.container}>
-            {stallData?.stallImage?.url && (
-                <Image source={{ uri: stallData.stallImage.url }} style={styles.image} />
-            )}
-            <Text style={styles.title}>{stallData?.stallDescription || "No Description"}</Text>
-            <Text style={styles.text}>📍 {stallData?.stallAddress || "No Address"}</Text>
-            <Text style={styles.text}>🔢 Stall Number: {stallData?.stallNumber || "N/A"}</Text>
-            <View style={styles.card}>
-                <View style={styles.iconWrapper}>
-                    <View style={styles.halfBackground} />
-                    <MaterialCommunityIcons name="sack-percent" size={50} color="green" style={styles.icon} />
-                </View>
-                <View style={styles.content}>
-                    <Text style={styles.cardTitle}>{sackData.description}</Text>
-                    <Text style={styles.cardText}>{sackData.location}</Text>
-                    <Text style={styles.cardText}>📅 Posted: {sackData.postedDate} (more than 3 days ago)</Text>
-                    <View
-                        style={[
-                            styles.statusBadge,
-                            getAvailabilityStatus(sackData.postedDate) === "✅ Available" ? styles.available : styles.unavailable,
-                        ]}
-                    >
-                        <Text style={styles.statusText}>{getAvailabilityStatus(sackData.postedDate)}</Text>
+        <>
+            <StatusBar translucent backgroundColor={"transparent"} />
+            <FlatList
+                ListHeaderComponent={
+                    <View style={styles.container}>
+                        {stallData?.stallImage?.url && (
+                            <Image source={{ uri: stallData.stallImage.url }} style={styles.image} />
+                        )}
+                        <Text style={styles.title}>{stallData?.stallDescription || "No Description"}</Text>
+                        <Text style={styles.text}>📍 {stallData?.stallAddress || "No Address"}</Text>
+                        <Text style={styles.text}>🔢 Stall Number: {stallData?.stallNumber || "N/A"}</Text>
                     </View>
-                    <TouchableOpacity
-                        style={styles.button}
-                        onPress={() => router.push({
-                            pathname: "/components/User/components/map",
-                        })}
-                    >
-                        <Text style={styles.buttonText}>Pickup</Text>
-                    </TouchableOpacity>
-                </View>
-            </View>
-        </View>
+                }
+                data={sackData}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                    <View style={styles.card}>
+                        <View style={{ marginLeft: 100 }}>
+                            <View style={styles.iconWrapper}>
+                                {item?.images?.[0]?.url && (
+                                    <Image source={{ uri: item.images[0].url }} style={{ width: 70, height: 70, borderRadius: 50 }} />
+                                )}
+                            </View>
+                            <View>
+                                <Text style={styles.cardTitle}>{item.description}</Text>
+                                <Text style={styles.cardText}>{item.location}</Text>
+                                <Text style={styles.cardText}>kg: {item.kilo}</Text>
+                                <Text style={styles.cardText}>📅 Posted: {new Date(item.createdAt).toLocaleDateString("en-US")}</Text>
+                                <Text style={styles.cardText}>🗓 Spoilage Date: {new Date(item.dbSpoil).toLocaleDateString("en-US")}</Text>
+                                {new Date(item.dbSpoil) < new Date() ? (
+                                    <MaterialIcons name="compost" size={24} color="black" />
+                                ) : (
+                                    <FontAwesome name="star" size={20} color="gold" style={{ alignSelf: 'flex-end' }} />
+                                )}
+                            </View>
+                            {user.user.role !== 'admin' && (
+                                <TouchableOpacity style={styles.button} onPress={() => handleAddtoSack(item)}>
+                                    <Text style={styles.buttonText}>Add to Sack</Text>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    </View>
+                )}
+                ListEmptyComponent={<Text style={styles.noDataText}>No sacks available</Text>}
+            />
+        </>
     );
 };
 
@@ -107,9 +146,11 @@ const styles = StyleSheet.create({
         flexDirection: "row",
         alignItems: "center",
         elevation: 3,
+        width: '90%',
+        alignSelf: "center"
     },
     iconWrapper: {
-        width: 70,
+        width: '100%',
         height: 70,
         borderRadius: 50,
         justifyContent: 'center',
@@ -118,7 +159,7 @@ const styles = StyleSheet.create({
     },
     halfBackground: {
         position: 'absolute',
-        width: '50%',
+        width: '100%',
         height: '100%',
         backgroundColor: '#0096FF',
         left: 0,
@@ -128,40 +169,64 @@ const styles = StyleSheet.create({
     icon: {
         zIndex: 1,
     },
-    content: {
-        flex: 1,
+    card: {
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 15,
+        width: '100%',
+        marginBottom: 20,
+        flexDirection: 'row',
+        alignItems: 'center',
+        shadowColor: "#000",
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+        elevation: 3,
+    },
+    iconWrapper: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#D1E7FF',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    icon: {
+        zIndex: 1,
     },
     cardTitle: {
-        fontSize: 16,
-        fontWeight: "bold",
+        fontSize: 14,
+        fontWeight: '500',
+        color: '#333',
         marginBottom: 5,
     },
     cardText: {
-        fontSize: 14,
-        color: "#555",
+        fontSize: 12,
+        color: '#777',
         marginBottom: 3,
     },
     statusBadge: {
-        marginTop: 8,
-        paddingVertical: 5,
-        paddingHorizontal: 10,
-        borderRadius: 5,
-        alignSelf: "flex-start",
+        marginTop: 10,
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+        alignSelf: 'flex-start',
     },
     available: {
-        backgroundColor: "green",
+        backgroundColor: '#4CAF50',
     },
     unavailable: {
-        backgroundColor: "red",
+        backgroundColor: '#F44336',
     },
     statusText: {
-        color: "white",
-        fontWeight: "bold",
-        fontSize: 14,
+        color: 'white',
+        fontSize: 12,
+        fontWeight: '600',
     },
     button: {
         marginTop: 10,
-        backgroundColor: '#ff6f00',
+        backgroundColor: '#4CAF50',
         paddingVertical: 10,
         borderRadius: 8,
         alignItems: 'center',

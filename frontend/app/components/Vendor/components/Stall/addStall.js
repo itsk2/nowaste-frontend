@@ -34,7 +34,7 @@ const AddStall = () => {
       <StatusBar translucent backgroundColor="transparent" />
       <View style={styles.overlay}>
         <Formik
-          initialValues={{ stallDescription: "", stallAddress: "", stallNumber: "" }}
+          initialValues={{ stallDescription: "", stallAddress: "", stallNumber: "", stallHours: "" }}
           onSubmit={async (values) => {
             try {
               // console.log('Values', values)
@@ -112,11 +112,19 @@ const AddStall = () => {
               )}
               <TextInput
                 style={styles.input}
+                placeholder="Stall Hours"
+                onChangeText={handleChange("stallHours")}
+                onBlur={handleBlur("stallHours")}
+                value={values.stallHours}
+              />
+              {errors.stallHours && touched.stallHours && (
+                <Text style={styles.errorText}>{errors.stallHours}</Text>
+              )}
+              <TextInput
+                style={styles.input}
                 placeholder="Stall Number"
                 onChangeText={handleChange("stallNumber")}
                 onBlur={handleBlur("stallNumber")}
-                keyboardType='numeric'
-                maxLength={3}
                 value={values.stallNumber}
               />
               {errors.stallNumber && touched.stallNumber && (

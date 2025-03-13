@@ -3,7 +3,7 @@ import React, { useCallback, useState } from 'react';
 import Constants from 'expo-constants';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
-import { getAllStalls } from '../(services)/api/Users/getAllStalls';
+import { getAllStalls } from '../../../(services)/api/Users/getAllStalls';
 
 
 const Market = () => {
@@ -53,7 +53,6 @@ const Market = () => {
 
                 <TouchableOpacity
                   style={styles.button}
-                  // onPress={() => navigation.navigate("components/Vendor/components/Stall/seeStall", { stallData })}
                   onPress={() => router.push({
                     pathname: "/components/User/components/Stall/seeStall",
                     params: { stall: JSON.stringify(stallData) },

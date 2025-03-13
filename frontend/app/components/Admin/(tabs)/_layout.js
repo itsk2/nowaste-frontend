@@ -3,9 +3,8 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
-import Fontisto from "@expo/vector-icons/Fontisto";
-import Ionicons from "@expo/vector-icons/Ionicons";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Entypo from '@expo/vector-icons/Entypo';
 import { View } from "react-native";
 
 export default function RootLayout() {
@@ -41,17 +40,7 @@ export default function RootLayout() {
                     headerShown: false,
                     title: "Home",
                     tabBarIcon: ({ color }) => (
-                        <FontAwesome name="home" color={color} size={28} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="pickup"
-                options={{
-                    headerShown: false,
-                    title: "Pickup",
-                    tabBarIcon: ({ color }) => (
-                        <MaterialCommunityIcons name="car-lifted-pickup" size={33} color={color} />
+                        <MaterialIcons name="dashboard" size={24} color="black" />
                     ),
                 }}
             />
@@ -73,29 +62,19 @@ export default function RootLayout() {
                                 marginBottom: 10,
                             }}
                         >
-                            <MaterialCommunityIcons name="shopping" size={32} color="white" />
+                            <Entypo name="shop" size={24} color="white" />
                         </View>
                     ),
                 }}
             />
 
             <Tabs.Screen
-                name="notification"
-                options={{
-                    headerShown: false,
-                    title: "Notification",
-                    tabBarIcon: ({ color }) => (
-                        <Ionicons name="notifications-sharp" size={24} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
                 name="profile"
                 options={{
                     headerShown: false,
                     title: "Profile",
                     tabBarIcon: ({ color }) => (
-                        <FontAwesome name="user" color={color} size={28} />
+                        <FontAwesome name="user" color='black' size={28} />
                     ),
                 }}
             />

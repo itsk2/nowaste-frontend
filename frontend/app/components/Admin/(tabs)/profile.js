@@ -12,7 +12,7 @@ import Constants from "expo-constants";
 import { useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { logoutAction } from "../(redux)/authSlice";
+import { logoutAction } from "../../../(redux)/authSlice";
 
 const Profile = () => {
     const router = useRouter();
