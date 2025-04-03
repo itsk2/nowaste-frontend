@@ -12,9 +12,9 @@ import Constants from "expo-constants";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
-import { logoutAction } from "../(redux)/authSlice";
+import { logoutAction } from "../../../(redux)/authSlice";
 import axios from "axios";
-import baseURL from "../../assets/common/baseURL";
+import baseURL from "../../../../assets/common/baseURL";
 
 const Profile = () => {
     const router = useRouter();
@@ -27,6 +27,7 @@ const Profile = () => {
         dispatch(logoutAction());
         router.replace("/auth/login");
     };
+    // console.log(user)
     const fetchUser = async () => {
         try {
             const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
@@ -47,7 +48,6 @@ const Profile = () => {
             }
         }, [user.user._id])
     );
-    // console.log(userData, 'userData')
     return (
         <>
             <StatusBar translucent backgroundColor={"transparent"} />

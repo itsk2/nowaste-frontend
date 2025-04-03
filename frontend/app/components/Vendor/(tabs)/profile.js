@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
     StyleSheet,
     Text,
@@ -10,7 +10,7 @@ import {
     Switch
 } from "react-native";
 import Constants from "expo-constants";
-import { useNavigation, useRouter } from "expo-router";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import Icon from "react-native-vector-icons/FontAwesome";
 import { logoutAction } from "../../../(redux)/authSlice";
@@ -25,6 +25,7 @@ const Profile = () => {
     const sellerId = user?.user?._id
     const navigation = useNavigation();
     const [stallStatus, setStallStatus] = useState(user?.user?.stall?.status === "open");
+    const [userData, setUser] = useState([])
 
     const handleLogout = () => {
         dispatch(logoutAction());
@@ -46,6 +47,27 @@ const Profile = () => {
         }
     };
 
+    const fetchUser = async () => {
+        try {
+            const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
+            setUser(data.data.user);
+        } catch (error) {
+            console.error("Error fetching predicted waste data:", error);
+        }
+    };
+    // console.log(user?.user?._id)
+    useFocusEffect(
+        useCallback(() => {
+            if (user.user._id) {
+                fetchUser();
+                const interval = setInterval(() => {
+                    fetchUser();
+                }, 3000);
+                return () => clearInterval(interval);
+            }
+        }, [user.user._id])
+    );
+
 
     // console.log(user)
     return (
@@ -56,12 +78,12 @@ const Profile = () => {
                     <View style={styles.card}>
                         <View style={styles.header}>
                             <Image
-                                source={{ uri: user?.user?.avatar?.url || user?.avatar?.url || "https://via.placeholder.com/150" }}
+                                source={{ uri: user?.user?.avatar?.url || userData?.avatar?.url || "https://via.placeholder.com/150" }}
                                 style={styles.avatar}
                             />
                             <View>
-                                <Text style={styles.name}>{user?.user?.name || user?.name || "John Smith Meu"}</Text>
-                                <Text style={styles.country}>{user?.user?.address?.city || user?.address?.city || 'nothing'}</Text>
+                                <Text style={styles.name}>{user?.user?.name || userData?.name || "John Smith Meu"}</Text>
+                                <Text style={styles.country}>{user?.user?.address?.city || userData?.address?.city || 'nothing'}</Text>
                             </View>
                         </View>
                         <View style={styles.actions}>

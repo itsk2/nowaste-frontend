@@ -21,8 +21,10 @@ export default function RootLayout() {
         const role = user.user?.role || user.role;
         switch (role) {
             case "farmer":
-            case "composter":
                 router.replace("/(tabs)");
+                break;
+            case "composter":
+                router.replace("/components/Composter/(tabs)");
                 break;
             case "vendor":
                 router.replace("/components/Vendor/(tabs)");
@@ -102,3 +104,4 @@ export default function RootLayout() {
         </Tabs>
     );
 }
+

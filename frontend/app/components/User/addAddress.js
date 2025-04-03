@@ -1,11 +1,13 @@
 import { StatusBar, StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Image } from 'react-native'
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import Constants from 'expo-constants';
 import { Formik } from 'formik';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUserAction } from '../../(redux)/authSlice';
-import { useNavigation, useRouter } from 'expo-router';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { addUserAddress } from '../../(services)/api/Users/addUserAddress';
+import axios from 'axios';
+import baseURL from '../../../assets/common/baseURL';
 
 const UserAddress = () => {
   const { user } = useSelector((state) => state.auth);
@@ -13,7 +15,30 @@ const UserAddress = () => {
   const navigation = useNavigation();
   const role = user.role || user.user.role
   const router = useRouter();
-  const address = user?.user?.address;
+  const [userData, setUser] = useState([])
+
+  const fetchUser = async () => {
+    try {
+      const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
+      setUser(data.data.user);
+    } catch (error) {
+      console.error("Error fetching predicted waste data:", error);
+    }
+  };
+  // console.log(user?.user?._id)
+  useFocusEffect(
+    useCallback(() => {
+      if (user.user._id) {
+        fetchUser();
+        const interval = setInterval(() => {
+          fetchUser();
+        }, 3000);
+        return () => clearInterval(interval);
+      }
+    }, [user.user._id])
+  );
+
+  const address = userData?.address;
 
   return (
     <>
@@ -62,7 +87,7 @@ const UserAddress = () => {
                         {
                           text: "OK",
                           onPress: () => {
-                            if (role === 'farmer' || role === 'composer') {
+                            if (role === 'farmer' || role === 'composter') {
                               router.replace("/components/Vendor/(tabs)");
                             } else {
                               router.replace("/components/Vendor/components/Stall/addStall");
@@ -229,6 +254,6 @@ const styles = StyleSheet.create({
     fontSize: 19,
     fontWeight: "bold",
     color: "black",
-    textAlign:'center'
+    textAlign: 'center'
   },
 })

@@ -17,7 +17,7 @@ let baseURL = '';
 // ? baseURL = 'http://192.168.169.104:8080/api/v1'
 // : baseURL = 'http://192.168.169.104:8080/api/v1'
 
-? baseURL = 'http://192.168.137.154:8080/api/v1'
+? baseURL = 'http://192.168.236.104:8080/api/v1'
 : baseURL = 'https://nw-mobile-backend-1.onrender.com/api/v1'
 
 
