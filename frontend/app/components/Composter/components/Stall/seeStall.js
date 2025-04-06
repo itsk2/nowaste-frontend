@@ -21,13 +21,22 @@ const SeeStall = () => {
     const fetchStoreSacks = async () => {
         try {
             const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${sellerId}`);
-            const filteredSacks = data.sacks.filter(sack => sack.status === "posted");
+
+            const now = new Date();
+            const filteredSacks = data.sacks.filter(sack => {
+                const spoilageDate = new Date(sack.dbSpoil);
+                const daysPast = (now - spoilageDate) / (1000 * 60 * 60 * 24);
+
+                return sack.status === "spoiled" && daysPast < 3;
+            });
 
             setStoreSacks(filteredSacks);
         } catch (error) {
             console.error("Error fetching:", error);
         }
     };
+
+    // console.log(sackData,'SackDAta')
 
     const fetchPredictedWaste = async () => {
         try {
@@ -48,7 +57,7 @@ const SeeStall = () => {
                 const interval = setInterval(() => {
                     fetchStoreSacks();
                     fetchPredictedWaste();
-                }, 5000);
+                }, 3000);
 
                 return () => clearInterval(interval);
             }
@@ -83,7 +92,6 @@ const SeeStall = () => {
         return { [stallData.stallNumber]: filteredData };
     };
 
-    console.log(stallData.stallNumber,'Stall number')
     const chartData = processChartData();
     const colors = ['#FF5733', '#33FF57', '#3357FF'];
 
@@ -155,11 +163,7 @@ const SeeStall = () => {
                                 <Text style={styles.cardText}>kg: {item.kilo}</Text>
                                 <Text style={styles.cardText}>📅 Posted: {new Date(item.createdAt).toLocaleDateString("en-US")}</Text>
                                 <Text style={styles.cardText}>🗓 Spoilage Date: {new Date(item.dbSpoil).toLocaleDateString("en-US")}</Text>
-                                {new Date(item.dbSpoil) < new Date() ? (
-                                    <MaterialIcons name="compost" size={24} color="black" />
-                                ) : (
-                                    <FontAwesome name="star" size={20} color="gold" style={{ alignSelf: 'flex-end' }} />
-                                )}
+                                <MaterialIcons name="compost" size={24} color="black" />
                             </View>
                             {user.user.role !== 'admin' && (
                                 <TouchableOpacity style={styles.button} onPress={() => handleAddtoSack(item)}>

@@ -4,7 +4,7 @@ import Constants from 'expo-constants';
 import { useSelector } from 'react-redux';
 import { router, useFocusEffect } from 'expo-router';
 import axios from 'axios';
-import baseURL from '../../assets/common/baseURL';
+import baseURL from '../../../../assets/common/baseURL';
 import { FontAwesome } from '@expo/vector-icons';
 import Icon from "react-native-vector-icons/FontAwesome";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -24,7 +24,6 @@ const Pickup = () => {
                 console.error("pickUpSacks is not an array:", pickUpSacks);
                 return;
             }
-            // console.log(pickUpSacks,'sack')
             const now = new Date();
             const nowUTC8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
 
@@ -95,7 +94,7 @@ const Pickup = () => {
                         return (
                             <TouchableOpacity
                                 onPress={() => router.push({
-                                    pathname: "/components/User/components/Pickup/seePickUp",
+                                    pathname: "/components/Composter/components/Pickup/seePickUp",
                                     params: { pickupData: JSON.stringify(item) },
                                 })}
                             >
@@ -114,7 +113,7 @@ const Pickup = () => {
                                         </View>
                                         <View style={styles.rightSection}>
                                             <Image
-                                                source={require('../../assets/newtaytay.jpg')}
+                                                source={require('../../../../assets/newtaytay.jpg')}
                                                 style={styles.image}
                                                 resizeMode="cover"
                                             />

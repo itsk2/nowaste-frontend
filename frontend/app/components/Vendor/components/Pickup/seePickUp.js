@@ -122,7 +122,7 @@ const SeePickUp = () => {
             {/* Display Buyer Information */}
             {buyer && (
                 <View style={styles.buyerCard}>
-                    <Text style={styles.sectionTitle}>Buyer Information</Text>
+                    <Text style={styles.sectionTitle}>Collector Details</Text>
                     <Image source={{ uri: buyer.avatar?.url || "https://via.placeholder.com/100" }} style={styles.buyerImage} />
                     <Text style={styles.textWhite}>Name: {buyer.name}</Text>
                     <Text style={styles.textWhite}>Email: {buyer.email}</Text>
