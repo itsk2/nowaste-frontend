@@ -20,7 +20,7 @@ const SeeStall = () => {
     try {
       const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${userData}`);
       console.log("Fetched sacks:", data.sacks);
-      setStoreSacks(data.sacks); // Ensure data.sacks is an array
+      setStoreSacks(data.sacks);
     } catch (error) {
       console.error("Error fetching:", error);
     }
@@ -59,6 +59,7 @@ const SeeStall = () => {
                 <Text style={styles.cardTitle}>{item.description}</Text>
                 <Text style={styles.cardText}>{item.location}</Text>
                 <Text style={styles.cardText}>kg: {item.kilo}</Text>
+                <Text style={styles.cardText}>Status: {item.status}</Text>
                 <Text style={styles.cardText}>📅 Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
                 <Text style={styles.cardText}>🗓 Spoilage Date: {new Date(item.dbSpoil).toLocaleDateString()}</Text>
               </View>

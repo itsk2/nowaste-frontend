@@ -26,19 +26,21 @@ const Notification = () => {
     return (
         <View style={styles.container}>
             <Text style={styles.header}>Notifications</Text>
-            {notifications.length === 0 ? (
-                <Text style={styles.noNotifications}>No notifications</Text>
-            ) : (
-                <FlatList
-                    data={notifications}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => (
-                        <View style={styles.notificationCard}>
-                            <Text style={styles.message}>{item.message}</Text>
+            {notifications.map((notification, idx) => (
+                <View key={notification._id || idx} style={styles.notificationCard}>
+                    <View style={styles.notificationLeft}>
+                        <View style={styles.notificationIcon}>
+                            <Text style={styles.iconText}>🔔</Text>
                         </View>
-                    )}
-                />
-            )}
+                    </View>
+                    <View style={styles.notificationRight}>
+                        <Text style={styles.notificationMessage}>{notification.message}</Text>
+                        <Text style={styles.notificationTime}>
+                            {new Date(notification.createdAt).toLocaleString()}
+                        </Text>
+                    </View>
+                </View>
+            ))}
         </View>
     );
 };
@@ -50,7 +52,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingTop: Constants.statusBarHeight,
         padding: 20,
-        marginTop:15,
+        marginTop: 15,
         backgroundColor: '#f5f5f5',
     },
     header: {
@@ -74,5 +76,45 @@ const styles = StyleSheet.create({
     },
     message: {
         fontSize: 16,
+    },
+    notificationCard: {
+        flexDirection: 'row',
+        backgroundColor: '#fff',
+        borderRadius: 12,
+        padding: 16,
+        marginVertical: 8,
+        marginHorizontal: 16,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 6,
+        elevation: 3,
+    },
+    notificationLeft: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+    notificationIcon: {
+        backgroundColor: '#E8F5E9',
+        padding: 10,
+        borderRadius: 50,
+    },
+    iconText: {
+        fontSize: 20,
+    },
+    notificationRight: {
+        flex: 1,
+        justifyContent: 'center',
+    },
+    notificationMessage: {
+        fontSize: 16,
+        fontWeight: '500',
+        color: '#333',
+        marginBottom: 4,
+    },
+    notificationTime: {
+        fontSize: 12,
+        color: '#888',
     },
 });

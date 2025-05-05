@@ -43,6 +43,13 @@ const Register = () => {
         style={styles.background}
         resizeMode="cover"
       >
+
+        <View style={styles.header}>
+          <Text style={styles.registerText}>Join NoWaste Community</Text>
+          <Text style={styles.subText}>
+            Connect with local partners, reduce food waste, and make a positive impact on our environment.
+          </Text>
+        </View>
         <View style={styles.container}>
           <Text style={styles.registerText}>Register</Text>
           <Text style={styles.subText}>Create your new account</Text>
@@ -191,62 +198,76 @@ export default Register;
 const styles = StyleSheet.create({
   background: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: "#fff",
   },
   container: {
-    width: "100%",
-    alignItems: "center",
+    flex: 1,
     paddingHorizontal: 20,
+    justifyContent: "flex-start",
+  },
+  header: {
+    backgroundColor: "#2BA84A",
+    paddingTop: 60,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
   },
   registerText: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: "bold",
     color: "#fff",
+    marginBottom: 5,
   },
   subText: {
-    fontSize: 16,
-    color: "#ddd",
-    marginBottom: 20,
+    fontSize: 14,
+    color: "#E6FFE6",
   },
   card: {
     backgroundColor: "#fff",
-    width: "100%",
-    padding: 20,
     borderRadius: 20,
-    elevation: 5,
+    padding: 20,
+    marginTop: -50,
+    elevation: 6,
     shadowColor: "#000",
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 5 },
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
   },
   form: {
     width: "100%",
   },
   input: {
-    width: "100%",
+    backgroundColor: "#F9F9F9",
+    borderRadius: 10,
+    paddingHorizontal: 15,
     height: 50,
-    borderBottomWidth: 1,
-    borderBottomColor: "#ddd",
-    marginBottom: 10,
-    fontSize: 16,
-    paddingHorizontal: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
   },
-  errorText: {
-    color: "red",
-    fontSize: 12,
-    marginBottom: 5,
+  pickerContainer: {
+    backgroundColor: "#F9F9F9",
+    borderRadius: 10,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    overflow: "hidden",
+  },
+  picker: {
+    height: 50,
+    width: "100%",
   },
   button: {
-    backgroundColor: "#008060",
+    backgroundColor: "#2BA84A",
     paddingVertical: 15,
-    borderRadius: 25,
-    marginTop: 20,
+    borderRadius: 10,
     alignItems: "center",
+    marginTop: 10,
   },
   buttonText: {
     color: "#fff",
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
   },
   signInContainer: {
@@ -260,36 +281,40 @@ const styles = StyleSheet.create({
   },
   signInLink: {
     fontSize: 14,
-    color: "#008060",
+    color: "#2BA84A",
     fontWeight: "bold",
   },
+  errorText: {
+    color: "red",
+    fontSize: 12,
+    marginBottom: 5,
+    marginLeft: 5,
+  },
   imageContainer: {
-    marginBottom: 16,
     alignItems: "center",
+    marginBottom: 20,
   },
   imagePicker: {
-    width: 150,
-    height: 150,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 75,
-    backgroundColor: "#e9e9e9",
+    width: 100,
+    height: 100,
+    backgroundColor: "#eee",
+    borderRadius: 50,
     justifyContent: "center",
     alignItems: "center",
-    overflow: "hidden",
+    borderWidth: 2,
+    borderColor: "#2BA84A",
   },
   roundImage: {
     width: "100%",
     height: "100%",
-    borderRadius: 75,
+    borderRadius: 50,
   },
   placeholderText: {
     color: "#888",
-    textAlign: "center",
+    fontSize: 14,
   },
   placeholderBellowText: {
-    color: "#888",
-    textAlign: "center",
-    fontSize: 12,
+    color: "#aaa",
+    fontSize: 10,
   },
 });

@@ -37,30 +37,30 @@ const Market = () => {
         keyExtractor={(item, index) => item?._id || index.toString()}
         renderItem={({ item }) => {
           const stallData = item.stall || item;
-          console.log(item, 'Item')
+          const isOpen = stallData.status === "open";
+          console.log(stallData)
           return (
             <View style={styles.card}>
               {stallData.stallImage?.url && (
                 <Image source={{ uri: stallData.stallImage.url }} style={styles.image} />
               )}
               <View style={styles.cardContent}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                  <Text style={styles.text}>🔢 Stall Number: {stallData.stallNumber || "N/A"}</Text>
-                  <Text style={styles.text}>
-                    {stallData.status === "open" ? "Store: 🟢" : "Store: 🔴"}
-                  </Text>
+                <View style={styles.cardHeader}>
+                  <View style={[styles.statusBadge, { backgroundColor: isOpen ? "#4CAF50" : "#F44336" }]}>
+                    <Text style={styles.statusText}>{isOpen ? "Open" : "Closed"}</Text>
+                  </View>
                 </View>
-                <Text style={styles.text}>Open Hours: {stallData.stallHours || "N/A"}</Text>  
+                <Text style={styles.text}>🆔 {stallData.stallNumber || "N/A"}</Text>
+                <Text style={styles.text}>📍 {stallData.location || "Taytay, Rizal New Market"}</Text>
 
                 <TouchableOpacity
                   style={styles.button}
-                  // onPress={() => navigation.navigate("components/Vendor/components/Stall/seeStall", { stallData })}
                   onPress={() => router.push({
                     pathname: "/components/User/components/Stall/seeStall",
                     params: { stall: JSON.stringify(stallData) },
                   })}
                 >
-                  <Text style={styles.buttonText}>View More</Text>
+                  <Text style={styles.buttonText}>View Stall</Text>
                 </TouchableOpacity>
               </View>
             </View>
@@ -119,27 +119,27 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     padding: 15,
+    backgroundColor: '#fff',
   },
-  title: {
-    fontSize: 18,
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  statusBadge: {
+    paddingVertical: 4,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+  },
+  statusText: {
+    color: '#fff',
     fontWeight: 'bold',
-    color: '#222',
-    marginBottom: 5,
-  },
-  subtitle: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#666',
-    marginBottom: 5,
-  },
-  text: {
-    fontSize: 14,
-    color: '#444',
-    marginBottom: 5,
+    fontSize: 12,
   },
   button: {
     marginTop: 10,
-    backgroundColor: '#ff6f00',
+    backgroundColor: '#00C853', // Green button like in your image
     paddingVertical: 10,
     borderRadius: 8,
     alignItems: 'center',
@@ -149,4 +149,5 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
   },
+
 });
