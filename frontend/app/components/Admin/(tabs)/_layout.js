@@ -80,4 +80,9 @@ export default function RootLayout() {
             />
         </Tabs>
     );
+<<<<<<< HEAD
 }
+=======
+}
+
+>>>>>>> 6bdfb29c409a359e3e697ae633a0493886e89d30
