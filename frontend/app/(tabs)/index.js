@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseURL';
+import { useFocusEffect } from 'expo-router';
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -64,10 +65,19 @@ const index = () => {
     }
   };
 
-  useEffect(() => {
-    fetchPickupSacks();
-    fetchNotifications();
-  }, [userId]);
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        fetchPickupSacks();
+        fetchNotifications();
+        const interval = setInterval(() => {
+          fetchPickupSacks();
+          fetchNotifications();
+        }, 3000);
+        return () => clearInterval(interval);
+      }
+    }, [userId])
+  );
 
   console.log(wasteCollected, 'wasteCollected')
   console.log(monthlyWasteCollected, 'monthlyWasteCollected')

@@ -75,11 +75,11 @@ export default function RootLayout() {
                     }}
                 />
                 <Tabs.Screen
-                    name="notification"
+                    name="tracker"
                     options={{
                         headerShown: false,
                         tabBarIcon: ({ color }) => (
-                            <Ionicons name="notifications-sharp" size={24} color={color} />
+                            <MaterialCommunityIcons name="pig-variant" size={24} color={color} />
                         ),
                     }}
                 />
