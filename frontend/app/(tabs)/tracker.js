@@ -176,7 +176,7 @@ export default function WeightProgressForm() {
                     style={styles.trackButton}
                     onPress={() => setModalVisible(true)}
                 >
-                    <Text style={{color:'white'}}>Track</Text>
+                    <Text style={{color:'white'}}>Record</Text>
                 </TouchableOpacity>
             </View>
 
