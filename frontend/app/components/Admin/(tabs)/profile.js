@@ -32,10 +32,12 @@ const Profile = () => {
                 <View style={styles.container}>
                     <View style={styles.card}>
                         <View style={styles.header}>
-                            <Image
-                                source={{ uri: user?.user?.avatar?.url || user?.avatar?.url || "https://via.placeholder.com/150" }}
-                                style={styles.avatar}
-                            />
+                            {user?.avatar?.url ? (
+                                <Image
+                                    source={{ uri: userData.avatar.url }}
+                                    style={styles.avatar}
+                                />
+                            ) : null}
                             <View>
                                 <Text style={styles.name}>{user?.user?.name || user?.name || "John Smith Meu"}</Text>
                                 <Text style={styles.country}>{user?.user?.address?.city || user?.address?.city || 'nothing'}</Text>

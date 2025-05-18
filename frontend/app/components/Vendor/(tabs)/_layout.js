@@ -82,12 +82,12 @@ export default function RootLayout() {
             />
 
             <Tabs.Screen
-                name="notification"
+                name="Chats"
                 options={{
                     headerShown: false,
-                    title: "Notification",
+                    title: "Chats",
                     tabBarIcon: ({ color }) => (
-                        <Ionicons name="notifications-sharp" size={24} color={color} />
+                        <MaterialCommunityIcons name="android-messages" size={24} color={color} />
                     ),
                 }}
             />

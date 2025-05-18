@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, StatusBar, ScrollView, Alert } from 'react-native';
-import { useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import baseURL from '../../../../../assets/common/baseURL';
 import axios from 'axios';
@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { FontAwesome } from '@expo/vector-icons';
 import { LineChart } from 'react-native-gifted-charts';
+import { generateRoomId } from '../../../../../utils/generateRoom';
 
 
 const SeeStall = () => {
@@ -17,7 +18,7 @@ const SeeStall = () => {
     const userId = user.user._id
     const [sackData, setStoreSacks] = useState([]);
     const [optimalSchedule, setOptimalSchedule] = useState([]);
-
+    console.log(sellerId)
     const fetchStoreSacks = async () => {
         try {
             const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${sellerId}`);
@@ -83,7 +84,7 @@ const SeeStall = () => {
         return { [stallData.stallNumber]: filteredData };
     };
 
-    console.log(stallData.stallNumber,'Stall number')
+    console.log(stallData.stallNumber, 'Stall number')
     const chartData = processChartData();
     const colors = ['#FF5733', '#33FF57', '#3357FF'];
 
@@ -135,6 +136,30 @@ const SeeStall = () => {
                                 <Text style={styles.title}>{stallData?.stallDescription || "No Description"}</Text>
                                 <Text style={styles.text}>📍 {stallData?.stallAddress || "No Address"}</Text>
                                 <Text style={styles.text}>🔢 Stall Number: {stallData?.stallNumber || "N/A"}</Text>
+                                <TouchableOpacity
+                                    style={styles.chatButton}
+                                    onPress={() => {
+                                        if (!userId || !sellerId) {
+                                            Alert.alert('Error', 'User or Seller ID missing');
+                                            return;
+                                        }
+
+                                        const roomId = generateRoomId(userId, sellerId);
+
+                                        router.push({
+                                            pathname: '/components/User/components/Chat/ChatRoom',
+                                            params: {
+                                                roomId,
+                                                userId,
+                                                receiverId: sellerId,
+                                                receiverName: stallData?.stallName || 'Vendor',
+                                            },
+                                        });
+                                    }}
+                                >
+                                    <FontAwesome name="comments" size={24} color="#fff" />
+                                    <Text style={styles.chatButtonText}>Chat with Seller</Text>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
@@ -322,5 +347,18 @@ const styles = StyleSheet.create({
         height: 12,
         borderRadius: 6,
         marginRight: 3
-    }
+    },
+    chatButton: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginTop: 10,
+        padding: 10,
+        backgroundColor: '#2196F3',
+        borderRadius: 8,
+    },
+    chatButtonText: {
+        marginLeft: 8,
+        color: '#fff',
+        fontWeight: '600',
+    },
 });

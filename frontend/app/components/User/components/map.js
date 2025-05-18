@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, StyleSheet, StatusBar } from 'react-native';
-import MapView, { Marker, Polyline } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 
@@ -69,6 +69,7 @@ const Map = () => {
       <StatusBar translucent backgroundColor="transparent" />
       <View style={styles.container}>
         <MapView
+          provider={PROVIDER_GOOGLE}
           style={styles.map}
           initialRegion={{
             latitude: destination.latitude,
@@ -88,7 +89,7 @@ const Map = () => {
                 }}
                 title="Your Location"
                 pinColor="blue"
-                
+
               />
 
               <Marker

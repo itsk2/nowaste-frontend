@@ -176,7 +176,7 @@ export default function WeightProgressForm() {
                     style={styles.trackButton}
                     onPress={() => setModalVisible(true)}
                 >
-                    <Text style={{color:'white'}}>Record</Text>
+                    <Text style={{ color: 'white' }}>Record</Text>
                 </TouchableOpacity>
             </View>
 
@@ -187,21 +187,14 @@ export default function WeightProgressForm() {
                         style={styles.recordItem}
                         onPress={() => setSelectedRecord(record)}
                     >
-                        <Text style={{
-                            fontSize: 16,
-                            fontWeight: "bold",
-                            marginRight: 7
-                        }}>
-                            <MaterialCommunityIcons name="pig-variant" size={24} color="green" />:
-                            {"\n"} {index + 1}</Text>
-                        {
-                            record.track[0]?.image[0]?.url && (
-                                <Image
-                                    source={{ uri: record.track[0].image[0].url }}
-                                    style={styles.recordImage}
-                                />
-                            )
-                        }
+                        <MaterialCommunityIcons name="pig-variant" size={24} color="green" />
+                        <Text style={{ marginHorizontal: 5 }}>:</Text>
+                        {record.track[0]?.image[0]?.url ? (
+                            <Image
+                                source={{ uri: record.track[0].image[0].url }}
+                                style={styles.recordImage}
+                            />
+                        ) : null}
                         < View style={{ flex: 1 }}>
                             <Text style={styles.recordPigName}>{record.pigName}</Text>
                             <Text style={styles.recordNotice}>{record.notice}</Text>

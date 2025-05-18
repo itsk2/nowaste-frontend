@@ -77,10 +77,12 @@ const Profile = () => {
                 <View style={styles.container}>
                     <View style={styles.card}>
                         <View style={styles.header}>
-                            <Image
-                                source={{ uri: user?.user?.avatar?.url || userData?.avatar?.url || "https://via.placeholder.com/150" }}
-                                style={styles.avatar}
-                            />
+                            {userData?.avatar?.url ? (
+                                <Image
+                                    source={{ uri: userData.avatar.url }}
+                                    style={styles.avatar}
+                                />
+                            ) : null}
                             <View>
                                 <Text style={styles.name}>{user?.user?.name || userData?.name || "John Smith Meu"}</Text>
                                 <Text style={styles.country}>{user?.user?.address?.city || userData?.address?.city || 'nothing'}</Text>
