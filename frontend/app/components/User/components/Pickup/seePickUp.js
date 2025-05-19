@@ -2,6 +2,8 @@ import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, Alert } from
 import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useSelector } from 'react-redux';
+import { Modal, TextInput } from 'react-native';
+import { AntDesign } from '@expo/vector-icons';
 import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -15,6 +17,9 @@ const SeePickUp = () => {
     const [sackStatuses, setSackStatuses] = useState({});
     const [sellers, setSellers] = useState({});
     const userId = user.user._id;
+    const [review, setReview] = useState('');
+    const [rating, setRating] = useState(0);
+    const [submitted, setSubmitted] = useState(false);
     const navigation = useNavigation()
 
     useEffect(() => {
@@ -81,25 +86,50 @@ const SeePickUp = () => {
         fetchAllSackStatuses();
     }, [userId]);
 
-    const handleCompletePickUpStatus = async () => {
-        try {
-            const data = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`)
-            Alert.alert(
-                "Pickup Was Now Completed!!",
-                `Thankyou ${user.user.name}`,
-                [
-                    {
-                        text: "OK",
-                        onPress: () => {
-                            navigation.goBack()
-                        },
-                    },
-                ]
-            );
-        } catch (error) {
-            console.log('Error in completing pickup status', error.message)
+    const handleCompletePickUpStatus = () => {
+        Alert.alert(
+            "Unclaimed Sacks Will Be Reverted",
+            "Any sacks that weren't claimed will be redistributed to their respective stalls.",
+            [
+                {
+                    text: "Proceed",
+                    onPress: async () => {
+                        try {
+                            const response = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`);
+                            console.log("Pickup completed:", response.data);
+                            navigation.goBack();
+                        } catch (error) {
+                            console.error("Error completing pickup:", error);
+                            Alert.alert("Error", "Failed to complete the pickup.");
+                        }
+                    }
+                },
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                }
+            ]
+        );
+    };
+
+    const handleRatingSubmit = async () => {
+        if (!rating || review.trim() === '') {
+            return Alert.alert("Incomplete", "Please provide both a rating and review.");
         }
-    }
+
+        try {
+            const { data } = await axios.put(`${baseURL}/sack/rate-transaction/${pickup._id}`, {
+                review,
+                rating
+            });
+            Alert.alert("Success", "Thank you for your feedback!");
+            setSubmitted(true);
+        } catch (error) {
+            console.error("Error submitting feedback:", error);
+            Alert.alert("Error", "Could not submit your feedback.");
+        }
+    };
+
 
     return (
         <View style={styles.container}>
@@ -121,7 +151,7 @@ const SeePickUp = () => {
                     </TouchableOpacity>
                 </View>
                 <View style={styles.sackContainer}>
-                    <MaterialCommunityIcons name="sack" size={100} color="white" style={styles.sackImage} />
+                    <MaterialCommunityIcons name="sack" size={30} color="white" style={styles.sackImage} />
                     <Text style={styles.sackWeight}>{pickup.totalKilo} KG</Text>
                     <Text style={styles.text}>Status: {pickupStatus}</Text>
                     {pickupStatus !== "completed" && (
@@ -143,7 +173,6 @@ const SeePickUp = () => {
             </View>
 
             <Text style={styles.sectionTitle}>Stall/s Info</Text>
-
             <FlatList
                 data={pickup.sacks}
                 keyExtractor={(item) => item._id}
@@ -168,48 +197,95 @@ const SeePickUp = () => {
                     </View>
                 )}
             />
-            {pickupStatus !== "completed" && Object.values(sackStatuses).length > 0 && Object.values(sackStatuses).every(status => status === "claimed") && (
+            {pickupStatus !== "completed" && (
                 <TouchableOpacity
                     style={{ backgroundColor: '#AFE1AF', padding: 10, borderRadius: 20, marginTop: 20 }}
                     onPress={() => handleCompletePickUpStatus()}
                 >
-                    <Text style={{ color: 'black', textAlign: 'center' }}>All Claimed</Text>
+                    <Text style={{ color: 'black', textAlign: 'center' }}>Done Pickup</Text>
                 </TouchableOpacity>
             )}
 
-            <FlatList
-                data={pickup.sacks}
-                keyExtractor={(item) => item._id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 10 }}
-                renderItem={({ item }) => {
-                    const sackStatus = sackStatuses[item.sackId] || "Loading...";
-                    const backgroundColor = sackStatus === "claimed" ? "#AFE1AF" : "gray";
-                    return (
-                        <View style={{
-                            marginTop: 20,
-                            marginRight: 10,
-                            flex: 1,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor,
-                            padding: 10,
-                            borderRadius: 20
-                        }}>
-                            <Image
-                                source={{ uri: item.images[0]?.url || "https://via.placeholder.com/150" }}
-                                style={styles.stallImage}
-                            />
-                            <View style={{ backgroundColor: 'white', padding: 15, borderRadius: 20 }}>
-                                <Text style={{ color: 'black', fontSize: 10 }}>Stall# {item.stallNumber}</Text>
-                                <Text style={{ color: 'black', fontSize: 10 }}>Weight: {item.kilo} KG</Text>
-                                <Text style={{ color: 'black', fontSize: 10 }}>Status: {sackStatus}</Text>
-                            </View>
-                        </View>
-                    );
-                }}
-            />
+            {pickupStatus !== "completed" && (
+                <>
+                    <FlatList
+                        data={pickup.sacks}
+                        keyExtractor={(item) => item._id}
+                        horizontal
+                        showsHorizontalScrollIndicator={false}
+                        contentContainerStyle={{ paddingHorizontal: 10 }}
+                        renderItem={({ item }) => {
+                            const sackStatus = sackStatuses[item.sackId] || "Loading...";
+                            const backgroundColor = sackStatus === "claimed" ? "#AFE1AF" : "gray";
+                            return (
+                                <View style={{
+                                    marginTop: 20,
+                                    marginRight: 10,
+                                    flex: 1,
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    backgroundColor,
+                                    padding: 10,
+                                    borderRadius: 20
+                                }}>
+                                    <Image
+                                        source={{ uri: item.images[0]?.url || "https://via.placeholder.com/150" }}
+                                        style={styles.stallImage}
+                                    />
+                                    <View style={{ backgroundColor: 'white', padding: 15, borderRadius: 20 }}>
+                                        <Text style={{ color: 'black', fontSize: 10 }}>Stall# {item.stallNumber}</Text>
+                                        <Text style={{ color: 'black', fontSize: 10 }}>Weight: {item.kilo} KG</Text>
+                                        <Text style={{ color: 'black', fontSize: 10 }}>Status: {sackStatus}</Text>
+                                    </View>
+                                </View>
+                            );
+                        }}
+                    />
+                </>
+            )}
+
+            {pickupStatus === "completed" && !submitted && (
+                <View style={{ marginTop: 30, padding: 20, backgroundColor: "#3b3f47", borderRadius: 15 }}>
+                    <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Rate Your Pickup</Text>
+
+                    <Text style={{ color: 'white', marginBottom: 5 }}>Rating (1 to 5):</Text>
+                    <View style={{ flexDirection: 'row', marginBottom: 15 }}>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <TouchableOpacity
+                                key={num}
+                                onPress={() => setRating(num)}
+                                style={{
+                                    backgroundColor: rating === num ? "#AFE1AF" : "#ccc",
+                                    padding: 10,
+                                    marginRight: 8,
+                                    borderRadius: 10,
+                                }}
+                            >
+                                <Text style={{ color: 'black', fontWeight: 'bold' }}>{num}</Text>
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    <Text style={{ color: 'white', marginBottom: 5 }}>Review:</Text>
+                    <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, marginBottom: 15 }}>
+                        <TextInput
+                            placeholder="Write your feedback..."
+                            placeholderTextColor="#aaa"
+                            multiline
+                            value={review}
+                            onChangeText={setReview}
+                            style={{ height: 80, color: 'black' }}
+                        />
+                    </View>
+
+                    <TouchableOpacity
+                        style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10 }}
+                        onPress={handleRatingSubmit}
+                    >
+                        <Text style={{ color: 'black', textAlign: 'center', fontWeight: 'bold' }}>Submit Feedback</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
         </View>
     );
 };
