@@ -6,6 +6,8 @@ import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Foundation from '@expo/vector-icons/Foundation';
+import { generateRoomId } from '../../../../../utils/generateRoom';
+import { FontAwesome } from '@expo/vector-icons';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
@@ -16,6 +18,9 @@ const SeePickUp = () => {
     const [sellers, setSellers] = useState({});
     const userId = user.user._id;
     const navigation = useNavigation()
+    const [review, setReview] = useState('');
+    const [rating, setRating] = useState(0);
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         const fetchSackSellers = async () => {
@@ -101,6 +106,39 @@ const SeePickUp = () => {
         }
     }
 
+    const handleRatingSubmit = async () => {
+        if (!rating || review.trim() === '') {
+            return Alert.alert("Incomplete", "Please provide both a rating and review.");
+        }
+
+        try {
+            const { data } = await axios.put(`${baseURL}/sack/rate-transaction/${pickup._id}`, {
+                review,
+                rating
+            });
+            Alert.alert("Success", "Thank you for your feedback!");
+            setSubmitted(true);
+        } catch (error) {
+            console.error("Error submitting feedback:", error);
+            Alert.alert("Error", "Could not submit your feedback.");
+        }
+    };
+
+    const uniqueSacks = pickup?.sacks?.filter((sack, index, self) => {
+        const seller = sellers[sack.seller];
+
+        if (!seller) return false;
+
+        const stallId = seller.stall?.stallNumber?.toString();
+
+        // Check if this stallNumber was already used
+        return (
+            self.findIndex(
+                (s) => sellers[s.seller]?.stall?.stallNumber?.toString() === stallId
+            ) === index
+        );
+    }) || [];
+
     return (
         <View style={styles.container}>
             <Text style={styles.title}>See Pick Up</Text>
@@ -144,30 +182,97 @@ const SeePickUp = () => {
 
             <Text style={styles.sectionTitle}>Stall/s Info</Text>
 
-            <FlatList
-                data={pickup.sacks}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => (
-                    <View style={styles.sackCard}>
-                        <Image
-                            source={{ uri: sellers[item.seller]?.stall?.stallImage?.url || "https://via.placeholder.com/150" }}
-                            style={styles.stallImage}
-                        />
-                        <View style={styles.sackInfo}>
-                            <Text style={styles.textWhite}>Stall #: {item.stallNumber}</Text>
-                            <Text style={styles.textWhite}>
-                                Seller: {sellers[item.seller]?.name || "Unknown"}
-                            </Text>
-                            <Text style={styles.textWhite}>
-                                Stall Address: {sellers[item.seller]?.stall?.stallAddress || "Unknown"}
-                            </Text>
-                            <Text style={styles.text}>
-                                {sellers[item.seller]?.stall?.status === "open" ? "Open: 🟢" : "Close: 🔴"}
-                            </Text>
+            {Object.keys(sellers).length > 0 ? (
+                <FlatList
+                    data={uniqueSacks}
+                    keyExtractor={(item) => item._id}
+                    renderItem={({ item }) => (
+                        <View style={styles.sackCard}>
+                            <Image
+                                source={{ uri: sellers[item.seller]?.stall?.stallImage?.url || "https://via.placeholder.com/150" }}
+                                style={styles.stallImage}
+                            />
+                            <View style={styles.sackInfo}>
+                                <Text style={styles.textWhite}>Stall #: {item.stallNumber}</Text>
+                                <Text style={styles.textWhite}>Seller: {sellers[item.seller]?.name || "Unknown"}</Text>
+                                <Text style={styles.textWhite}>Stall Address: {sellers[item.seller]?.stall?.stallAddress || "Unknown"}</Text>
+                                <Text style={styles.text}>
+                                    {sellers[item.seller]?.stall?.status === "open" ? "Open: 🟢" : "Close: 🔴"}
+                                </Text>
+                            </View>
+                            <TouchableOpacity
+                                style={styles.chatButton}
+                                onPress={() => {
+                                    if (!userId || !sellers[item.seller]?._id) {
+                                        Alert.alert('Error', 'User or Seller ID missing');
+                                        return;
+                                    }
+
+                                    const roomId = generateRoomId(userId, sellers[item.seller]?._id);
+
+                                    router.push({
+                                        pathname: '/components/Composter/components/Chat/ChatRoom',
+                                        params: {
+                                            roomId,
+                                            userId,
+                                            receiverId: sellers[item.seller]?._id,
+                                            receiverName: sellers[item.seller]?.name || 'Vendor',
+                                        },
+                                    });
+                                }}
+                            >
+                                <FontAwesome name="comments" size={24} color="#fff" />
+                            </TouchableOpacity>
                         </View>
+                    )}
+                />
+            ) : (
+                <Text style={styles.text}>Loading stall data...</Text>
+            )}
+
+            {pickupStatus === "completed" && !submitted && (
+                <View style={{ marginTop: 30, padding: 20, backgroundColor: "#3b3f47", borderRadius: 15 }}>
+                    <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Rate Your Pickup</Text>
+
+                    <Text style={{ color: 'white', marginBottom: 5 }}>Rating (1 to 5):</Text>
+                    <View style={{ flexDirection: 'row', marginBottom: 15 }}>
+                        {[1, 2, 3, 4, 5].map((num) => (
+                            <TouchableOpacity
+                                key={num}
+                                onPress={() => setRating(num)}
+                                style={{
+                                    backgroundColor: rating === num ? "#AFE1AF" : "#ccc",
+                                    padding: 10,
+                                    marginRight: 8,
+                                    borderRadius: 10,
+                                }}
+                            >
+                                <Text style={{ color: 'black', fontWeight: 'bold' }}>{num}</Text>
+                            </TouchableOpacity>
+                        ))}
                     </View>
-                )}
-            />
+
+                    <Text style={{ color: 'white', marginBottom: 5 }}>Review:</Text>
+                    <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, marginBottom: 15 }}>
+                        <TextInput
+                            placeholder="Write your feedback..."
+                            placeholderTextColor="#aaa"
+                            multiline
+                            value={review}
+                            onChangeText={setReview}
+                            style={{ height: 80, color: 'black' }}
+                        />
+                    </View>
+
+                    <TouchableOpacity
+                        style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10 }}
+                        onPress={handleRatingSubmit}
+                    >
+                        <Text style={{ color: 'black', textAlign: 'center', fontWeight: 'bold' }}>Submit Feedback</Text>
+                    </TouchableOpacity>
+                </View>
+            )}
+
             {pickupStatus !== "completed" && Object.values(sackStatuses).length > 0 && Object.values(sackStatuses).every(status => status === "claimed") && (
                 <TouchableOpacity
                     style={{ backgroundColor: '#AFE1AF', padding: 10, borderRadius: 20, marginTop: 20 }}
@@ -285,5 +390,16 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: 'white',
+    },
+    chatButton: {
+        padding: 10,
+        backgroundColor: '#2196F3',
+        borderRadius: 8,
+        marginLeft: 12,
+    },
+    chatButtonText: {
+        marginLeft: 8,
+        color: '#fff',
+        fontWeight: '600',
     },
 });

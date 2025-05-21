@@ -54,7 +54,7 @@ const index = () => {
 
   const fetchNotifications = async () => {
     try {
-      const { data } = await axios.get(`${baseURL}/notifications/users-get-notif/${userId}`);
+      const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
 
       const newSackNotifications = data.notifications.filter(notification => notification.type === 'new_sack');
 

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, Animated } from 'react-native';
 import { useEffect, useRef } from 'react';
 import baseURL from '../../../../assets/common/baseURL';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
+import { useFocusEffect } from 'expo-router';
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -52,9 +53,17 @@ const index = () => {
   };
 
 
+  const fetchSacks = async () => {
+    try {
+      const { data } = await axios.get(`${baseURL}/sack/get-sacks`);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+    }
+  };
+
   const fetchNotifications = async () => {
     try {
-      const { data } = await axios.get(`${baseURL}/notifications/users-get-notif/${userId}`);
+      const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
       const spoiledNotifications = data.notifications.filter(notification => notification.type === 'spoiled');
       console.log(spoiledNotifications);
       setNotifications(spoiledNotifications);
@@ -63,10 +72,23 @@ const index = () => {
     }
   };
 
+  useFocusEffect(
+    useCallback(() => {
+      if (userId) {
+        fetchSacks();
+        fetchNotifications();
+        const interval = setInterval(() => {
+          fetchSacks();
+          fetchNotifications();
+        }, 2000);
+        return () => clearInterval(interval);
+      }
+    }, [userId])
+  );
+
 
   useEffect(() => {
     fetchPickupSacks();
-    fetchNotifications();
   }, [userId]);
   console.log(notifications, 'Notif')
 

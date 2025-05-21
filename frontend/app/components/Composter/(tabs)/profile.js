@@ -15,6 +15,7 @@ import Icon from "react-native-vector-icons/FontAwesome";
 import { logoutAction } from "../../../(redux)/authSlice";
 import axios from "axios";
 import baseURL from "../../../../assets/common/baseURL";
+import { FontAwesome } from '@expo/vector-icons';
 
 const Profile = () => {
     const router = useRouter();
@@ -96,6 +97,12 @@ const Profile = () => {
                             >
                                 <Icon name="book" size={20} color="#000" />
                                 <Text style={styles.menuText}>Address Book</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.menuItem}
+                                onPress={() => navigation.navigate('components/Composter/components/Chat/Chats')}
+                            >
+                                <FontAwesome name="comments" size={24} color="#000" />
+                                <Text style={styles.menuText}>Chats</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.menuItem}>
                                 <Icon name="info-circle" size={20} color="#000" />

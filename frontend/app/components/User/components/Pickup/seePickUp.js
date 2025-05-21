@@ -8,6 +8,8 @@ import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Foundation from '@expo/vector-icons/Foundation';
+import { generateRoomId } from '../../../../../utils/generateRoom';
+import { FontAwesome } from '@expo/vector-icons';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
@@ -130,6 +132,20 @@ const SeePickUp = () => {
         }
     };
 
+    const uniqueSacks = pickup?.sacks?.filter((sack, index, self) => {
+        const seller = sellers[sack.seller];
+
+        if (!seller) return false;
+
+        const stallId = seller.stall?.stallNumber?.toString();
+
+        // Check if this stallNumber was already used
+        return (
+            self.findIndex(
+                (s) => sellers[s.seller]?.stall?.stallNumber?.toString() === stallId
+            ) === index
+        );
+    }) || [];
 
     return (
         <View style={styles.container}>
@@ -194,6 +210,29 @@ const SeePickUp = () => {
                                 {sellers[item.seller]?.stall?.status === "open" ? "Open: 🟢" : "Close: 🔴"}
                             </Text>
                         </View>
+                        <TouchableOpacity
+                            style={styles.chatButton}
+                            onPress={() => {
+                                if (!userId || !sellers[item.seller]?._id) {
+                                    Alert.alert('Error', 'User or Seller ID missing');
+                                    return;
+                                }
+
+                                const roomId = generateRoomId(userId, sellers[item.seller]?._id);
+
+                                router.push({
+                                    pathname: '/components/User/components/Chat/ChatRoom',
+                                    params: {
+                                        roomId,
+                                        userId,
+                                        receiverId: sellers[item.seller]?._id,
+                                        receiverName: sellers[item.seller]?.name || 'Vendor',
+                                    },
+                                });
+                            }}
+                        >
+                            <FontAwesome name="comments" size={24} color="#fff" />
+                        </TouchableOpacity>
                     </View>
                 )}
             />
@@ -209,7 +248,7 @@ const SeePickUp = () => {
             {pickupStatus !== "completed" && (
                 <>
                     <FlatList
-                        data={pickup.sacks}
+                        data={uniqueSacks}
                         keyExtractor={(item) => item._id}
                         horizontal
                         showsHorizontalScrollIndicator={false}
@@ -361,5 +400,16 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         color: 'white',
+    },
+    chatButton: {
+        padding: 10,
+        backgroundColor: '#2196F3',
+        borderRadius: 8,
+        marginLeft: 12,
+    },
+    chatButtonText: {
+        marginLeft: 8,
+        color: '#fff',
+        fontWeight: '600',
     },
 });

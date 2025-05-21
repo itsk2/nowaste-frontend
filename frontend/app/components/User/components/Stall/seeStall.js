@@ -136,30 +136,6 @@ const SeeStall = () => {
                                 <Text style={styles.title}>{stallData?.stallDescription || "No Description"}</Text>
                                 <Text style={styles.text}>📍 {stallData?.stallAddress || "No Address"}</Text>
                                 <Text style={styles.text}>🔢 Stall Number: {stallData?.stallNumber || "N/A"}</Text>
-                                <TouchableOpacity
-                                    style={styles.chatButton}
-                                    onPress={() => {
-                                        if (!userId || !sellerId) {
-                                            Alert.alert('Error', 'User or Seller ID missing');
-                                            return;
-                                        }
-
-                                        const roomId = generateRoomId(userId, sellerId);
-
-                                        router.push({
-                                            pathname: '/components/User/components/Chat/ChatRoom',
-                                            params: {
-                                                roomId,
-                                                userId,
-                                                receiverId: sellerId,
-                                                receiverName: stallData?.stallName || 'Vendor',
-                                            },
-                                        });
-                                    }}
-                                >
-                                    <FontAwesome name="comments" size={24} color="#fff" />
-                                    <Text style={styles.chatButtonText}>Chat with Seller</Text>
-                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>

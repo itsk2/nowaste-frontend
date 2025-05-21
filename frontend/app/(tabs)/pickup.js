@@ -20,22 +20,30 @@ const Pickup = () => {
         try {
             const response = await axios.get(`${baseURL}/sack/get-pickup-sacks/${userId}`);
             const pickUpSacks = response.data.pickUpSacks;
+
             if (!Array.isArray(pickUpSacks)) {
                 console.error("pickUpSacks is not an array:", pickUpSacks);
                 return;
             }
-            // console.log(pickUpSacks,'sack')
+
             const now = new Date();
             const nowUTC8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+            console.log(pickUpSacks, 'Sacks');
 
             for (const sack of pickUpSacks) {
                 const pickupTimestamp = new Date(sack.pickupTimestamp);
 
-                const sackIds = sack.sacks.map(s => s.sackId);
-                if (pickupTimestamp.getTime() <= nowUTC8.getTime()) {
+                // Check status and time
+                if (
+                    ['pending', 'pickup'].includes(sack.status) &&
+                    pickupTimestamp.getTime() <= nowUTC8.getTime()
+                ) {
+                    const sackIds = sack.sacks.map(s => s.sackId);
+
                     await axios.delete(`${baseURL}/sack/delete-pickuped-sack/${sack._id}`, {
                         data: { sackIds }
                     });
+
                     Alert.alert(
                         "You didn't pick up the stated sack/s",
                         "It will now again be redistributed.",
@@ -43,6 +51,7 @@ const Pickup = () => {
                     );
                 }
             }
+
             setMySacks(pickUpSacks);
         } catch (error) {
             console.error("Error fetching sacks:", error.response?.data || error.message);

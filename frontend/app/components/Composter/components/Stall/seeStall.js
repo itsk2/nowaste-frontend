@@ -43,7 +43,7 @@ const SeeStall = () => {
             const optimalSchedule = await axios.get(`${baseURL}/ml/optimal-collection-schedule`);
             setOptimalSchedule(optimalSchedule.data);
         } catch (error) {
-            console.error("Error fetching predicted waste data:", error);
+            // console.error("Error fetching predicted waste data:", error);
         }
     };
     // console.log(stallData.stallNumber, 'StallData')
