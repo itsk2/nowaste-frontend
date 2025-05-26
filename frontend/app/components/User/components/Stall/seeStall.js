@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, StatusBar, Alert } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, StatusBar, Alert, SafeAreaView } from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import axios from 'axios';
@@ -83,66 +83,66 @@ const SeeStall = () => {
     };
 
     return (
-        <>
+        <SafeAreaView style={styles.safeArea}>
             <StatusBar translucent backgroundColor={"transparent"} />
-            <View style={{ marginTop: 30, }}>
-                <Header name={'User'} />
-                <FlatList
-                    ListHeaderComponent={
-                        <View style={styles.container}>
-                            <Text style={styles.chartTitle}>Predicted Waste Collection Schedule</Text>
-                            <View style={{ marginTop: 20, width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center', marginBottom: 15 }}>
-                                <View style={styles.legendContainer}>
-                                    <Text style={styles.text}>📅 Peak Collection: {getPeakDate()}</Text>
-                                </View>
+            <Header name={'User'} />
+            <FlatList
+                ListHeaderComponent={
+                    <View style={styles.container}>
+                        <Text style={styles.chartTitle}>Predicted Waste Collection Schedule</Text>
+                        <View style={{ marginTop: 20, width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center', marginBottom: 15 }}>
+                            <View style={styles.legendContainer}>
+                                <Text style={styles.text}>📅 Peak Collection: {getPeakDate()}</Text>
                             </View>
-                            {stallData?.stallImage?.url && (
-                                <Image
-                                    source={{ uri: stallData.stallImage.url }}
-                                    style={{ width: '100%', height: 180, borderRadius: 15, marginBottom: 10 }}
-                                />
+                        </View>
+                        {stallData?.stallImage?.url && (
+                            <Image
+                                source={{ uri: stallData.stallImage.url }}
+                                style={{ width: '100%', height: 180, borderRadius: 15, marginBottom: 10 }}
+                            />
+                        )}
+                        <View style={{ backgroundColor: '#295F39', padding: 15, borderRadius: 12, width: '100%', marginBottom: 20 }}>
+                            <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>{stallData?.stallName}</Text>
+                            <Text style={{ fontSize: 14, color: '#C8E6C9' }}>{stallData?.stallDescription}</Text>
+                            <Text style={{ fontSize: 14, color: '#C8E6C9' }}>📍 {stallData?.stallAddress}</Text>
+                            <Text style={{ fontSize: 14, color: '#C8E6C9' }}>🔢 Stall #{stallData?.stallNumber}</Text>
+                        </View>
+                    </View>
+                }
+                data={sackData}
+                keyExtractor={(item) => item._id}
+                renderItem={({ item }) => (
+                    <View style={styles.card}>
+                        <Image source={{ uri: item.images?.[0]?.url }} style={{ width: 70, height: 70, borderRadius: 50 }} />
+                        <View style={{ backgroundColor: '#1E3D29', borderRadius: 12, padding: 15, flex: 1, marginLeft: 10 }}>
+                            <Text style={styles.cardTitle}>{item.description}</Text>
+                            <Text style={styles.cardText}>{item.location}</Text>
+                            <Text style={styles.cardText}>kg: {item.kilo}</Text>
+                            <Text style={styles.cardText}>📅 Posted: {new Date(item.createdAt).toLocaleDateString("en-US")}</Text>
+                            <Text style={styles.cardText}>🗓 Spoilage Date: {new Date(item.dbSpoil).toLocaleDateString("en-US")}</Text>
+                            <Text style={styles.statusBadge}>Available</Text>
+                            {user.user.role !== 'admin' && (
+                                <TouchableOpacity style={styles.addButton} onPress={() => handleAddtoSack(item)}>
+                                    <Text style={styles.addButtonText}>Add to Sack</Text>
+                                </TouchableOpacity>
                             )}
-                            <View style={{ backgroundColor: '#295F39', padding: 15, borderRadius: 12, width: '100%', marginBottom: 20 }}>
-                                <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>{stallData?.stallName}</Text>
-                                <Text style={{ fontSize: 14, color: '#C8E6C9' }}>{stallData?.stallDescription}</Text>
-                                <Text style={{ fontSize: 14, color: '#C8E6C9' }}>📍 {stallData?.stallAddress}</Text>
-                                <Text style={{ fontSize: 14, color: '#C8E6C9' }}>🔢 Stall #{stallData?.stallNumber}</Text>
-                            </View>
                         </View>
-                    }
-                    data={sackData}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => (
-                        <View style={styles.card}>
-                            <Image source={{ uri: item.images?.[0]?.url }} style={{ width: 70, height: 70, borderRadius: 50 }} />
-                            <View style={{ backgroundColor: '#1E3D29', borderRadius: 12, padding: 15, flex: 1, marginLeft: 10 }}>
-                                <Text style={styles.cardTitle}>{item.description}</Text>
-                                <Text style={styles.cardText}>{item.location}</Text>
-                                <Text style={styles.cardText}>kg: {item.kilo}</Text>
-                                <Text style={styles.cardText}>📅 Posted: {new Date(item.createdAt).toLocaleDateString("en-US")}</Text>
-                                <Text style={styles.cardText}>🗓 Spoilage Date: {new Date(item.dbSpoil).toLocaleDateString("en-US")}</Text>
-                                <Text style={styles.statusBadge}>Available</Text>
-                                {user.user.role !== 'admin' && (
-                                    <TouchableOpacity style={styles.addButton} onPress={() => handleAddtoSack(item)}>
-                                        <Text style={styles.addButtonText}>Add to Sack</Text>
-                                    </TouchableOpacity>
-                                )}
-                            </View>
-                        </View>
-                    )}
-                    ListEmptyComponent={<Text style={styles.noDataText}>No sacks available</Text>}
-                />
-            </View>
-        </>
+                    </View>
+                )}
+                ListEmptyComponent={<Text style={styles.noDataText}>No sacks available</Text>}
+            />
+        </SafeAreaView>
     );
 };
 
 export default SeeStall;
 
 const styles = StyleSheet.create({
-    container: {
+    safeArea: {
         flex: 1,
         backgroundColor: '#E9FDF0',
+    },
+    container: {
         padding: 20,
         alignItems: 'center',
     },

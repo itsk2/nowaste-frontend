@@ -107,10 +107,7 @@ export default MySack;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: Constants.statusBarHeight + 10,
-        paddingHorizontal: 15,
         backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
-
     },
     header: {
         fontSize: 30,
