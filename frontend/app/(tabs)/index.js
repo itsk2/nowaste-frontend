@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseURL';
 import { useFocusEffect } from 'expo-router';
+import Header from '../components/Header';
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -94,19 +95,10 @@ const index = () => {
   }, [fadeAnim]);
 
   return (
-    <ScrollView style={styles.container}
-      contentContainerStyle={{ padding: 20, paddingBottom: 25 }} // allow scrolling past bottom
+    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
+      <Header name={user.user.name} />
 
-    >
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Welcome,</Text>
-        <Text style={styles.name}>{user.user.name}</Text>
-        <Text style={styles.subtitle}>
-          Track and manage your waste collections efficiently
-        </Text>
-      </View>
-
-      <View style={styles.statsContainer}>
+      <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Total Collected</Text>
           <Text style={styles.statValue}>{wasteCollected} <Text style={styles.unit}>kg</Text></Text>
@@ -115,14 +107,14 @@ const index = () => {
           <Text style={styles.statLabel}>Monthly Average</Text>
           <Text style={styles.statValue}>{monthlyWasteCollected} <Text style={styles.unit}>kg</Text></Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Active Requests</Text>
-          <Text style={styles.statValue}>{activePickupRequest}</Text>
-        </View>
+      </View>
+      <View style={[styles.statCard, styles.fullWidthCard]}>
+        <Text style={styles.statLabel}>Active Requests</Text>
+        <Text style={styles.statValue}>{activePickupRequest}</Text>
       </View>
 
       <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
-      {notifications.map((notification, idx) => (
+      {notifications.slice(0, 3).map((notification, idx) => (
         <View key={notification._id || idx} style={styles.notificationCard}>
           <View style={styles.notificationLeft}>
             <View style={styles.notificationIcon}>
@@ -138,90 +130,93 @@ const index = () => {
         </View>
       ))}
     </ScrollView>
-
   );
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f8f8" },
-  header: { marginBottom: 20 },
-  greeting: { fontSize: 20, fontWeight: "600" },
-  name: { fontSize: 24, fontWeight: "bold", marginBottom: 5 },
-  subtitle: { color: "#666", fontSize: 14 },
-
-  statsContainer: {
-    flexDirection: "column",
-    gap: 15,
-    marginBottom: 20,
+  container: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
   },
-  statCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 15,
-    elevation: 2,
-  },
-  statLabel: { color: "#666", fontSize: 14 },
-  statValue: { fontSize: 22, fontWeight: "bold" },
-  unit: { fontSize: 14, fontWeight: "400" },
 
-  quickActionsTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-  primaryButton: {
-    backgroundColor: "#2BA84A",
-    padding: 15,
-    borderRadius: 25,
+  header: {
     alignItems: "center",
-    marginBottom: 10,
+    marginBottom: 24,
   },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  outlineButton: {
-    borderColor: "#2BA84A",
-    borderWidth: 1.5,
-    padding: 15,
-    borderRadius: 25,
-    alignItems: "center",
-    marginBottom: 20,
+  greeting: {
+    fontSize: 18,
+    fontWeight: "500",
+    color: "#333",
   },
-  outlineButtonText: { color: "#2BA84A", fontWeight: "bold" },
+  name: {
+    fontSize: 26,
+    fontWeight: "700",
+    color: "#111",
+  },
+  subtitle: {
+    color: "#666",
+    fontSize: 14,
+    textAlign: "center",
+    marginTop: 8,
+    paddingHorizontal: 10,
+  },
 
-  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-
-  sackItem: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
+  statsGrid: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
+    marginBottom: 15,
+  },
+  statCard: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 18,
+    borderRadius: 16,
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    marginHorizontal: 5,
+  },
+  fullWidthCard: {
+    marginHorizontal: 0,
+    marginTop: 10,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: "#6B7280",
+    marginBottom: 6,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: "bold",
+    color: "#111827",
+  },
+  unit: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#6B7280",
+  },
+
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginTop: 20,
     marginBottom: 10,
-    borderLeftWidth: 5,
-    borderLeftColor: "#2BA84A",
+    color: "#111827",
   },
-  sackInfo: { flexDirection: "row", alignItems: "center" },
-  sackIcon: {
-    backgroundColor: "#2BA84A",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  sackIconText: { fontSize: 18, color: "#fff" },
-  sackName: { fontWeight: "bold" },
-  sackWeight: { color: "#666", fontSize: 12 },
-  timeLeft: { color: "red", fontSize: 12, fontWeight: "600" },
+
   notificationCard: {
     flexDirection: 'row',
     backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   notificationLeft: {
     justifyContent: 'center',
@@ -229,9 +224,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   notificationIcon: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#D1FAE5',
     padding: 10,
-    borderRadius: 50,
+    borderRadius: 999,
   },
   iconText: {
     fontSize: 20,
@@ -241,14 +236,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   notificationMessage: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
-    color: '#333',
+    color: '#1F2937',
     marginBottom: 4,
   },
   notificationTime: {
     fontSize: 12,
-    color: '#888',
+    color: '#9CA3AF',
   },
 });
 

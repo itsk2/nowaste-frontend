@@ -4,6 +4,7 @@ import Constants from 'expo-constants';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { getAllStalls } from '../(services)/api/Users/getAllStalls';
+import Header from '../components/Header';
 
 
 const Market = () => {
@@ -27,7 +28,7 @@ const Market = () => {
   );
   return (
     <View style={styles.container}>
-
+      <Header />
       <Text style={styles.heading}>
         Taytay, Rizal Market Stalls
       </Text>
@@ -78,9 +79,8 @@ export default Market;
 const styles = StyleSheet.create({
   container: {
     paddingTop: Constants.statusBarHeight,
-    marginTop: 15,
     padding: 15,
-    backgroundColor: '#f4f4f4',
+    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
     flex: 1,
   },
   toggleButton: {

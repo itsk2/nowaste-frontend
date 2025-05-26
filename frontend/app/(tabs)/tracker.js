@@ -20,6 +20,7 @@ import { Picker } from "@react-native-picker/picker";
 import baseURL from "../../assets/common/baseURL";
 import axios from "axios";
 import { LineChart } from 'react-native-gifted-charts';
+import Header from "../components/Header";
 
 export default function WeightProgressForm() {
     const navigation = useNavigation();
@@ -167,8 +168,9 @@ export default function WeightProgressForm() {
 
     return (
         <View style={styles.container}>
+            <Header name={'User'} />
             {/* Track Button */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 60, alignContent: 'center', alignItems: 'center', borderWidth: 2, padding: 6, borderRadius: 20, borderColor: '#eb6794', backgroundColor: 'green' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', borderWidth: 2, padding: 6, borderRadius: 20, borderColor: '#eb6794', backgroundColor: 'green' }}>
                 <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, marginLeft: 10 }}> Track {'\n'} Records</Text>
                 <MaterialCommunityIcons name="pig-variant" size={80} color="#eb6794" />
 
@@ -488,6 +490,7 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         padding: 20,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
     },
     trackButton: {
         backgroundColor: "#6680ff",

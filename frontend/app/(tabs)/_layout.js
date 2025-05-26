@@ -25,36 +25,32 @@ export default function RootLayout() {
     });
 
     return (
-        <View style={{ flex: 1 }}>
-            {/* Floating Button (Hidden in Profile Tab) */}
-            {!isProfile && (
-                <TouchableOpacity
-                    style={styles.floatingButton}
-                    onPress={() => router.push('components/User/components/MySack/mySack')}
-                >
-                    <Entypo name="shopping-cart" size={20} color="white" />
-                </TouchableOpacity>
-            )}
+        <View style={styles.container}>
 
-            <Tabs screenOptions={{ headerShown: false, tabBarShowLabel: false }}>
+            <Tabs screenOptions={{
+                headerShown: false, tabBarShowLabel: false,
+                tabBarStyle: {
+                    backgroundColor: '#355E3B', // also set the tab bar background
+                },
+            }}>
                 <Tabs.Screen
                     name="index"
                     options={{
                         tabBarIcon: ({ color }) => (
-                            <FontAwesome name="home" color={color} size={28} />
-                        ),
-                    }}
-                />
-                <Tabs.Screen
-                    name="market"
-                    options={{
-                        tabBarIcon: ({ color }) => (
-                            <Fontisto name="shopping-store" size={24} color={color} />
+                            <FontAwesome name="home" color='white' size={28} />
                         ),
                     }}
                 />
                 <Tabs.Screen
                     name="pickup"
+                    options={{
+                        tabBarIcon: ({ color }) => (
+                            <MaterialCommunityIcons name="car-lifted-pickup" size={30} color='white' />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="market"
                     options={{
                         headerShown: false,
                         tabBarIcon: ({ color }) => (
@@ -69,7 +65,7 @@ export default function RootLayout() {
                                     marginBottom: 10,
                                 }}
                             >
-                                <MaterialCommunityIcons name="car-lifted-pickup" size={30} color="white" />
+                                <Fontisto name="shopping-store" size={24} color='white' />
                             </View>
                         ),
                     }}
@@ -79,7 +75,7 @@ export default function RootLayout() {
                     options={{
                         headerShown: false,
                         tabBarIcon: ({ color }) => (
-                            <MaterialCommunityIcons name="pig-variant" size={24} color={color} />
+                            <MaterialCommunityIcons name="pig-variant" size={24} color='white' />
                         ),
                     }}
                 />
@@ -87,7 +83,7 @@ export default function RootLayout() {
                     name="profile"
                     options={{
                         tabBarIcon: ({ color }) => (
-                            <FontAwesome name="user" color={color} size={28} />
+                            <FontAwesome name="user" color='white' size={28} />
                         ),
                     }}
                 />
@@ -97,21 +93,8 @@ export default function RootLayout() {
 }
 
 const styles = StyleSheet.create({
-    floatingButton: {
-        position: "absolute",
-        top: Constants.statusBarHeight,
-        right: 20,
-        backgroundColor: "#4caf50",
-        width: 40,
-        height: 40,
-        borderRadius: 25,
-        justifyContent: "center",
-        alignItems: "center",
-        shadowColor: "#000",
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-        zIndex: 999,
+    container: {
+        flex: 1,
+        backgroundColor: "#355E3B", // your desired background color
     },
 });

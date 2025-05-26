@@ -9,6 +9,7 @@ import { FontAwesome } from '@expo/vector-icons';
 import Icon from "react-native-vector-icons/FontAwesome";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
+import Header from '../components/Header';
 
 const Pickup = () => {
     const { user } = useSelector((state) => state.auth);
@@ -93,6 +94,7 @@ const Pickup = () => {
     }, [mySack]);
     return (
         <View style={styles.container}>
+            <Header name={'User'}/>
             <View style={{ flexDirection: 'row' }}>
                 <Text style={styles.header}>Pickup Waste</Text>
             </View>
@@ -167,7 +169,7 @@ const styles = StyleSheet.create({
         flex: 1,
         paddingTop: Constants.statusBarHeight,
         paddingHorizontal: 10,
-        backgroundColor: '#4CAF50'
+        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
     },
     header: {
         fontSize: 36,
@@ -177,7 +179,6 @@ const styles = StyleSheet.create({
         color: 'white'
     },
     listContainer: {
-        backgroundColor: '#E5E5E5',
         borderRadius: 15,
         padding: 10,
         marginTop: 10,
