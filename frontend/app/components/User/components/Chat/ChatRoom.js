@@ -1,11 +1,12 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, TextInput, Button, FlatList, Text, StyleSheet, Image } from "react-native";
+import { View, TextInput, Button, FlatList, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 import { sendMessage, subscribeToMessages } from "../../../../../firebase/chatService";
 import { generateRoomId } from "../../../../../utils/generateRoom";
 import baseURL from '../../../../../assets/common/baseURL';
 import axios from 'axios';
 import { timeAgo } from "../../../../../utils/timeAgo"
+import { Ionicons } from "@expo/vector-icons"; // make sure expo install expo/vector-icons
 
 const ChatRoom = () => {
     const { userId, receiverId } = useLocalSearchParams();
@@ -51,6 +52,7 @@ const ChatRoom = () => {
             console.error("Failed to send message:", error);
         }
     };
+    const receiver = participants.find(p => p._id === receiverId);
 
     const renderItem = ({ item }) => {
         const isSender = item.senderId === userId;
@@ -80,6 +82,13 @@ const ChatRoom = () => {
     return (
         <View style={styles.container}>
             {/* 💬 Messages */}
+            {receiver && (
+                <View style={styles.header}>
+                    <Image source={{ uri: receiver.avatar?.url }} style={styles.headerAvatar} />
+                    <Text style={styles.headerName}>{receiver.name}</Text>
+                </View>
+            )}
+
             <FlatList
                 ref={flatListRef}
                 data={messages}
@@ -95,9 +104,11 @@ const ChatRoom = () => {
                     style={styles.input}
                     value={inputText}
                     onChangeText={setInputText}
-                    placeholder="Type a message..."
+                    placeholder="Type messages here..."
                 />
-                <Button title="Send" onPress={handleSend} />
+                <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+                    <Ionicons name="send" size={20} color="#fff" />
+                </TouchableOpacity>
             </View>
         </View>
     );
@@ -106,113 +117,99 @@ const ChatRoom = () => {
 export default ChatRoom;
 
 const styles = StyleSheet.create({
-    container: { flex: 1, padding: 10 },
+    container: {
+        flex: 1,
+        backgroundColor: "#4CAF50", // green background
+    },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 15,
+        backgroundColor: '#1f2d1e',
+    },
+    headerAvatar: {
+        width: 35,
+        height: 35,
+        borderRadius: 17.5,
+        marginRight: 10,
+    },
+    headerName: {
+        color: '#fff',
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    messageContainer: {
+        flexDirection: "row",
+        alignItems: "flex-end",
+        marginVertical: 8,
+        paddingHorizontal: 10,
+        maxWidth: "100%",
+    },
+    myMessageContainer: {
+        alignSelf: "flex-end",
+        flexDirection: "row-reverse",
+    },
+    otherMessageContainer: {
+        alignSelf: "flex-start",
+        flexDirection: "row",
+    },
+    myMessageBubble: {
+        backgroundColor: "white",
+        borderRadius: 10,
+        padding: 10,
+        maxWidth: "70%",
+    },
+    otherMessageBubble: {
+        backgroundColor: "#fff",
+        borderRadius: 10,
+        padding: 10,
+        maxWidth: "70%",
+    },
+    chatAvatar: {
+        width: 35,
+        height: 35,
+        borderRadius: 17.5,
+        borderWidth: 2,
+        borderColor: "#fff",
+        marginHorizontal: 5,
+        backgroundColor: "#fff",
+    },
+    senderName: {
+        fontSize: 12,
+        fontWeight: "bold",
+        marginBottom: 2,
+    },
+    timestamp: {
+        fontSize: 10,
+        color: "#aaa",
+        marginTop: 4,
+        textAlign: "right",
+    },
     inputContainer: {
         flexDirection: "row",
         alignItems: "center",
-        paddingTop: 8,
+        padding: 8,
         borderTopWidth: 1,
         borderColor: "#ccc",
         backgroundColor: "#fff",
     },
     input: {
         flex: 1,
-        borderColor: "gray",
+        borderColor: "#ccc",
         borderWidth: 1,
-        borderRadius: 20,
-        paddingHorizontal: 10,
-        paddingVertical: 6,
-        marginRight: 8,
-    },
-    myMessage: {
-        alignSelf: "flex-end",
-        backgroundColor: "#DCF8C6",
-        borderRadius: 10,
-        padding: 8,
-        marginVertical: 4,
-        maxWidth: "75%",
-    },
-    otherMessage: {
-        alignSelf: "flex-start",
-        backgroundColor: "#E2E2E2",
-        borderRadius: 10,
-        padding: 8,
-        marginVertical: 4,
-        maxWidth: "75%",
-    },
-    timestamp: {
-        fontSize: 10,
-        color: "gray",
-        marginTop: 2,
-        textAlign: "right",
-    },
-    participantContainer: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginBottom: 10,
-        padding: 8,
-        backgroundColor: "#f0f0f0",
-        borderRadius: 10,
-        flexWrap: "wrap",
-    },
-    participant: {
-        flexDirection: "row",
-        alignItems: "center",
+        borderRadius: 25,
+        paddingHorizontal: 15,
+        paddingVertical: 8,
+        backgroundColor: "#f9f9f9",
         marginRight: 10,
-        marginBottom: 6,
     },
-    avatar: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        marginRight: 6,
+    sendButton: {
+        backgroundColor: "#4CAF50",
+        padding: 10,
+        borderRadius: 25,
     },
-    name: {
+    sendButtonText: {
+        color: "#fff",
         fontWeight: "bold",
-        fontSize: 14,
     },
-    messageContainer: {
-        flexDirection: "row",
-        alignItems: "flex-end",
-        marginVertical: 6,
-        maxWidth: "100%",
-    },
-
-    myMessageContainer: {
-        alignSelf: "flex-end",
-        flexDirection: "row-reverse",
-    },
-
-    otherMessageContainer: {
-        alignSelf: "flex-start",
-        flexDirection: "row",
-    },
-
-    myMessageBubble: {
-        backgroundColor: "#DCF8C6",
-        borderRadius: 10,
-        padding: 8,
-        maxWidth: "75%",
-    },
-
-    otherMessageBubble: {
-        backgroundColor: "#E2E2E2",
-        borderRadius: 10,
-        padding: 8,
-        maxWidth: "75%",
-    },
-
-    chatAvatar: {
-        width: 35,
-        height: 35,
-        borderRadius: 17.5,
-        marginHorizontal: 5,
-    },
-
-    senderName: {
-        fontSize: 12,
-        fontWeight: "bold",
-        marginBottom: 4,
-    },
-
 });

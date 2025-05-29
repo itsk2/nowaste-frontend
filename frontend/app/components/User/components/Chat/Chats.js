@@ -7,6 +7,8 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import { FontAwesome } from '@expo/vector-icons';
+import Footer from '../../../Footer';
+import Constants from 'expo-constants';
 
 const Chats = () => {
   const { user } = useSelector((state) => state.auth);
@@ -89,26 +91,31 @@ const Chats = () => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={{ backgroundColor: 'green', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
-        <View style={{ padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-          <FontAwesome name="comments" size={24} color="#fff" />
-          <Text style={{ color: 'white', fontSize: 20, marginLeft: 10 }}>Chat Heads</Text>
+    <>
+      <View style={styles.container}>
+        <View style={{ backgroundColor: 'green', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
+          <View style={{ padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
+            <FontAwesome name="comments" size={24} color="#fff" />
+            <Text style={{ color: 'white', fontSize: 20, marginLeft: 10 }}>Chat Heads</Text>
+          </View>
         </View>
+        {rooms.length === 0 ? (
+          <View style={styles.emptyContainer}>
+            <Text style={styles.emptyText}>No chat rooms found.</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={rooms}
+            keyExtractor={item => item.id}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
       </View>
-      {rooms.length === 0 ? (
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyText}>No chat rooms found.</Text>
-        </View>
-      ) : (
-        <FlatList
-          data={rooms}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
-      )}
-    </View>
+      <View>
+        <Footer />
+      </View>
+    </>
   );
 };
 
@@ -119,7 +126,7 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
     paddingTop: 35,
-    paddingHorizontal: 20,
+    paddingTop: Constants.statusBarHeight,
   },
   header: {
     fontSize: 22,

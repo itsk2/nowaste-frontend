@@ -10,6 +10,7 @@ import axios from 'axios';
 import { useFocusEffect, useNavigation } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import Footer from '../../../Footer';
 
 const MySack = () => {
     const { user } = useSelector((state) => state.auth);
@@ -52,53 +53,57 @@ const MySack = () => {
     };
 
     return (
-        <View style={styles.container}>
+        <>
+            <View style={styles.container}>
+                <View style={styles.overlay}>
+                    {/* Header */}
+                    <View style={styles.headerContainer}>
+                        <Text style={styles.headerTitle}>My Sacks</Text>
+                        <TouchableOpacity
+                            style={styles.headerButton}
+                            onPress={() => navigation.goBack()}
+                        >
+                            <Text style={styles.headerButtonText}>Back to Available</Text>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={styles.totalCard}>
+                        <MaterialCommunityIcons name="sack" size={40} color="#fff" />
+                        <Text style={styles.totalWeight}>{totalKilos} kg</Text>
+                        <Text style={styles.totalSubtext}>Combined weight</Text>
+                    </View>
 
-            <View style={styles.overlay}>
-                {/* Header */}
-                <View style={styles.headerContainer}>
-                    <Text style={styles.headerTitle}>My Sacks</Text>
-                    <TouchableOpacity
-                        style={styles.headerButton}
-                        onPress={() => navigation.goBack()}
-                    >
-                        <Text style={styles.headerButtonText}>Back to Available</Text>
-                    </TouchableOpacity>
-                </View>
-                <View style={styles.totalCard}>
-                    <MaterialCommunityIcons name="sack" size={40} color="#fff" />
-                    <Text style={styles.totalWeight}>{totalKilos} kg</Text>
-                    <Text style={styles.totalSubtext}>Combined weight</Text>
-                </View>
-
-                <FlatList
-                    data={mySack}
-                    keyExtractor={(item) => item._id}
-                    contentContainerStyle={styles.list}
-                    ListEmptyComponent={<Text style={styles.emptyText}>No sacks added.</Text>}
-                    renderItem={({ item }) => item.sacks.map((sack, index) => (
-                        <View key={index} style={styles.card}>
-                            <Image source={{ uri: sack.images?.[0]?.url }} style={styles.cardImage} />
-                            <View style={styles.cardContent}>
-                                <Text style={styles.cardTitle}>{sack.description}</Text>
-                                <Text style={styles.cardText}>Kilo: {sack.kilo}</Text>
-                                <Text style={styles.cardText}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
-                                <Text style={styles.cardText}>Spoils: {new Date(sack.dbSpoil).toLocaleDateString()}</Text>
+                    <FlatList
+                        data={mySack}
+                        keyExtractor={(item) => item._id}
+                        contentContainerStyle={styles.list}
+                        ListEmptyComponent={<Text style={styles.emptyText}>No sacks added.</Text>}
+                        renderItem={({ item }) => item.sacks.map((sack, index) => (
+                            <View key={index} style={styles.card}>
+                                <Image source={{ uri: sack.images?.[0]?.url }} style={styles.cardImage} />
+                                <View style={styles.cardContent}>
+                                    <Text style={styles.cardTitle}>{sack.description}</Text>
+                                    <Text style={styles.cardText}>Kilo: {sack.kilo}</Text>
+                                    <Text style={styles.cardText}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
+                                    <Text style={styles.cardText}>Spoils: {new Date(sack.dbSpoil).toLocaleDateString()}</Text>
+                                </View>
+                                <TouchableOpacity style={styles.removeBtn}>
+                                    <FontAwesome name="trash" size={20} color="white" />
+                                </TouchableOpacity>
                             </View>
-                            <TouchableOpacity style={styles.removeBtn}>
-                                <FontAwesome name="trash" size={20} color="white" />
-                            </TouchableOpacity>
-                        </View>
-                    ))}
-                />
+                        ))}
+                    />
 
-                <View style={styles.footer}>
-                    <TouchableOpacity style={styles.pickupButton} onPress={handlePickUpSacks}>
-                        <Text style={styles.pickupText}>Pick up</Text>
-                    </TouchableOpacity>
+                    <View style={styles.footer}>
+                        <TouchableOpacity style={styles.pickupButton} onPress={handlePickUpSacks}>
+                            <Text style={styles.pickupText}>Pick up</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
-        </View>
+            <View>
+                <Footer />
+            </View>
+        </>
     );
 };
 

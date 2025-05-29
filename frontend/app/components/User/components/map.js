@@ -65,7 +65,7 @@ const Map = () => {
 
 
   return (
-    <>
+    <View style={{ flex: 1 }}>
       <StatusBar translucent backgroundColor="transparent" />
       <View style={styles.container}>
         <MapView
@@ -109,7 +109,7 @@ const Map = () => {
           )}
         </MapView>
       </View>
-    </>
+    </View>
   );
 };
 

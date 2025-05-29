@@ -59,7 +59,7 @@ const index = () => {
 
       const newSackNotifications = data.notifications.filter(notification => notification.type === 'new_sack');
 
-      console.log(newSackNotifications);
+   
       setNotifications(newSackNotifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -79,11 +79,6 @@ const index = () => {
       }
     }, [userId])
   );
-
-  console.log(wasteCollected, 'wasteCollected')
-  console.log(monthlyWasteCollected, 'monthlyWasteCollected')
-  console.log(activePickupRequest, 'activePickupRequest')
-  console.log(notifications, 'notifications')
 
 
   useEffect(() => {

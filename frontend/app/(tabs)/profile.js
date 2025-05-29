@@ -16,7 +16,7 @@ import axios from "axios";
 import baseURL from "../../assets/common/baseURL";
 import { logoutAction } from "../(redux)/authSlice";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-
+import AntDesign from '@expo/vector-icons/AntDesign';
 const Profile = () => {
     const router = useRouter();
     const dispatch = useDispatch();
@@ -74,14 +74,15 @@ const Profile = () => {
                             pathname: "/components/User/components/map",
                         })}
                     />
-                    <MenuItem icon="cog" label="Settings" />
                     <MenuItem icon="home" label="Address"
                         onPress={() => navigation.navigate('components/User/addAddress', { user })}
                     />
                     <MenuItem iconLib={MaterialCommunityIcons} icon="message-text-outline" label="Chat"
                         onPress={() => navigation.navigate('components/User/components/Chat/Chats')}
                     />
-                    <MenuItem icon="shield" label="Privacy Policy" />
+                    <MenuItem iconLib={AntDesign} icon="notification" label="Notifications"
+                        onPress={() => navigation.navigate('components/User/components/Notification/notification')}
+                    />
                     <MenuItem icon="sign-out" label="Log out" onPress={handleLogout} />
                 </View>
             </ScrollView>

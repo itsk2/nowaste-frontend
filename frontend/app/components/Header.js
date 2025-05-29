@@ -5,13 +5,17 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import Entypo from '@expo/vector-icons/Entypo';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useSelector } from 'react-redux';
 
 const Header = ({ name }) => {
+
+    const { user } = useSelector((state) => state.auth);
+    
     return (
         <View style={styles.headerContainer}>
             <View>
                 <Text style={styles.greeting}>Welcome</Text>
-                <Text style={styles.name}>{name}</Text>
+                <Text style={styles.name}>{user?.user?.name}</Text>
             </View>
             <View style={styles.iconGroup}>
                 <TouchableOpacity
@@ -42,7 +46,7 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         backgroundColor: '#355E3B',
         padding: 20,
-        marginTop:10,
+        marginTop: 10,
         borderRadius: 20
     },
     greeting: {

@@ -19,7 +19,6 @@ const Market = () => {
       console.error("Error fetching stalls:", error);
     }
   };
-  // console.log(allStalls)
 
   useFocusEffect(
     useCallback(() => {
@@ -39,7 +38,6 @@ const Market = () => {
         renderItem={({ item }) => {
           const stallData = item.stall || item;
           const isOpen = stallData.status === "open";
-          console.log(stallData)
           return (
             <View style={styles.card}>
               {stallData.stallImage?.url && (
