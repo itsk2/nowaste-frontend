@@ -13,9 +13,16 @@ import Header from '../components/Header';
 
 const Pickup = () => {
     const { user } = useSelector((state) => state.auth);
+    useEffect(() => {
+        if (!user) {
+            router.replace('/auth/login');
+        }
+    }, [user]);
+    // console.log(user,'USER')
     const userId = user.user._id;
     const [mySack, setMySacks] = useState([]);
     const [sellers, setSellers] = useState({});
+    if (!user) return null; // prevent rendering while redirecting
 
     const fetchMySacks = async () => {
         try {
@@ -77,13 +84,11 @@ const Pickup = () => {
     };
     useFocusEffect(
         useCallback(() => {
-            if (userId) {
-                fetchMySacks();
-                const interval = setInterval(() => {
-                    fetchMySacks();
-                }, 3000);
-                return () => clearInterval(interval);
-            }
+            if (!userId) return;
+
+            fetchMySacks();
+            const interval = setInterval(fetchMySacks, 3000);
+            return () => clearInterval(interval);
         }, [userId])
     );
     useEffect(() => {

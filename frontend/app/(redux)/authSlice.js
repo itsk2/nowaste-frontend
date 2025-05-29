@@ -58,3 +58,13 @@ export const loadUser = () => async (dispatch) => {
     dispatch(setLoading(false));
   }
 };
+
+// At the bottom of authSlice.js
+export const logout = () => async (dispatch) => {
+  try {
+    await AsyncStorage.removeItem("userInfo");
+    dispatch(logoutAction());
+  } catch (error) {
+    console.error("Error removing user info during logout", error);
+  }
+};

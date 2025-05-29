@@ -4,13 +4,15 @@ import { useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseURL';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import Header from '../components/Header';
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user } = useSelector((state) => state.auth);
   const userId = user?._id || user?.user?._id
+  const router = useRouter();
+
 
   const [wasteCollected, setWasteCollected] = useState(0);
   const [monthlyWasteCollected, setMonthlyWasteCollected] = useState(0);
@@ -59,7 +61,7 @@ const index = () => {
 
       const newSackNotifications = data.notifications.filter(notification => notification.type === 'new_sack');
 
-   
+
       setNotifications(newSackNotifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -68,17 +70,24 @@ const index = () => {
 
   useFocusEffect(
     useCallback(() => {
-      if (userId) {
+      if (!user) {
+        router.replace('/auth/login');
+        return;
+      }
+
+      fetchPickupSacks();
+      fetchNotifications();
+
+      const interval = setInterval(() => {
         fetchPickupSacks();
         fetchNotifications();
-        const interval = setInterval(() => {
-          fetchPickupSacks();
-          fetchNotifications();
-        }, 3000);
-        return () => clearInterval(interval);
-      }
+      }, 3000);
+
+      return () => clearInterval(interval);
     }, [userId])
   );
+  console.log(user, 'USER')
+
 
 
   useEffect(() => {
@@ -88,10 +97,12 @@ const index = () => {
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
-
+  if (!user) {
+    return null; // Or show a loading spinner / fallback UI
+  }
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
-      <Header name={user.user.name} />
+      <Header />
 
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
     StyleSheet,
     Text,
@@ -14,7 +14,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { FontAwesome } from "@expo/vector-icons";
 import axios from "axios";
 import baseURL from "../../assets/common/baseURL";
-import { logoutAction } from "../(redux)/authSlice";
+import { logout, logoutAction } from "../(redux)/authSlice";
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 const Profile = () => {
@@ -25,9 +25,17 @@ const Profile = () => {
     const [userData, setUser] = useState([]);
 
     const handleLogout = () => {
-        dispatch(logoutAction());
-        router.replace("/auth/login");
+        // dispatch(logoutAction());
+        router.replace("/");
     };
+
+    useEffect(() => {
+        if (!user) {
+            router.replace("/");
+            return;
+        }
+    }, [user, router]);
+
 
     const fetchUser = async () => {
         try {

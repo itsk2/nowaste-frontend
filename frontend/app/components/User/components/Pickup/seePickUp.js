@@ -20,9 +20,16 @@ const SeePickUp = () => {
     const pickup = pickupData ? JSON.parse(pickupData) : [];
     const [pickupStatus, setPickupStatus] = useState(pickup.status);
     const { user } = useSelector((state) => state.auth);
+    useEffect(() => {
+        if (!user) {
+            router.replace('/auth/login');
+        }
+    }, [user]);
+    if (!user) return null; // prevent rendering while redirecting
+    console.log(user, 'USER Printer')
     const [sackStatuses, setSackStatuses] = useState({});
     const [sellers, setSellers] = useState({});
-    const userId = user.user._id;
+    const userId = user?.user?._id;
     const [review, setReview] = useState('');
     const [rating, setRating] = useState(0);
     const [submitted, setSubmitted] = useState(false);
