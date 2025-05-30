@@ -1,6 +1,7 @@
 import {
     StyleSheet, Text, View, Image, FlatList, TouchableOpacity,
-    ImageBackground, Alert, ScrollView
+    ImageBackground, Alert, ScrollView,
+    Modal
 } from 'react-native';
 import React, { useCallback, useState } from 'react';
 import Constants from 'expo-constants';
@@ -22,6 +23,7 @@ const MySack = () => {
     const totalKilos = mySack.reduce((sum, item) => {
         return sum + item.sacks.reduce((sackSum, sack) => sackSum + Number(sack.kilo || 0), 0);
     }, 0);
+    const [showModal, setShowModal] = useState(false);
 
     const fetchMySacks = async () => {
         try {
@@ -44,9 +46,12 @@ const MySack = () => {
     const handlePickUpSacks = async () => {
         try {
             await axios.post(`${baseURL}/sack/pick-up-sacks/${addToSackId}`, { mySack, totalKilos });
-            Alert.alert("Pickup Confirmed", "Your sacks are ready for pickup!", [
-                { text: "OK", onPress: () => navigation.goBack() }
-            ]);
+            setShowModal(true);
+
+            setTimeout(() => {
+                setShowModal(false);
+                navigation.goBack();
+            }, 2000);
         } catch (error) {
             console.error("Error picking up sacks:", error);
         }
@@ -69,7 +74,7 @@ const MySack = () => {
                     <View style={styles.totalCard}>
                         <MaterialCommunityIcons name="sack" size={40} color="#fff" />
                         <Text style={styles.totalWeight}>{totalKilos} kg</Text>
-                        <Text style={styles.totalSubtext}>Combined weight</Text>
+                        <Text style={styles.totalSubtext}>Total Pickup Weight</Text>
                     </View>
 
                     <FlatList
@@ -98,10 +103,31 @@ const MySack = () => {
                             <Text style={styles.pickupText}>Pick up</Text>
                         </TouchableOpacity>
                     </View>
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={showModal}
+                        onRequestClose={() => setShowModal(false)}
+                    >
+                        <View style={styles.modalBackground}>
+                            <View style={styles.modalCard}>
+                                <View style={styles.checkmarkCircle}>
+                                    <Text style={styles.checkmark}>✓</Text>
+                                </View>
+                                <Text style={styles.modalTitle}>Pickup Requested</Text>
+                                <TouchableOpacity
+                                    onPress={() => {
+                                        setShowModal(false);
+                                        navigation.goBack();
+                                    }}
+                                    style={styles.modalButton}
+                                >
+                                    <Text style={styles.modalButtonText}>Go to pickups</Text>
+                                </TouchableOpacity>
+                            </View>
+                        </View>
+                    </Modal>
                 </View>
-            </View>
-            <View>
-                <Footer />
             </View>
         </>
     );
@@ -132,6 +158,49 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: '#C8E6C9',
         marginTop: 10,
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalCard: {
+        width: 280,
+        backgroundColor: '#A5D6A7',
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+    },
+    checkmarkCircle: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#4CAF50',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    checkmark: {
+        color: 'white',
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+        marginBottom: 10,
+    },
+    modalButton: {
+        backgroundColor: '#689F38',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
     totalSubtext: {
         fontSize: 14,

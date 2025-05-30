@@ -5,11 +5,13 @@ import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import { getAllStalls } from '../(services)/api/Users/getAllStalls';
 import Header from '../components/Header';
-
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const Market = () => {
   const [allStalls, setAllStalls] = useState([]);
   const router = useRouter();
+  const { user } = useSelector((state) => state.auth);
 
   const fetchAllStore = async () => {
     try {
@@ -27,7 +29,27 @@ const Market = () => {
   );
   return (
     <View style={styles.container}>
-      <Header />
+      <View style={styles.headerContainer}>
+        <View>
+          <Text style={styles.greeting}>Welcome</Text>
+          <Text style={styles.name}>{user?.user?.name}</Text>
+        </View>
+        <View style={styles.iconGroup}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/MySack/mySack')}
+          >
+            <Entypo name="shopping-cart" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/Chat/Chats')}
+          >
+            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+        </View>
+      </View>
       <Text style={styles.heading}>
         Taytay, Rizal Market Stalls
       </Text>
@@ -76,10 +98,38 @@ export default Market;
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop: Constants.statusBarHeight,
-    padding: 15,
     backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
     flex: 1,
+  },
+ headerContainer: {
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1A2F23',
+    padding: 20,
+    height: 77,
+  },
+  greeting: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  name: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#2BA84A',
+    marginVertical: 4,
+    fontFamily: 'Inter-Medium',
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: '#E8F5E9',
   },
   toggleButton: {
     backgroundColor: '#007bff',

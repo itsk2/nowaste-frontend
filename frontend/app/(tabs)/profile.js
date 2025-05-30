@@ -25,8 +25,8 @@ const Profile = () => {
     const [userData, setUser] = useState([]);
 
     const handleLogout = () => {
-        // dispatch(logoutAction());
-        router.replace("/");
+        dispatch(logoutAction());
+        router.replace("/auth/login");
     };
 
     useEffect(() => {
@@ -60,7 +60,6 @@ const Profile = () => {
 
     return (
         <View style={styles.screen}>
-            <StatusBar translucent backgroundColor="transparent" />
             <View style={styles.headerContainer}>
                 <View style={styles.profileImageWrapper}>
                     {userData?.avatar?.url ? (

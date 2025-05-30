@@ -1,13 +1,12 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, StatusBar, Alert, SafeAreaView } from 'react-native';
-import { useLocalSearchParams } from 'expo-router';
+import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, StatusBar, Alert, SafeAreaView, Modal } from 'react-native';
+import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { FontAwesome } from '@expo/vector-icons';
 import baseURL from '../../../../../assets/common/baseURL';
 import { useFocusEffect } from 'expo-router';
-import Header from '../../../Header';
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const SeeStall = () => {
     const { stall } = useLocalSearchParams();
@@ -17,6 +16,8 @@ const SeeStall = () => {
     const userId = user.user._id;
     const [sackData, setStoreSacks] = useState([]);
     const [optimalSchedule, setOptimalSchedule] = useState([]);
+    const [showModal, setShowModal] = useState(false);
+    const navigation = useNavigation();
 
     const fetchStoreSacks = async () => {
         try {
@@ -54,9 +55,12 @@ const SeeStall = () => {
     const handleAddtoSack = async (item) => {
         try {
             const { data } = await axios.post(`${baseURL}/sack/add-to-sack/${userId}`, item);
-            if (data.message) {
-                Alert.alert("Success", data.message);
-            }
+            setShowModal(true);
+
+            setTimeout(() => {
+                setShowModal(false);
+                navigation.goBack();
+            }, 2000);
         } catch (error) {
             Alert.alert("Cannot Proceed", error.response?.data?.message);
         }
@@ -84,8 +88,27 @@ const SeeStall = () => {
 
     return (
         <SafeAreaView style={styles.safeArea}>
-            <StatusBar translucent backgroundColor={"transparent"} />
-            <Header name={'User'} />
+            <View style={styles.headerContainer}>
+                <View>
+                    <Text style={styles.greeting}>See</Text>
+                    <Text style={styles.name}>Stall Description</Text>
+                </View>
+                <View style={styles.iconGroup}>
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/MySack/mySack')}
+                    >
+                        <Entypo name="shopping-cart" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/Chat/Chats')}
+                    >
+                        <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+                </View>
+            </View>
             <FlatList
                 ListHeaderComponent={
                     <View style={styles.container}>
@@ -131,6 +154,30 @@ const SeeStall = () => {
                 )}
                 ListEmptyComponent={<Text style={styles.noDataText}>No sacks available</Text>}
             />
+            <Modal
+                animationType="fade"
+                transparent={true}
+                visible={showModal}
+                onRequestClose={() => setShowModal(false)}
+            >
+                <View style={styles.modalBackground}>
+                    <View style={styles.modalCard}>
+                        <View style={styles.checkmarkCircle}>
+                            <Text style={styles.checkmark}>✓</Text>
+                        </View>
+                        <Text style={styles.modalTitle}>Now Added To Your Sack!!</Text>
+                        <TouchableOpacity
+                            onPress={() => {
+                                setShowModal(false);
+                                navigation.goBack();
+                            }}
+                            style={styles.modalButton}
+                        >
+                            <Text style={styles.modalButtonText}>Proceed</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -141,6 +188,36 @@ const styles = StyleSheet.create({
     safeArea: {
         flex: 1,
         backgroundColor: '#E9FDF0',
+    },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
+        padding: 20,
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: '#E8F5E9',
     },
     container: {
         padding: 20,
@@ -214,5 +291,48 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginVertical: 20,
         color: '#888',
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalCard: {
+        width: 280,
+        backgroundColor: '#A5D6A7',
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+    },
+    checkmarkCircle: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#4CAF50',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    checkmark: {
+        color: 'white',
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+        marginBottom: 10,
+    },
+    modalButton: {
+        backgroundColor: '#689F38',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });

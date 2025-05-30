@@ -7,6 +7,7 @@ import baseURL from '../../../../../assets/common/baseURL';
 import axios from 'axios';
 import { timeAgo } from "../../../../../utils/timeAgo"
 import { Ionicons } from "@expo/vector-icons"; // make sure expo install expo/vector-icons
+import Constants from 'expo-constants';
 
 const ChatRoom = () => {
     const { userId, receiverId } = useLocalSearchParams();
@@ -119,7 +120,8 @@ export default ChatRoom;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#4CAF50", // green background
+        backgroundColor: "#4CAF50",
+        marginTop: 30,
     },
     header: {
         flexDirection: 'row',

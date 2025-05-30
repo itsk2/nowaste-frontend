@@ -5,7 +5,9 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseURL';
 import { useFocusEffect, useRouter } from 'expo-router';
-import Header from '../components/Header';
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Constants from "expo-constants";
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -101,9 +103,28 @@ const index = () => {
     return null; // Or show a loading spinner / fallback UI
   }
   return (
-    <ScrollView style={styles.container} contentContainerStyle={{ padding: 20 }}>
-      <Header />
+    <ScrollView style={styles.container}>
+      <View style={styles.headerContainer}>
+        <View>
+          <Text style={styles.greeting}>Welcome</Text>
+          <Text style={styles.name}>{user?.user?.name}</Text>
+        </View>
+        <View style={styles.iconGroup}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/MySack/mySack')}
+          >
+            <Entypo name="shopping-cart" size={18} color="#2BA84A" />
+          </TouchableOpacity>
 
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/Chat/Chats')}
+          >
+            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+        </View>
+      </View>
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Total Collected</Text>
@@ -250,6 +271,36 @@ const styles = StyleSheet.create({
   notificationTime: {
     fontSize: 12,
     color: '#9CA3AF',
+  },
+  headerContainer: {
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1A2F23',
+    padding: 20,
+    height: 77,
+  },
+  greeting: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  name: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#2BA84A',
+    marginVertical: 4,
+    fontFamily: 'Inter-Medium',
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: '#E8F5E9',
   },
 });
 

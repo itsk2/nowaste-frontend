@@ -5,24 +5,15 @@ import { useSelector } from 'react-redux';
 import { router, useFocusEffect } from 'expo-router';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseURL';
-import { FontAwesome } from '@expo/vector-icons';
-import Icon from "react-native-vector-icons/FontAwesome";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import Header from '../components/Header';
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const Pickup = () => {
     const { user } = useSelector((state) => state.auth);
-    useEffect(() => {
-        if (!user) {
-            router.replace('/auth/login');
-        }
-    }, [user]);
-    // console.log(user,'USER')
     const userId = user.user._id;
     const [mySack, setMySacks] = useState([]);
     const [sellers, setSellers] = useState({});
-    if (!user) return null; // prevent rendering while redirecting
 
     const fetchMySacks = async () => {
         try {
@@ -36,6 +27,7 @@ const Pickup = () => {
 
             const now = new Date();
             const nowUTC8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
+            console.log(pickUpSacks, 'Sacks');
 
             for (const sack of pickUpSacks) {
                 const pickupTimestamp = new Date(sack.pickupTimestamp);
@@ -84,11 +76,13 @@ const Pickup = () => {
     };
     useFocusEffect(
         useCallback(() => {
-            if (!userId) return;
-
-            fetchMySacks();
-            const interval = setInterval(fetchMySacks, 3000);
-            return () => clearInterval(interval);
+            if (userId) {
+                fetchMySacks();
+                const interval = setInterval(() => {
+                    fetchMySacks();
+                }, 3000);
+                return () => clearInterval(interval);
+            }
         }, [userId])
     );
     useEffect(() => {
@@ -98,8 +92,28 @@ const Pickup = () => {
     }, [mySack]);
     return (
         <View style={styles.container}>
-            <Header name={'User'} />
             <View style={styles.headerContainer}>
+                <View>
+                    <Text style={styles.greeting}>Welcome</Text>
+                    <Text style={styles.name}>{user?.user?.name}</Text>
+                </View>
+                <View style={styles.iconGroup}>
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/MySack/mySack')}
+                    >
+                        <Entypo name="shopping-cart" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/Chat/Chats')}
+                    >
+                        <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+                </View>
+            </View>
+            <View style={styles.header}>
                 <Text style={styles.headerTitle}>My Pickup</Text>
             </View>
             <View style={styles.listContainer}>
@@ -184,16 +198,41 @@ export default Pickup;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: Constants.statusBarHeight,
-        paddingHorizontal: 10,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
     },
     header: {
-        fontSize: 36,
+        alignItems: "center",
+        marginBottom: 24,
+    },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
+        padding: 20,
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 23,
         fontWeight: 'bold',
-        textAlign: 'left',
-        marginVertical: 10,
-        color: 'white'
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: '#E8F5E9',
     },
     listContainer: {
         borderRadius: 15,
@@ -265,20 +304,6 @@ const styles = StyleSheet.create({
         color: 'white',
         marginTop: 5,
     },
-    headerContainer: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#2E4237',
-        padding: 12,
-        borderRadius: 12,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 3 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
-        elevation: 5,
-    },
-
     headerTitle: {
         fontSize: 22,
         fontWeight: 'bold',
@@ -314,72 +339,52 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         fontSize: 12,
         paddingHorizontal: 10,
-        paddingVertical: 2,
+        paddingVertical: 4,
         borderRadius: 12,
-        overflow: 'hidden',
         textTransform: 'capitalize',
     },
-
     cardContent: {
         flexDirection: 'row',
-        alignItems: 'center',
-        marginBottom: 10,
+        alignItems: 'flex-start',
     },
-
     imageContainer: {
-        width: 50,
-        height: 50,
-        borderRadius: 8,
-        backgroundColor: '#ccc',
-        justifyContent: 'center',
-        alignItems: 'center',
         marginRight: 10,
     },
-
     imagePlaceholder: {
-        fontSize: 14,
-        fontWeight: 'bold',
-        color: '#333',
+        width: 60,
+        height: 60,
+        borderRadius: 10,
+        backgroundColor: '#ccc',
+        overflow: 'hidden',
+        justifyContent: 'center',
+        alignItems: 'center',
     },
-
     detailsSection: {
         flex: 1,
     },
-
     pickupTitle: {
-        color: '#ffffff',
         fontSize: 16,
         fontWeight: 'bold',
-        marginBottom: 4,
+        color: 'white',
     },
-
     secondaryText: {
-        color: '#D0D0D0',
         fontSize: 12,
+        color: '#ccc',
     },
-
     kiloSection: {
-        alignItems: 'flex-end',
+        alignItems: 'center',
+        justifyContent: 'center',
         paddingLeft: 10,
     },
-
-    kiloText: {
-        fontSize: 16,
-        color: '#ffffff',
-        fontWeight: 'bold',
-    },
-
     detailsButton: {
-        backgroundColor: '#B6FF5B',
-        paddingVertical: 6,
-        paddingHorizontal: 12,
-        borderRadius: 10,
-        alignSelf: 'flex-end',
+        marginTop: 12,
+        backgroundColor: '#4CAF50',
+        paddingVertical: 8,
+        borderRadius: 8,
+        alignItems: 'center',
     },
-
     detailsButtonText: {
-        color: '#1a1a1a',
+        color: 'white',
         fontWeight: 'bold',
-        fontSize: 14,
-    }
+    },
 });

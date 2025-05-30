@@ -21,6 +21,9 @@ import baseURL from "../../assets/common/baseURL";
 import axios from "axios";
 import { LineChart } from 'react-native-gifted-charts';
 import Header from "../components/Header";
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Constants from "expo-constants";
 
 export default function WeightProgressForm() {
     const navigation = useNavigation();
@@ -168,7 +171,27 @@ export default function WeightProgressForm() {
 
     return (
         <View style={styles.container}>
-            <Header name={'User'} />
+            <View style={styles.headerContainer}>
+                <View>
+                    <Text style={styles.greeting}>Welcome</Text>
+                    <Text style={styles.name}>{user?.user?.name}</Text>
+                </View>
+                <View style={styles.iconGroup}>
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/MySack/mySack')}
+                    >
+                        <Entypo name="shopping-cart" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/Chat/Chats')}
+                    >
+                        <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+                </View>
+            </View>
             {/* Track Button */}
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', borderWidth: 2, padding: 6, borderRadius: 20, borderColor: '#eb6794', backgroundColor: 'green' }}>
                 <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, marginLeft: 10 }}> Track {'\n'} Records</Text>
@@ -489,8 +512,37 @@ export default function WeightProgressForm() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
         padding: 20,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: '#E8F5E9',
     },
     trackButton: {
         backgroundColor: "#6680ff",
