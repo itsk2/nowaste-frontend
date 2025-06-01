@@ -79,7 +79,7 @@ const Chats = () => {
           <View style={styles.headerRow}>
             <Text style={styles.name}>{receiver ? receiver.name : 'Unknown User'}</Text>
           </View>
-          <Text>Role: {receiver ? receiver.role : 'Unknown User'}</Text>
+          <Text style={{ color: '#4CAF50' }}>Role: {receiver ? receiver.role : 'Unknown User'}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -87,21 +87,23 @@ const Chats = () => {
 
   return (
     <View style={styles.container}>
-      <View style={{ backgroundColor: 'green', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
+      <View style={{ backgroundColor: '#2A4535', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
         <View style={{ padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
           <FontAwesome name="comments" size={24} color="#fff" />
           <Text style={{ color: 'white', fontSize: 20, marginLeft: 10 }}>Chat Heads</Text>
         </View>
       </View>
-      {rooms.length === 0 ? (
-        <Text>No chat rooms found.</Text>
-      ) : (
-        <FlatList
-          data={rooms}
-          keyExtractor={item => item.id}
-          renderItem={renderItem}
-        />
-      )}
+      <View style={{ padding: 10, backgroundColor: '#E9FFF3', flex: 1 }}>
+        {rooms.length === 0 ? (
+          <Text>No chat rooms found.</Text>
+        ) : (
+          <FlatList
+            data={rooms}
+            keyExtractor={item => item.id}
+            renderItem={renderItem}
+          />
+        )}
+      </View>
     </View>
   );
 };
@@ -112,8 +114,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#fff',
-    paddingTop: 35,
-    paddingHorizontal: 20,
   },
   header: {
     fontSize: 22,
@@ -127,6 +127,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
+    backgroundColor: '#2A4535',
+    padding: 10,
+    borderRadius: 20,
+    marginBottom: 7
   },
   avatar: {
     width: 56,
@@ -147,7 +151,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#222',
+    color: 'white',
   },
   emptyContainer: {
     flex: 1,

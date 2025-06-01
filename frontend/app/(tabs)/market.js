@@ -31,8 +31,8 @@ const Market = () => {
     <View style={styles.container}>
       <View style={styles.headerContainer}>
         <View>
-          <Text style={styles.greeting}>Welcome</Text>
-          <Text style={styles.name}>{user?.user?.name}</Text>
+          <Text style={styles.greeting}>Taytay, Rizal</Text>
+          <Text style={styles.name}>New Market</Text>
         </View>
         <View style={styles.iconGroup}>
           <TouchableOpacity
@@ -50,46 +50,43 @@ const Market = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <Text style={styles.heading}>
-        Taytay, Rizal Market Stalls
-      </Text>
-
-      <FlatList
-        data={allStalls}
-        keyExtractor={(item, index) => item?._id || index.toString()}
-        renderItem={({ item }) => {
-          const stallData = item.stall || item;
-          const isOpen = stallData.status === "open";
-          return (
-            <View style={styles.card}>
-              {stallData.stallImage?.url && (
-                <Image source={{ uri: stallData.stallImage.url }} style={styles.image} />
-              )}
-              <View style={styles.cardContent}>
-                <View style={styles.cardHeader}>
-                  <View style={[styles.statusBadge, { backgroundColor: isOpen ? "#4CAF50" : "#F44336" }]}>
-                    <Text style={styles.statusText}>{isOpen ? "Open" : "Closed"}</Text>
+      <View style={{ padding: 15, marginBottom: 80 }}>
+        <FlatList
+          data={allStalls}
+          keyExtractor={(item, index) => item?._id || index.toString()}
+          renderItem={({ item }) => {
+            const stallData = item.stall || item;
+            const isOpen = stallData.status === "open";
+            return (
+              <View style={styles.card}>
+                {stallData.stallImage?.url && (
+                  <Image source={{ uri: stallData.stallImage.url }} style={styles.image} />
+                )}
+                <View style={styles.cardContent}>
+                  <View style={styles.cardHeader}>
+                    <View style={[styles.statusBadge, { backgroundColor: isOpen ? "#4CAF50" : "#F44336" }]}>
+                      <Text style={styles.statusText}>{isOpen ? "Open" : "Closed"}</Text>
+                    </View>
                   </View>
+                  <Text style={{ color: 'white' }}>🆔 {stallData.stallNumber || "N/A"}</Text>
+                  <Text style={{ color: 'white' }}>📍 {stallData.location || "Taytay, Rizal New Market"}</Text>
+
+                  <TouchableOpacity
+                    style={styles.button}
+                    onPress={() => router.push({
+                      pathname: "/components/User/components/Stall/seeStall",
+                      params: { stall: JSON.stringify(stallData) },
+                    })}
+                  >
+                    <Text style={styles.buttonText}>View Stall</Text>
+                  </TouchableOpacity>
                 </View>
-                <Text style={styles.text}>🆔 {stallData.stallNumber || "N/A"}</Text>
-                <Text style={styles.text}>📍 {stallData.location || "Taytay, Rizal New Market"}</Text>
-
-                <TouchableOpacity
-                  style={styles.button}
-                  onPress={() => router.push({
-                    pathname: "/components/User/components/Stall/seeStall",
-                    params: { stall: JSON.stringify(stallData) },
-                  })}
-                >
-                  <Text style={styles.buttonText}>View Stall</Text>
-                </TouchableOpacity>
               </View>
-            </View>
-          );
-        }}
-        showsVerticalScrollIndicator={false}
-      />
-
+            );
+          }}
+          showsVerticalScrollIndicator={false}
+        />
+      </View>
     </View>
   );
 };
@@ -98,10 +95,10 @@ export default Market;
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
+    backgroundColor: '#E9FFF3', // Optional dark overlay for readability
     flex: 1,
   },
- headerContainer: {
+  headerContainer: {
     marginBottom: 15,
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -151,7 +148,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: '#2A4535',
     borderRadius: 12,
     marginBottom: 15,
     overflow: 'hidden',
@@ -160,6 +157,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
+    borderWidth: 2
   },
   image: {
     width: '100%',
@@ -167,7 +165,7 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     padding: 15,
-    backgroundColor: '#fff',
+    backgroundColor: '#2A4535',
   },
   cardHeader: {
     flexDirection: 'row',

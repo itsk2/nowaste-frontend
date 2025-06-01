@@ -1,42 +1,29 @@
 import { StyleSheet, Text, View, FlatList, TouchableOpacity } from 'react-native';
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { Ionicons } from '@expo/vector-icons';
 import { useSelector } from 'react-redux';
-import Constants from 'expo-constants';
-import baseURL from '../../../../assets/common/baseURL';
-import { timeAgo } from '../../../../utils/timeAgo'; // Ensure this path is correct
-import { router, useFocusEffect } from 'expo-router';
-import Entypo from '@expo/vector-icons/Entypo';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-
+import baseURL from '../../../../../assets/common/baseURL';
+import { timeAgo } from '../../../../../utils/timeAgo'; // Ensure this path is correct
+import { router, useNavigation } from 'expo-router';
 const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const { user } = useSelector((state) => state.auth);
     const userId = user.user._id;
+    const navigation = useNavigation();
 
-    const fetchNotifications = async () => {
-        try {
-            const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
-            const spoiledNotifications = data.notifications.filter(notification => notification.type === 'spoiled');
-            // console.log(spoiledNotifications);
-            setNotifications(spoiledNotifications);
-        } catch (error) {
-            console.error("Error fetching notifications:", error);
-        }
-    };
-
-    useFocusEffect(
-        useCallback(() => {
-            if (notifications) {
-                fetchNotifications();
-                const interval = setInterval(() => {
-                    fetchNotifications();
-                }, 2000);
-                return () => clearInterval(interval);
+    useEffect(() => {
+        const fetchNotifications = async () => {
+            try {
+                const { data } = await axios.get(`${baseURL}/notifications/users-get-notif/${userId}`);
+                setNotifications(data.notifications);
+            } catch (error) {
+                console.error("Error fetching notifications:", error);
             }
-        }, [notifications])
-    );
+        };
+
+        fetchNotifications();
+    }, []);
 
     const renderItem = ({ item }) => (
         <View style={styles.notificationCard}>
@@ -52,27 +39,17 @@ const Notification = () => {
         <>
             <View style={styles.container}>
                 <View style={styles.headerContainer}>
-                    <View>
-                        <Text style={styles.greeting}>Composter</Text>
-                        <Text style={styles.name}>Notifications</Text>
-                    </View>
-                    <View style={styles.iconGroup}>
-                        <TouchableOpacity
-                            style={styles.iconButton}
-                            onPress={() => router.push('components/Composter/components/MySack/mySack')}
-                        >
-                            <Entypo name="shopping-cart" size={18} color="#2BA84A" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.iconButton}
-                            onPress={() => router.push('components/User/components/Chat/Chats')}
-                        >
-                            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
+                        <View style={styles.iconGroup}>
+                            <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                        </View>
+                        <View style={{ marginLeft: 10 }}>
+                            <Text style={styles.greeting}>Stall</Text>
+                            <Text style={styles.name}>Notifications</Text>
+                        </View>
+                    </TouchableOpacity>
                 </View>
-                <View style={{ padding: 10, marginBottom: 100 }}>
+                <View style={{ padding: 15 }}>
                     {notifications.length === 0 ? (
                         <Text style={styles.noNotifications}>No notifications</Text>
                     ) : (
@@ -80,11 +57,10 @@ const Notification = () => {
                             data={notifications}
                             keyExtractor={(item) => item._id}
                             renderItem={renderItem}
-                            showsVerticalScrollIndicator={false}
                         />
                     )}
                 </View>
-            </View>
+            </View >
         </>
     );
 };
@@ -96,21 +72,12 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#f5f5f5',
     },
-    header: {
-        fontSize: 20,
-        fontWeight: 'bold',
-        color: '#fff',
-        backgroundColor: '#1c3d2e',
-        padding: 10,
-    },
     headerContainer: {
-        marginBottom: 5,
         flexDirection: 'row',
-        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#1A2F23',
         padding: 20,
-        height: 77,
+        height: 90,
     },
     greeting: {
         fontSize: 18,
@@ -131,7 +98,17 @@ const styles = StyleSheet.create({
     iconButton: {
         padding: 8,
         borderRadius: 50,
-        backgroundColor: '#E8F5E9',
+        flexDirection: 'row',
+        alignItems: 'center'
+    },
+    header: {
+        fontSize: 20,
+        fontWeight: 'bold',
+        marginVertical: 10,
+        color: '#fff',
+        backgroundColor: '#1c3d2e',
+        padding: 10,
+        borderRadius: 6,
     },
     notificationCard: {
         flexDirection: 'row',

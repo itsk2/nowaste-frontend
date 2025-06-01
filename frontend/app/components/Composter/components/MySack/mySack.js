@@ -1,4 +1,8 @@
-import { StyleSheet, Text, View, Image, FlatList, TouchableOpacity, ImageBackground, Alert } from 'react-native';
+import {
+    StyleSheet, Text, View, Image, FlatList, TouchableOpacity,
+    ImageBackground, Alert, ScrollView,
+    Modal
+} from 'react-native';
 import React, { useCallback, useState } from 'react';
 import Constants from 'expo-constants';
 import { useSelector } from 'react-redux';
@@ -7,22 +11,26 @@ import axios from 'axios';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { Ionicons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const MySack = () => {
     const { user } = useSelector((state) => state.auth);
-    const userId = user.user._id
-    const router = useRouter()
-    const navigation = useNavigation()
+    const userId = user.user._id;
+    const navigation = useNavigation();
     const [mySack, setMySacks] = useState([]);
+    const router = useRouter();
+
     const addToSackId = mySack.length > 0 ? mySack[0]._id : undefined;
-    const status = mySack.length > 0 ? mySack[0].status : undefined;
-    // console.log(userId)
+    const totalKilos = mySack.reduce((sum, item) => {
+        return sum + item.sacks.reduce((sackSum, sack) => sackSum + Number(sack.kilo || 0), 0);
+    }, 0);
+    const [showModal, setShowModal] = useState(false);
 
     const fetchMySacks = async () => {
         try {
             const { data } = await axios.get(`${baseURL}/sack/get-my-sacks/${userId}`);
             const pendingSacks = data.mySack.filter(sack => sack.status === "pending");
-
             setMySacks(pendingSacks);
         } catch (error) {
             console.error("Error fetching:", error);
@@ -36,91 +44,118 @@ const MySack = () => {
             }
         }, [userId])
     );
-    // console.log("My Sack Data:", mySack);
-    const totalKilos = mySack.reduce((sum, item) => {
-        return sum + item.sacks.reduce((sackSum, sack) => sackSum + Number(sack.kilo || 0), 0);
-    }, 0);
 
     const handlePickUpSacks = async () => {
-        // console.log(totalKilos, 'Kilos');
-        console.log(mySack, 'My sacks');
-        // const status = 'pending';
         try {
-            const { data } = await axios.post(`${baseURL}/sack/pick-up-sacks/${addToSackId}`, { mySack, totalKilos });
-            Alert.alert(
-                "Pickup Your Sacks Now?",
-                "Go to Pickups!!",
-                [
-                    {
-                        text: "OK",
-                        onPress: () => {
-                            navigation.goBack();
-                        },
-                    },
-                ]
-            );
+            await axios.post(`${baseURL}/sack/pick-up-sacks/${addToSackId}`, { mySack, totalKilos });
+            setShowModal(true);
+
+            setTimeout(() => {
+                setShowModal(false);
+                navigation.goBack();
+            }, 1500);
         } catch (error) {
-            console.error("Error fetching:", error);
+            console.error("Error picking up sacks:", error);
         }
-    }
+    };
 
     return (
-        <ImageBackground
-            source={require("../../../../../assets/bg-leaf.png")}
-            style={{
-                flex: 1,
-            }}
-            resizeMode="cover"
-        >
+        <>
             <View style={styles.container}>
-                {/* Header */}
-                <Text style={styles.header}>MY SACK</Text>
-
-                {/* Sack Image & Weight */}
-                <View style={styles.sackContainer}>
-                    <MaterialCommunityIcons name="sack" size={100} color="white" style={styles.sackImage} />
-                    <Text style={styles.sackWeight}>{totalKilos} KG</Text>
-                </View>
-
-                {/* Pickup Button */}
-                <View style={styles.buttonContainer}>
-                    <TouchableOpacity style={styles.pickupButton}
-                        onPress={() => handlePickUpSacks()}
-                    >
-                        <Text style={styles.pickupText}>PICKUP</Text>
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity style={{
+                        padding: 8,
+                        borderRadius: 50,
+                    }} onPress={() => navigation.goBack()}>
+                        <View style={{ justifyContent: 'center', alignItems: 'center', height: 90 }}>
+                            <View style={{ marginRight: 10, flexDirection: 'row', }}>
+                                <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                                <View style={{ marginTop: 5, marginLeft: 10 }}>
+                                    <Text style={styles.greeting}>My <Text style={styles.name}>Sacks</Text></Text>
+                                </View>
+                            </View>
+                        </View>
                     </TouchableOpacity>
-                </View>
 
-                {/* Sack List */}
-                <View style={styles.listContainer}>
+                    <View style={styles.iconGroup}>
+
+                        <TouchableOpacity
+                            style={styles.iconButton}
+                            onPress={() => router.push('components/User/components/Chat/Chats')}
+                        >
+                            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+                <View style={styles.overlay}>
+                    {/* Header */}
+                    <View style={styles.totalCard}>
+                        <MaterialCommunityIcons name="sack" size={40} color="#fff" />
+                        <Text style={styles.totalWeight}>{totalKilos} kg</Text>
+                        <Text style={styles.totalSubtext}>Total Pickup Weight</Text>
+                    </View>
+
                     <FlatList
                         data={mySack}
                         keyExtractor={(item) => item._id}
-                        renderItem={({ item }) => (
-                            item.sacks.map((sack, index) => (
-                                <View key={index} style={styles.sackCard}>
-                                    <Image source={{ uri: sack.images[0]?.url }} style={styles.sackItemImage} />
-                                    <View style={styles.sackDetails}>
-                                        <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                                            <Text style={{ color: 'white' }}>Description: {sack.description}</Text>
-                                            <TouchableOpacity>
-                                                <FontAwesome name="trash" size={20} color="red" />
-                                            </TouchableOpacity>
-                                        </View>
-                                        <Text style={{ marginBottom: 4, color: 'white' }}>Kilo: {sack.kilo} kg/s</Text>
-                                        <Text style={{ marginBottom: 4, color: 'white' }}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
-                                        <Text style={{ marginBottom: 4, color: 'white' }}>Spoilage Date: {new Date(sack.dbSpoil).toLocaleDateString()}</Text>
-                                        <TouchableOpacity>
-                                            <FontAwesome name="star" size={20} color="gold" style={{ alignSelf: 'flex-end' }} />
-                                        </TouchableOpacity>
-                                    </View>
+                        contentContainerStyle={styles.list}
+                        ListEmptyComponent={
+                            <View style={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <Text style={styles.emptyText}>No sacks available</Text>
+                                <Image
+                                    source={require('../../../../../assets/no-sack-removebg-preview.png')}
+                                    style={{
+                                        width: 300,
+                                        height: 300,
+                                    }}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                        }
+                        renderItem={({ item }) => item.sacks.map((sack, index) => (
+                            <View key={index} style={styles.card}>
+                                <Image source={{ uri: sack.images?.[0]?.url }} style={styles.cardImage} />
+                                <View style={styles.cardContent}>
+                                    <Text style={styles.cardTitle}>{sack.description}</Text>
+                                    <Text style={styles.cardText}>Kilo: {sack.kilo}</Text>
+                                    <Text style={styles.cardText}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
+                                    <Text style={styles.cardText}>Spoils: {new Date(sack.dbSpoil).toLocaleDateString()}</Text>
                                 </View>
-                            ))
-                        )}
+                                <TouchableOpacity style={styles.removeBtn}>
+                                    <FontAwesome name="trash" size={20} color="white" />
+                                </TouchableOpacity>
+                            </View>
+                        ))}
                     />
+
+                    {mySack.length > 0 && (
+                        <View style={styles.footer}>
+                            <TouchableOpacity style={styles.pickupButton} onPress={handlePickUpSacks}>
+                                <Text style={styles.pickupText}>Pick up</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={showModal}
+                        onRequestClose={() => setShowModal(false)}
+                    >
+                        <View style={styles.modalBackground}>
+                            <View style={styles.modalCard}>
+                                <View style={styles.checkmarkCircle}>
+                                    <Text style={styles.checkmark}>✓</Text>
+                                </View>
+                                <Text style={styles.modalTitle}>Pickup Requested</Text>
+                            </View>
+                        </View>
+                    </Modal>
                 </View>
-            </View>
-        </ImageBackground>
+            </View >
+        </>
     );
 };
 
@@ -129,73 +164,202 @@ export default MySack;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: Constants.statusBarHeight,
-        paddingHorizontal: 10,
+        backgroundColor: '#E9FFF3', // Optional dark overlay for readability
     },
     header: {
-        fontSize: 36,
-        fontWeight: 'bold',
-        textAlign: 'left',
-        marginVertical: 10,
-        color: 'white'
-    },
-    sackContainer: {
-        alignItems: 'center',
-        backgroundColor: '#2E4237',
-        padding: 20,
-        borderRadius: 15,
-        marginBottom: 15,
-    },
-    sackImage: {
-        width: 100,
-        height: 100,
-    },
-    sackWeight: {
-        fontSize: 20,
+        fontSize: 30,
         fontWeight: 'bold',
         color: 'white',
+        marginBottom: 20,
     },
-    buttonContainer: {
+    totalCard: {
+        backgroundColor: '#1E3D29',
+        padding: 20,
+        borderRadius: 15,
         alignItems: 'center',
+        marginBottom: 20,
+    },
+    totalWeight: {
+        fontSize: 36,
+        fontWeight: 'bold',
+        color: '#C8E6C9',
+        marginTop: 10,
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalCard: {
+        width: 280,
+        backgroundColor: '#A5D6A7',
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+    },
+    checkmarkCircle: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#4CAF50',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    checkmark: {
+        color: 'white',
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+        marginBottom: 10,
+    },
+    modalButton: {
+        backgroundColor: '#689F38',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+    },
+    totalSubtext: {
+        fontSize: 14,
+        color: '#A5D6A7',
+        marginTop: 4,
+    },
+    list: {
+        paddingBottom: 100,
+    },
+    card: {
+        flexDirection: 'row',
+        backgroundColor: '#2E4237',
+        borderRadius: 15,
+        marginBottom: 12,
+        padding: 10,
+        alignItems: 'center',
+    },
+    cardImage: {
+        width: 70,
+        height: 70,
+        borderRadius: 10,
+        marginRight: 12,
+    },
+    cardContent: {
+        flex: 1,
+    },
+    cardTitle: {
+        color: '#fff',
+        fontWeight: 'bold',
+        marginBottom: 4,
+    },
+    cardText: {
+        color: '#ddd',
+        fontSize: 12,
+        marginBottom: 2,
+    },
+    removeBtn: {
+        padding: 5,
+    },
+    footer: {
+        position: 'absolute',
+        bottom: 20,
+        left: 15,
+        right: 15,
     },
     pickupButton: {
-        backgroundColor: '#FFD89C',
-        paddingVertical: 10,
-        width: '50%',
+        backgroundColor: '#A2E45C',
+        paddingVertical: 15,
+        borderRadius: 12,
         alignItems: 'center',
-        borderRadius: 10,
-        elevation: 5,
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.2,
-        shadowRadius: 4,
     },
     pickupText: {
         fontSize: 16,
         fontWeight: 'bold',
+        color: '#1B1B1B',
     },
-    listContainer: {
-        backgroundColor: '#E5E5E5',
-        borderRadius: 15,
-        padding: 10,
-        marginTop: 10,
+    emptyText: {
+        textAlign: 'center',
+        marginTop: 50,
+        fontSize: 16,
+        color: '#black',
     },
-    sackCard: {
+    background: {
+        flex: 1,
+        width: '100%',
+        height: '100%',
+    },
+    overlay: {
+        flex: 1,
+        padding: 10
+    },
+
+    headerContainer: {
         flexDirection: 'row',
+        justifyContent: 'space-between',
         alignItems: 'center',
         backgroundColor: '#2E4237',
-        padding: 10,
-        borderRadius: 10,
-        marginVertical: 5,
+        padding: 12,
+        borderRadius: 12,
+        marginBottom: 20,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 3 },
+        shadowOpacity: 0.2,
+        shadowRadius: 4,
+        elevation: 5,
     },
-    sackItemImage: {
-        width: 100,
-        height: 100,
-        borderRadius: 10,
-        marginRight: 10,
-    },
-    sackDetails: {
-        flex: 1,
+
+    headerTitle: {
+        fontSize: 22,
+        fontWeight: 'bold',
         color: 'white',
+    },
+
+    headerButton: {
+        backgroundColor: '#A2E45C',
+        paddingVertical: 6,
+        paddingHorizontal: 12,
+        borderRadius: 8,
+    },
+
+    headerButtonText: {
+        fontSize: 12,
+        fontWeight: 'bold',
+        color: '#1B1B1B',
+    },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
+        padding: 20,
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: '#E8F5E9',
     },
 });

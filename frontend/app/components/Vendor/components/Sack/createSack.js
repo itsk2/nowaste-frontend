@@ -3,7 +3,7 @@ import React, { useState } from 'react'
 // import { createProduct } from '../../../../(services)/api/Product/createProduct'
 import Constants from 'expo-constants'
 import * as ImagePicker from 'expo-image-picker';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { Formik } from 'formik';
 import { useSelector } from 'react-redux';
 import { createSack } from '../../../../(services)/api/Sack/createSack';
@@ -15,7 +15,8 @@ const CreateSack = () => {
     const userId = user.user._id
     const { stallNum } = useLocalSearchParams();
     const stallNumber = stallNum ? JSON.parse(stallNum) : {};
-    // console.log(stallNumber)
+    console.log(stallNumber)
+    const navigation = useNavigation();
 
     //Image Picker
     const pickImage = async () => {
@@ -80,7 +81,7 @@ const CreateSack = () => {
                                     ...values,
                                     images,
                                     userId,
-                                    stallNumber,
+                                    stallNumber: stallNumber.stallNumber,
                                 });
                                 Alert.alert(
                                     "Posted Sack Successfully",
@@ -89,7 +90,7 @@ const CreateSack = () => {
                                         {
                                             text: "OK",
                                             onPress: () => {
-                                                router.back();
+                                                navigation.goBack();
                                             },
                                         },
                                     ]

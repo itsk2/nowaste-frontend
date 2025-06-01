@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import Fontisto from "@expo/vector-icons/Fontisto";
 import Ionicons from "@expo/vector-icons/Ionicons";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
-import { View } from "react-native";
+import { StyleSheet, View } from "react-native";
 
 export default function RootLayout() {
     const { user } = useSelector((state) => state.auth);
@@ -36,71 +36,85 @@ export default function RootLayout() {
     }, [user, router]);
 
     return (
-        <Tabs screenOptions={{ tabBarShowLabel: false }}>
-            <Tabs.Screen
-                name="index"
-                options={{
-                    headerShown: false,
-                    title: "Home",
-                    tabBarIcon: ({ color }) => (
-                        <FontAwesome name="home" color={color} size={28} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="pickup"
-                options={{
-                    headerShown: false,
-                    title: "Pickup",
-                    tabBarIcon: ({ color }) => (
-                        <MaterialCommunityIcons name="car-lifted-pickup" size={33} color={color} />
-                    ),
-                }}
-            />
+        <View style={styles.container}>
+            <Tabs screenOptions={{
+                tabBarShowLabel: false,
+                tabBarStyle: {
+                    backgroundColor: '#1A2F23', // also set the tab bar background
+                },
+            }}>
+                <Tabs.Screen
+                    name="index"
+                    options={{
+                        headerShown: false,
+                        title: "Home",
+                        tabBarIcon: ({ color }) => (
+                            <FontAwesome name="home" color='white' size={28} />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="pickup"
+                    options={{
+                        headerShown: false,
+                        title: "Pickup",
+                        tabBarIcon: ({ color }) => (
+                            <MaterialCommunityIcons name="car-lifted-pickup" size={33} color='white' />
+                        ),
+                    }}
+                />
 
-            {/* Center Market Button */}
-            <Tabs.Screen
-                name="stall"
-                options={{
-                    headerShown: false,
-                    tabBarIcon: ({ color }) => (
-                        <View
-                            style={{
-                                width: 60,
-                                height: 60,
-                                backgroundColor: "#007AFF",
-                                borderRadius: 30,
-                                justifyContent: "center",
-                                alignItems: "center",
-                                marginBottom: 10,
-                            }}
-                        >
-                            <MaterialCommunityIcons name="shopping" size={32} color="white" />
-                        </View>
-                    ),
-                }}
-            />
+                {/* Center Market Button */}
+                <Tabs.Screen
+                    name="stall"
+                    options={{
+                        headerShown: false,
+                        tabBarIcon: ({ color }) => (
+                            <View
+                                style={{
+                                    width: 60,
+                                    height: 60,
+                                    backgroundColor: "#007AFF",
+                                    borderRadius: 30,
+                                    justifyContent: "center",
+                                    alignItems: "center",
+                                    marginBottom: 10,
+                                }}
+                            >
+                                <MaterialCommunityIcons name="shopping" size={32} color="white" />
+                            </View>
+                        ),
+                    }}
+                />
 
-            <Tabs.Screen
-                name="Chats"
-                options={{
-                    headerShown: false,
-                    title: "Chats",
-                    tabBarIcon: ({ color }) => (
-                        <MaterialCommunityIcons name="android-messages" size={24} color={color} />
-                    ),
-                }}
-            />
-            <Tabs.Screen
-                name="profile"
-                options={{
-                    headerShown: false,
-                    title: "Profile",
-                    tabBarIcon: ({ color }) => (
-                        <FontAwesome name="user" color={color} size={28} />
-                    ),
-                }}
-            />
-        </Tabs>
+                <Tabs.Screen
+                    name="Chats"
+                    options={{
+                        headerShown: false,
+                        title: "Chats",
+                        tabBarIcon: ({ color }) => (
+                            <MaterialCommunityIcons name="android-messages" size={24} color='white' />
+                        ),
+                    }}
+                />
+                <Tabs.Screen
+                    name="profile"
+                    options={{
+                        headerShown: false,
+                        title: "Profile",
+                        tabBarIcon: ({ color }) => (
+                            <FontAwesome name="user" color='white' size={28} />
+                        ),
+                    }}
+                />
+            </Tabs>
+        </View>
     );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: "#1A2F23",
+    },
+});

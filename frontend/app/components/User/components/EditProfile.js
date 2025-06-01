@@ -6,7 +6,7 @@ import * as ImagePicker from 'expo-image-picker';
 import Constants from 'expo-constants';
 import { useDispatch, useSelector } from 'react-redux';
 import { updateUserAction } from '../../../(redux)/authSlice';
-import { useNavigation } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { updateUser } from '../../../(services)/api/Users/updateUserAPI';
 
@@ -22,6 +22,7 @@ const EditProfile = () => {
     const navigation = useNavigation();
     const { user } = useSelector((state) => state.auth);
     // console.log
+    const router = useRouter();
     const [image, setImage] = useState(
         user.user && user.user.image && user.user.image[0] ? user.user.image[0].url :
             (user.image && user.image[0] ? user.image[0].url : null)
@@ -45,11 +46,18 @@ const EditProfile = () => {
     }, [user]);
     return (
         <>
-            <StatusBar translucent backgroundColor="transparent" />
             <View style={styles.container}>
-                <View style={{ justifyContent: 'center' }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <AntDesign name="back" size={24} color="white" style={{ marginLeft: 25, fontWeight: 'bold', marginTop: 30, position: 'relative' }} />
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
+                        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                            <View style={styles.iconGroup}>
+                                <AntDesign name="back" size={24} color="white" />
+                            </View>
+                            <View style={{ marginLeft: 10 }}>
+                                <Text style={styles.greeting}>Edit </Text>
+                                <Text style={styles.greeting}>Profile</Text>
+                            </View>
+                        </View>
                     </TouchableOpacity>
                 </View>
                 <View style={styles.overlay}>
@@ -106,42 +114,48 @@ const EditProfile = () => {
                             touched,
                         }) => (
                             <View style={styles.form}>
-                                <Text style={{ fontSize: 20, fontWeight: 'bold', color: 'black', marginBottom: 10, textAlign: 'center' }}>EDIT PROFILE</Text>
-                                <View style={styles.imageContainer}>
-                                    <TouchableOpacity style={styles.imagePicker} onPress={pickImage}>
-                                        {image ? (
-                                            <Image source={{ uri: image }} style={styles.roundImage} />
-                                        ) : (
-                                            <>
-                                                <Text style={styles.placeholderText}>No Image</Text>
-                                                <Text style={styles.placeholderBelowText}>Select Image</Text>
-                                            </>
-                                        )}
-                                    </TouchableOpacity>
+                                <View style={styles.headerWrapper}>
+                                    <Text style={styles.header}>Edit Profile</Text>
                                 </View>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Name"
-                                    onChangeText={handleChange('name')}
-                                    onBlur={handleBlur('name')}
-                                    value={values.name}
-                                />
-                                {errors.name && touched.name && (
-                                    <Text style={styles.errorText}>{errors.name}</Text>
-                                )}
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="Input Email to Confirm"
-                                    onChangeText={handleChange('email')}
-                                    onBlur={handleBlur('email')}
-                                    value={values.email}
-                                    keyboardType="email-address"
-                                />
-                                {errors.email && touched.email && (
-                                    <Text style={styles.errorText}>{errors.email}</Text>
-                                )}
-                                <TouchableOpacity style={styles.button} onPress={handleSubmit}>
-                                    <Text style={styles.buttonText}>Update Profile</Text>
+
+                                <TouchableOpacity style={styles.imageBox} onPress={pickImage}>
+                                    {image ? (
+                                        <Image source={{ uri: image }} style={styles.image} />
+                                    ) : (
+                                        <View style={styles.imagePlaceholder}>
+                                            <AntDesign name="picture" size={40} color="black" />
+                                            <Text style={{ marginTop: 10 }}>Select Image</Text>
+                                        </View>
+                                    )}
+                                </TouchableOpacity>
+
+                                <View style={styles.inputRow}>
+                                    <View style={styles.inputWrapper}>
+                                        <Text style={styles.label}>Name</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Name"
+                                            onChangeText={handleChange('name')}
+                                            onBlur={handleBlur('name')}
+                                            value={values.name}
+                                        />
+                                    </View>
+
+                                    <View style={styles.inputWrapper}>
+                                        <Text style={styles.label}>Email</Text>
+                                        <TextInput
+                                            style={styles.input}
+                                            placeholder="Email"
+                                            onChangeText={handleChange('email')}
+                                            onBlur={handleBlur('email')}
+                                            value={values.email}
+                                            keyboardType="email-address"
+                                        />
+                                    </View>
+                                </View>
+
+                                <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
+                                    <Text style={styles.submitButtonText}>Submit</Text>
                                 </TouchableOpacity>
                             </View>
                         )}
@@ -157,24 +171,49 @@ export default EditProfile;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: Constants.statusBarHeight,
+        backgroundColor: '#E9FFF3'
     },
     backgroundImage: {
         flex: 1,
         resizeMode: 'cover',
     },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
+        padding: 20,
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+    },
     overlay: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
         padding: 16,
     },
     form: {
         width: "100%",
         borderRadius: 10,
         padding: 20,
-        marginBottom: 100,
-        justifyContent: 'center'
     },
     input: {
         height: 50,
@@ -188,6 +227,74 @@ const styles = StyleSheet.create({
     errorText: {
         color: "red",
         marginBottom: 16,
+    },
+    headerWrapper: {
+        backgroundColor: '#163020',
+        alignSelf: 'flex-start',
+        paddingHorizontal: 20,
+        paddingVertical: 6,
+        borderTopRightRadius: 20,
+        borderBottomRightRadius: 20,
+        marginBottom: 20,
+    },
+    header: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
+    },
+
+    imageBox: {
+        height: 150,
+        borderWidth: 1,
+        borderColor: '#ccc',
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 20,
+        width: '100%',
+        backgroundColor: '#fff',
+    },
+    image: {
+        width: '100%',
+        height: '100%',
+        resizeMode: 'cover',
+        borderRadius: 8,
+    },
+    imagePlaceholder: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+
+    inputRow: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        marginBottom: 20,
+    },
+    inputWrapper: {
+        flex: 1,
+        marginRight: 8,
+    },
+    label: {
+        marginBottom: 5,
+        fontWeight: 'bold',
+        color: '#333',
+    },
+    input: {
+        backgroundColor: '#e5e5e5',
+        padding: 10,
+        borderRadius: 5,
+    },
+    submitButton: {
+        backgroundColor: '#163020',
+        paddingVertical: 12,
+        alignItems: 'center',
+        borderRadius: 4,
+        marginTop: 10,
+    },
+    submitButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
+        fontSize: 16,
     },
     button: {
         height: 50,

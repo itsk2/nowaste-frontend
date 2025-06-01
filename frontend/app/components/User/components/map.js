@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, StatusBar } from 'react-native';
+import { View, StyleSheet, StatusBar, Image } from 'react-native';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
@@ -90,7 +90,12 @@ const Map = () => {
                 title="Your Location"
                 pinColor="blue"
 
-              />
+              >
+                <Image
+                  source={require('../../../../assets/sda-removebg-preview.png')}
+                  style={{ width: 40, height: 40, resizeMode: 'contain' }}
+                />
+              </Marker>
 
               <Marker
                 coordinate={destination}

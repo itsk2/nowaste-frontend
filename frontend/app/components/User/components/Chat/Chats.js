@@ -2,13 +2,14 @@ import React, { useEffect, useState } from 'react';
 import { StyleSheet, Text, View, FlatList, TouchableOpacity, Image } from 'react-native';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { db } from '../../../../../firebase/firebaseConfig';
-import { useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import { FontAwesome } from '@expo/vector-icons';
 import Footer from '../../../Footer';
 import Constants from 'expo-constants';
+import { Ionicons } from '@expo/vector-icons';
 
 const Chats = () => {
   const { user } = useSelector((state) => state.auth);
@@ -17,6 +18,7 @@ const Chats = () => {
   const [participantsInfo, setParticipantsInfo] = useState({});
   const [lastMessages, setLastMessages] = useState({}); // store last message per room
   const router = useRouter();
+  const navigation = useNavigation();
 
   useEffect(() => {
     if (!userId) return;
@@ -84,7 +86,7 @@ const Chats = () => {
           <View style={styles.headerRow}>
             <Text style={styles.name}>{receiver ? receiver.name : 'Unknown User'}</Text>
           </View>
-          <Text>Stall #: {receiver ? receiver.stall.stallNumber : 'Unknown User'}</Text>
+          <Text style={{ color: '#4CAF50' }}>Stall #: {receiver ? receiver.stall.stallNumber : 'Unknown User'}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -93,27 +95,34 @@ const Chats = () => {
   return (
     <>
       <View style={styles.container}>
-        <View style={{ backgroundColor: 'green', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
-          <View style={{ padding: 20, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' }}>
-            <FontAwesome name="comments" size={24} color="#fff" />
-            <Text style={{ color: 'white', fontSize: 20, marginLeft: 10 }}>Chat Heads</Text>
+        <View style={styles.headerContainer}>
+
+          <View style={{ backgroundColor: '#2A4535', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
+            <View style={{ padding: 20, flexDirection: 'row', }}>
+              <View style={{ marginRight: 90 }}>
+                <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
+                  <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                </TouchableOpacity>
+              </View>
+              <FontAwesome name="comments" size={24} color="#fff" />
+              <Text style={{ color: 'white', fontSize: 20, marginLeft: 10 }}>Chat Heads</Text>
+            </View>
           </View>
         </View>
-        {rooms.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Text style={styles.emptyText}>No chat rooms found.</Text>
-          </View>
-        ) : (
-          <FlatList
-            data={rooms}
-            keyExtractor={item => item.id}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-          />
-        )}
-      </View>
-      <View>
-        <Footer />
+        <View style={{ padding: 10, backgroundColor: '#E9FFF3', flex: 1 }}>
+          {rooms.length === 0 ? (
+            <View style={styles.emptyContainer}>
+              <Text style={styles.emptyText}>No chat rooms found.</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={rooms}
+              keyExtractor={item => item.id}
+              renderItem={renderItem}
+              showsVerticalScrollIndicator={false}
+            />
+          )}
+        </View>
       </View>
     </>
   );
@@ -124,9 +133,7 @@ export default Chats;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-    paddingTop: 35,
-    paddingTop: Constants.statusBarHeight,
+    backgroundColor: '#E9FFF3',
   },
   header: {
     fontSize: 22,
@@ -140,6 +147,10 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     borderBottomColor: '#eee',
     borderBottomWidth: 1,
+    backgroundColor: '#2A4535',
+    padding: 10,
+    borderRadius: 20,
+    marginBottom: 7
   },
   avatar: {
     width: 56,
@@ -160,7 +171,7 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 17,
     fontWeight: '600',
-    color: '#222',
+    color: 'white',
   },
   emptyContainer: {
     flex: 1,

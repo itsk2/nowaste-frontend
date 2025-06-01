@@ -5,8 +5,7 @@ import axios from 'axios';
 import { useSelector } from 'react-redux';
 import baseURL from '../../../../../assets/common/baseURL';
 import { useFocusEffect } from 'expo-router';
-import Entypo from '@expo/vector-icons/Entypo';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { Ionicons } from '@expo/vector-icons';
 
 const SeeStall = () => {
     const { stall } = useLocalSearchParams();
@@ -60,7 +59,7 @@ const SeeStall = () => {
             setTimeout(() => {
                 setShowModal(false);
                 navigation.goBack();
-            }, 2000);
+            }, 1500);
         } catch (error) {
             Alert.alert("Cannot Proceed", error.response?.data?.message);
         }
@@ -89,31 +88,24 @@ const SeeStall = () => {
     return (
         <SafeAreaView style={styles.safeArea}>
             <View style={styles.headerContainer}>
-                <View>
-                    <Text style={styles.greeting}>See</Text>
-                    <Text style={styles.name}>Stall Description</Text>
-                </View>
-                <View style={styles.iconGroup}>
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={() => router.push('components/User/components/MySack/mySack')}
-                    >
-                        <Entypo name="shopping-cart" size={18} color="#2BA84A" />
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.iconButton}
-                        onPress={() => router.push('components/User/components/Chat/Chats')}
-                    >
-                        <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={{
+                    padding: 8,
+                    borderRadius: 50,
+                }} onPress={() => navigation.goBack()}>
+                    <View style={{ justifyContent: 'center', alignItems: 'center', height: 90 }}>
+                        <View style={{ marginRight: 10, flexDirection: 'row', }}>
+                            <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                            <View style={{ marginTop: 5, marginLeft: 10 }}>
+                                <Text style={styles.greeting}>Stall <Text style={{ fontSize: 18, fontWeight: '500' }}>Information</Text></Text>
+                            </View>
+                        </View>
+                    </View>
+                </TouchableOpacity>
             </View>
             <FlatList
                 ListHeaderComponent={
                     <View style={styles.container}>
-                        <Text style={styles.chartTitle}>Predicted Waste Collection Schedule</Text>
-                        <View style={{ marginTop: 20, width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center', marginBottom: 15 }}>
+                        <View style={{ width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center', marginBottom: 15 }}>
                             <View style={styles.legendContainer}>
                                 <Text style={styles.text}>📅 Peak Collection: {getPeakDate()}</Text>
                             </View>
@@ -152,7 +144,22 @@ const SeeStall = () => {
                         </View>
                     </View>
                 )}
-                ListEmptyComponent={<Text style={styles.noDataText}>No sacks available</Text>}
+                ListEmptyComponent={
+                    <View style={{
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                    }}>
+                        <Text style={styles.emptyText}>No sacks available</Text>
+                        <Image
+                            source={require('../../../../../assets/no-sack-removebg-preview.png')}
+                            style={{
+                                width: 200,
+                                height: 200,
+                            }}
+                            resizeMode="contain"
+                        />
+                    </View>
+                }
             />
             <Modal
                 animationType="fade"
@@ -166,15 +173,6 @@ const SeeStall = () => {
                             <Text style={styles.checkmark}>✓</Text>
                         </View>
                         <Text style={styles.modalTitle}>Now Added To Your Sack!!</Text>
-                        <TouchableOpacity
-                            onPress={() => {
-                                setShowModal(false);
-                                navigation.goBack();
-                            }}
-                            style={styles.modalButton}
-                        >
-                            <Text style={styles.modalButtonText}>Proceed</Text>
-                        </TouchableOpacity>
                     </View>
                 </View>
             </Modal>
@@ -221,7 +219,6 @@ const styles = StyleSheet.create({
     },
     container: {
         padding: 20,
-        alignItems: 'center',
     },
     chartTitle: {
         fontSize: 16,

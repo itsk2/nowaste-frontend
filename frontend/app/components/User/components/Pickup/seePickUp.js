@@ -5,15 +5,13 @@ import { useSelector } from 'react-redux';
 import { Modal, TextInput } from 'react-native';
 import { AntDesign } from '@expo/vector-icons';
 import axios from 'axios';
-import { Ionicons } from '@expo/vector-icons';
 import baseURL from '../../../../../assets/common/baseURL';
+import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
+import { FontAwesome } from '@expo/vector-icons';
 import Foundation from '@expo/vector-icons/Foundation';
 import { generateRoomId } from '../../../../../utils/generateRoom';
-import { FontAwesome } from '@expo/vector-icons';
 import Map from '../map';
-import Entypo from '@expo/vector-icons/Entypo';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Constants from 'expo-constants';
 
 const SeePickUp = () => {
@@ -177,25 +175,19 @@ const SeePickUp = () => {
         <>
             <View style={styles.container}>
                 <View style={styles.headerContainer}>
-                    <View>
-                        <Text style={styles.greeting}>Pickup</Text>
-                        <Text style={styles.name}>Information</Text>
-                    </View>
-                    <View style={styles.iconGroup}>
-                        <TouchableOpacity
-                            style={styles.iconButton}
-                            onPress={() => router.push('components/User/components/MySack/mySack')}
-                        >
-                            <Entypo name="shopping-cart" size={18} color="#2BA84A" />
-                        </TouchableOpacity>
-
-                        <TouchableOpacity
-                            style={styles.iconButton}
-                            onPress={() => router.push('components/User/components/Chat/Chats')}
-                        >
-                            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
-                        </TouchableOpacity>
-                    </View>
+                    <TouchableOpacity style={{
+                        padding: 8,
+                        borderRadius: 50,
+                    }} onPress={() => navigation.goBack()}>
+                        <View style={{ justifyContent: 'center', alignItems: 'center', height: 90 }}>
+                            <View style={{ marginRight: 10, flexDirection: 'row', }}>
+                                <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                                <View style={{ marginTop: 5, marginLeft: 10 }}>
+                                    <Text style={styles.greeting}>Pickup <Text style={{ fontSize: 18, fontWeight: '500' }}>Information</Text></Text>
+                                </View>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
                 </View>
                 <FlatList
                     data={pickup.sacks}
@@ -468,15 +460,6 @@ const SeePickUp = () => {
                                             <Text style={styles.checkmark}>✓</Text>
                                         </View>
                                         <Text style={styles.modalTitle}>Pickup: Get Sacks Now!!</Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setShowModal(false);
-                                                navigation.goBack();
-                                            }}
-                                            style={styles.modalButton}
-                                        >
-                                            <Text style={styles.modalButtonText}>Proceed</Text>
-                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             </Modal>
@@ -493,15 +476,6 @@ const SeePickUp = () => {
                                             <Text style={styles.checkmark}>✓</Text>
                                         </View>
                                         <Text style={styles.modalTitle}>Pickup Waste Completed!!</Text>
-                                        <TouchableOpacity
-                                            onPress={() => {
-                                                setCompleteModal(false);
-                                                navigation.goBack();
-                                            }}
-                                            style={styles.modalButton}
-                                        >
-                                            <Text style={styles.modalButtonText}>Proceed</Text>
-                                        </TouchableOpacity>
                                     </View>
                                 </View>
                             </Modal>

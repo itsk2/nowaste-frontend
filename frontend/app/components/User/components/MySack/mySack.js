@@ -8,16 +8,18 @@ import Constants from 'expo-constants';
 import { useSelector } from 'react-redux';
 import baseURL from '../../../../../assets/common/baseURL';
 import axios from 'axios';
-import { useFocusEffect, useNavigation } from 'expo-router';
+import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { FontAwesome } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
-import Footer from '../../../Footer';
+import { Ionicons } from '@expo/vector-icons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const MySack = () => {
     const { user } = useSelector((state) => state.auth);
     const userId = user.user._id;
     const navigation = useNavigation();
     const [mySack, setMySacks] = useState([]);
+    const router = useRouter();
 
     const addToSackId = mySack.length > 0 ? mySack[0]._id : undefined;
     const totalKilos = mySack.reduce((sum, item) => {
@@ -51,7 +53,7 @@ const MySack = () => {
             setTimeout(() => {
                 setShowModal(false);
                 navigation.goBack();
-            }, 2000);
+            }, 1500);
         } catch (error) {
             console.error("Error picking up sacks:", error);
         }
@@ -60,17 +62,33 @@ const MySack = () => {
     return (
         <>
             <View style={styles.container}>
-                <View style={styles.overlay}>
-                    {/* Header */}
-                    <View style={styles.headerContainer}>
-                        <Text style={styles.headerTitle}>My Sacks</Text>
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity style={{
+                        padding: 8,
+                        borderRadius: 50,
+                    }} onPress={() => navigation.goBack()}>
+                        <View style={{ justifyContent: 'center', alignItems: 'center', height: 90 }}>
+                            <View style={{ marginRight: 10, flexDirection: 'row', }}>
+                                <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                                <View style={{ marginTop: 5, marginLeft: 10 }}>
+                                    <Text style={styles.greeting}>My <Text style={styles.name}>Sacks</Text></Text>
+                                </View>
+                            </View>
+                        </View>
+                    </TouchableOpacity>
+
+                    <View style={styles.iconGroup}>
+
                         <TouchableOpacity
-                            style={styles.headerButton}
-                            onPress={() => navigation.goBack()}
+                            style={styles.iconButton}
+                            onPress={() => router.push('components/User/components/Chat/Chats')}
                         >
-                            <Text style={styles.headerButtonText}>Back to Available</Text>
+                            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
                         </TouchableOpacity>
                     </View>
+                </View>
+                <View style={styles.overlay}>
+                    {/* Header */}
                     <View style={styles.totalCard}>
                         <MaterialCommunityIcons name="sack" size={40} color="#fff" />
                         <Text style={styles.totalWeight}>{totalKilos} kg</Text>
@@ -81,7 +99,22 @@ const MySack = () => {
                         data={mySack}
                         keyExtractor={(item) => item._id}
                         contentContainerStyle={styles.list}
-                        ListEmptyComponent={<Text style={styles.emptyText}>No sacks added.</Text>}
+                        ListEmptyComponent={
+                            <View style={{
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                            }}>
+                                <Text style={styles.emptyText}>No sacks available</Text>
+                                <Image
+                                    source={require('../../../../../assets/no-sack-removebg-preview.png')}
+                                    style={{
+                                        width: 300,
+                                        height: 300,
+                                    }}
+                                    resizeMode="contain"
+                                />
+                            </View>
+                        }
                         renderItem={({ item }) => item.sacks.map((sack, index) => (
                             <View key={index} style={styles.card}>
                                 <Image source={{ uri: sack.images?.[0]?.url }} style={styles.cardImage} />
@@ -98,11 +131,13 @@ const MySack = () => {
                         ))}
                     />
 
-                    <View style={styles.footer}>
-                        <TouchableOpacity style={styles.pickupButton} onPress={handlePickUpSacks}>
-                            <Text style={styles.pickupText}>Pick up</Text>
-                        </TouchableOpacity>
-                    </View>
+                    {mySack.length > 0 && (
+                        <View style={styles.footer}>
+                            <TouchableOpacity style={styles.pickupButton} onPress={handlePickUpSacks}>
+                                <Text style={styles.pickupText}>Pick up</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
                     <Modal
                         animationType="fade"
                         transparent={true}
@@ -115,20 +150,11 @@ const MySack = () => {
                                     <Text style={styles.checkmark}>✓</Text>
                                 </View>
                                 <Text style={styles.modalTitle}>Pickup Requested</Text>
-                                <TouchableOpacity
-                                    onPress={() => {
-                                        setShowModal(false);
-                                        navigation.goBack();
-                                    }}
-                                    style={styles.modalButton}
-                                >
-                                    <Text style={styles.modalButtonText}>Go to pickups</Text>
-                                </TouchableOpacity>
                             </View>
                         </View>
                     </Modal>
                 </View>
-            </View>
+            </View >
         </>
     );
 };
@@ -138,7 +164,7 @@ export default MySack;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
+        backgroundColor: '#E9FFF3', // Optional dark overlay for readability
     },
     header: {
         fontSize: 30,
@@ -261,7 +287,7 @@ const styles = StyleSheet.create({
         textAlign: 'center',
         marginTop: 50,
         fontSize: 16,
-        color: 'white',
+        color: '#black',
     },
     background: {
         flex: 1,
@@ -270,8 +296,7 @@ const styles = StyleSheet.create({
     },
     overlay: {
         flex: 1,
-        paddingTop: Constants.statusBarHeight,
-        paddingHorizontal: 15,
+        padding: 10
     },
 
     headerContainer: {
@@ -306,5 +331,35 @@ const styles = StyleSheet.create({
         fontSize: 12,
         fontWeight: 'bold',
         color: '#1B1B1B',
+    },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
+        padding: 20,
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: '#E8F5E9',
     },
 });

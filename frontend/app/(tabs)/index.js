@@ -1,25 +1,55 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, Animated, TouchableOpacity } from 'react-native';
-import { useEffect, useRef } from 'react';
+import React, { useCallback, useState, useEffect, useRef } from 'react';
+import { View, Text, ScrollView, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../assets/common/baseURL';
 import { useFocusEffect, useRouter } from 'expo-router';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Constants from "expo-constants";
+import { BarChart } from 'react-native-gifted-charts';
 
-const index = () => {
+const Index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user } = useSelector((state) => state.auth);
-  const userId = user?._id || user?.user?._id
+  const userId = user?._id || user?.user?._id;
   const router = useRouter();
 
-
+  const [monthlyWasteData, setMonthlyWasteData] = useState([]);
   const [wasteCollected, setWasteCollected] = useState(0);
   const [monthlyWasteCollected, setMonthlyWasteCollected] = useState(0);
   const [activePickupRequest, setActivePickupRequest] = useState(0);
   const [notifications, setNotifications] = useState([]);
+
+  // Transform data for BarChart (dummy example for last 6 months)
+  const prepareChartData = (pickups) => {
+    // Get last 6 months labels and sum kilos
+    const now = new Date();
+    const monthsLabels = [];
+    const dataMap = new Map();
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = date.toLocaleString('default', { month: 'short' });
+      monthsLabels.push(label);
+      dataMap.set(label, 0);
+    }
+
+    pickups.forEach(pickup => {
+      if (pickup.status === 'completed') {
+        const pickupDate = new Date(pickup.pickupTimestamp);
+        const label = pickupDate.toLocaleString('default', { month: 'short' });
+        if (dataMap.has(label)) {
+          dataMap.set(label, dataMap.get(label) + parseFloat(pickup.totalKilo || 0));
+        }
+      }
+    });
+
+    return monthsLabels.map(label => ({
+      value: dataMap.get(label),
+      label,
+      frontColor: '#2BA84A',
+    }));
+  };
 
   const fetchPickupSacks = async () => {
     try {
@@ -51,7 +81,10 @@ const index = () => {
 
       setWasteCollected(total);
       setMonthlyWasteCollected(thisMonthTotal);
-      setActivePickupRequest(requestedPickups.length)
+      setActivePickupRequest(requestedPickups.length);
+
+      // Set chart data for last 6 months
+      setMonthlyWasteData(prepareChartData(pickups));
     } catch (error) {
       console.error('Error getting Pickups:', error.message);
     }
@@ -60,10 +93,7 @@ const index = () => {
   const fetchNotifications = async () => {
     try {
       const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
-
       const newSackNotifications = data.notifications.filter(notification => notification.type === 'new_sack');
-
-
       setNotifications(newSackNotifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -88,9 +118,6 @@ const index = () => {
       return () => clearInterval(interval);
     }, [userId])
   );
-  console.log(user, 'USER')
-
-
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -99,9 +126,11 @@ const index = () => {
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
+
   if (!user) {
-    return null; // Or show a loading spinner / fallback UI
+    return null;
   }
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerContainer}>
@@ -125,14 +154,39 @@ const index = () => {
           </TouchableOpacity>
         </View>
       </View>
+
+      {/* Chart Container */}
+      <View style={styles.chartCard}>
+        <Text style={styles.chartTitle}>Monthly Waste Collected (kg)</Text>
+        <BarChart
+          data={monthlyWasteData}
+          barWidth={16}
+          spacing={28}
+          height={220}
+          initialSpacing={10}
+          roundedTop
+          yAxisTextStyle={styles.axisText}
+          xAxisTextStyle={styles.axisText}
+          noOfSections={5}
+          maxValue={Math.max(...monthlyWasteData.map(d => d.value), 20)}
+          labelsExtraHeight={15}
+          frontColor="#2BA84A"
+          showVerticalLines
+        />
+      </View>
+
       <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Total Collected</Text>
-          <Text style={styles.statValue}>{wasteCollected} <Text style={styles.unit}>kg</Text></Text>
+          <Text style={styles.statValue}>
+            {wasteCollected} <Text style={styles.unit}>kg</Text>
+          </Text>
         </View>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Monthly Average</Text>
-          <Text style={styles.statValue}>{monthlyWasteCollected} <Text style={styles.unit}>kg</Text></Text>
+          <Text style={styles.statValue}>
+            {monthlyWasteCollected} <Text style={styles.unit}>kg</Text>
+          </Text>
         </View>
       </View>
       <View style={[styles.statCard, styles.fullWidthCard]}>
@@ -163,115 +217,9 @@ const index = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)', // Optional dark overlay for readability
+    backgroundColor: '#E9FFF3', // subtle light background
   },
 
-  header: {
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  greeting: {
-    fontSize: 18,
-    fontWeight: "500",
-    color: "#333",
-  },
-  name: {
-    fontSize: 26,
-    fontWeight: "700",
-    color: "#111",
-  },
-  subtitle: {
-    color: "#666",
-    fontSize: 14,
-    textAlign: "center",
-    marginTop: 8,
-    paddingHorizontal: 10,
-  },
-
-  statsGrid: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 15,
-  },
-  statCard: {
-    flex: 1,
-    backgroundColor: "#fff",
-    padding: 18,
-    borderRadius: 16,
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
-    marginHorizontal: 5,
-  },
-  fullWidthCard: {
-    marginHorizontal: 0,
-    marginTop: 10,
-  },
-  statLabel: {
-    fontSize: 14,
-    color: "#6B7280",
-    marginBottom: 6,
-  },
-  statValue: {
-    fontSize: 24,
-    fontWeight: "bold",
-    color: "#111827",
-  },
-  unit: {
-    fontSize: 14,
-    fontWeight: "400",
-    color: "#6B7280",
-  },
-
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginTop: 20,
-    marginBottom: 10,
-    color: "#111827",
-  },
-
-  notificationCard: {
-    flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 16,
-    marginBottom: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  notificationLeft: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
-  },
-  notificationIcon: {
-    backgroundColor: '#D1FAE5',
-    padding: 10,
-    borderRadius: 999,
-  },
-  iconText: {
-    fontSize: 20,
-  },
-  notificationRight: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  notificationMessage: {
-    fontSize: 15,
-    fontWeight: '500',
-    color: '#1F2937',
-    marginBottom: 4,
-  },
-  notificationTime: {
-    fontSize: 12,
-    color: '#9CA3AF',
-  },
   headerContainer: {
     marginBottom: 15,
     flexDirection: 'row',
@@ -302,7 +250,108 @@ const styles = StyleSheet.create({
     borderRadius: 50,
     backgroundColor: '#E8F5E9',
   },
+
+  chartCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2BA84A',
+    marginBottom: 14,
+    textAlign: 'center',
+  },
+  axisText: {
+    fontSize: 13,
+    color: '#4B5563',
+    fontWeight: '600',
+  },
+
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    gap: 12,
+  },
+  statCard: {
+    flex: 1,
+    padding: 18,
+    backgroundColor: '#2A4535',
+    borderRadius: 16,
+    marginVertical: 8,
+    elevation: 2,
+  },
+  fullWidthCard: {
+    marginHorizontal: 16,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2BA84A',
+  },
+  unit: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#fff',
+  },
+
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginHorizontal: 16,
+    marginTop: 20,
+    marginBottom: 10,
+    color: '#2BA84A',
+  },
+  notificationCard: {
+    flexDirection: 'row',
+    padding: 14,
+    backgroundColor: '#2A4535',
+    marginHorizontal: 16,
+    marginBottom: 10,
+    borderRadius: 12,
+    elevation: 2,
+  },
+  notificationLeft: {
+    marginRight: 10,
+    justifyContent: 'center',
+  },
+  notificationIcon: {
+    backgroundColor: '#DCFCE7',
+    padding: 10,
+    borderRadius: 999,
+  },
+  iconText: {
+    fontSize: 16,
+  },
+  notificationRight: {
+    flex: 1,
+  },
+  notificationMessage: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#fff',
+    marginBottom: 4,
+  },
+  notificationTime: {
+    fontSize: 12,
+    color: '#fff',
+  },
 });
 
-
-export default index;
+export default Index;

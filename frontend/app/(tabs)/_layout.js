@@ -30,7 +30,7 @@ export default function RootLayout() {
             <Tabs screenOptions={{
                 headerShown: false, tabBarShowLabel: false,
                 tabBarStyle: {
-                    backgroundColor: '#355E3B', // also set the tab bar background
+                    backgroundColor: '#1A2F23', // also set the tab bar background
                 },
             }}>
                 <Tabs.Screen
@@ -95,6 +95,6 @@ export default function RootLayout() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: "#355E3B", // your desired background color
+        backgroundColor: "#1A2F23",
     },
 });

@@ -3,47 +3,45 @@ import {
     StyleSheet,
     Text,
     View,
-    StatusBar,
     TouchableOpacity,
     Image,
-    ImageBackground,
-    Switch
+    ScrollView,
+    Switch,
 } from "react-native";
 import Constants from "expo-constants";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import Icon from "react-native-vector-icons/FontAwesome";
+import { FontAwesome } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import axios from "axios";
+import baseURL from "../../../../assets/common/baseURL";
 import { logoutAction } from "../../../(redux)/authSlice";
-import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
-import axios from 'axios';
-import baseURL from '../../../../assets/common/baseURL';
 
 const Profile = () => {
     const router = useRouter();
     const dispatch = useDispatch();
-    const { user } = useSelector((state) => state.auth);
-    const sellerId = user?.user?._id
     const navigation = useNavigation();
+    const { user } = useSelector((state) => state.auth);
+    const [userData, setUser] = useState([]);
     const [stallStatus, setStallStatus] = useState(user?.user?.stall?.status === "open");
-    const [userData, setUser] = useState([])
 
     const handleLogout = () => {
         dispatch(logoutAction());
         router.replace("/auth/login");
     };
+
     const toggleStallStatus = async () => {
         const newStatus = stallStatus ? "closed" : "open";
         setStallStatus(!stallStatus);
 
         try {
-            const response = await axios.put(`${baseURL}/stall-status/${sellerId}`, {
+            await axios.put(`${baseURL}/stall-status/${user?.user?._id}`, {
                 status: newStatus,
             });
-
-            console.log("Updated Stall Status:", response.data);
         } catch (error) {
             console.error("Error updating stall status:", error);
-            setStallStatus(stallStatus);
+            setStallStatus(stallStatus); // revert if failed
         }
     };
 
@@ -52,193 +50,175 @@ const Profile = () => {
             const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
             setUser(data.data.user);
         } catch (error) {
-            console.error("Error fetching predicted waste data:", error);
+            console.error("Error fetching user:", error);
         }
     };
-    // console.log(user?.user?._id)
+
     useFocusEffect(
         useCallback(() => {
-            if (user.user._id) {
+            if (user?.user?._id) {
                 fetchUser();
                 const interval = setInterval(() => {
                     fetchUser();
                 }, 3000);
                 return () => clearInterval(interval);
             }
-        }, [user.user._id])
+        }, [user?.user?._id])
     );
 
-
-    // console.log(user)
     return (
-        <>
-            <StatusBar translucent backgroundColor={"transparent"} />
-            <View style={styles.background}>
-                <View style={styles.container}>
-                    <View style={styles.card}>
-                        <View style={styles.header}>
-                            {userData?.avatar?.url ? (
-                                <Image
-                                    source={{ uri: userData.avatar.url }}
-                                    style={styles.avatar}
-                                />
-                            ) : null}
-                            <View>
-                                <Text style={styles.name}>{user?.user?.name || userData?.name || "John Smith Meu"}</Text>
-                                <Text style={styles.country}>{user?.user?.address?.city || userData?.address?.city || 'nothing'}</Text>
-                            </View>
-                        </View>
-                        <View style={styles.actions}>
-                            <TouchableOpacity style={styles.actionButton}>
-                                <Icon name="phone" size={20} color="#000" />
-                                <Text style={styles.actionText}>Call Us</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={[styles.actionButton, styles.mailButton]}>
-                                <Icon name="envelope" size={20} color="#fff" />
-                                <Text style={[styles.actionText, { color: "#fff" }]}>Mail Us</Text>
-                            </TouchableOpacity>
-                        </View>
-                        <View style={styles.menu}>
-                            <TouchableOpacity style={styles.menuItem}
-                                onPress={() => router.push({
-                                    pathname: "/components/User/components/map",
-                                })}
-                            >
-                                <Icon name="map-marker" size={20} color="#000" />
-                                <Text style={styles.menuText}>Location</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.menuItem}
-                                onPress={() => navigation.navigate('components/User/components/EditProfile', { user })}
-                            >
-                                <Icon name="user" size={20} color="#000" />
-                                <Text style={styles.menuText}>Profile</Text>
-                            </TouchableOpacity>
-                            {/* <TouchableOpacity style={styles.menuItem}
-                                onPress={() => navigation.navigate('components/User/addAddress', { user })}
-                            >
-                                <Icon name="book" size={20} color="#000" />
-                                <Text style={styles.menuText}>Address Book</Text>
-                            </TouchableOpacity> */}
-                            <TouchableOpacity style={styles.menuItem}>
-                                <Icon name="info-circle" size={20} color="#000" />
-                                <Text style={styles.menuText}>About Us</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.menuItem}>
-                                <Icon name="question-circle" size={20} color="#000" />
-                                <Text style={styles.menuText}>FAQ</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.menuItem}>
-                                <FontAwesome6 name="store" size={20} color="black" />
-                                <Text style={styles.menuText}>Store Status</Text>
-                                <Switch
-                                    value={stallStatus}
-                                    onValueChange={toggleStallStatus}
-                                />
-                            </TouchableOpacity>
-                        </View>
-                        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-                            <Text style={styles.logoutText}>Sign Out</Text>
-                            <Icon name="sign-out" size={20} color="#fff" />
-                        </TouchableOpacity>
-                    </View>
+        <View style={styles.screen}>
+            <View style={styles.headerContainer}>
+                <View style={styles.profileImageWrapper}>
+                    {userData?.avatar?.url ? (
+                        <Image source={{ uri: userData.avatar.url }} style={styles.avatar} />
+                    ) : (
+                        <View style={styles.placeholderAvatar} />
+                    )}
+                </View>
+                <Text style={styles.name}>{userData?.name || "Market Vendor"}</Text>
+                <Text style={styles.email}>{userData?.email || "vendor@gmail.com"}</Text>
+                <Text style={styles.role}>
+                    {userData?.stall?.status ? `Stall is ${userData?.stall?.status}` : "No stall status"}
+                </Text>
+                <View style={styles.switchContainer}>
+                    <Text style={styles.switchLabel}>{stallStatus ? "Open" : "Closed"}</Text>
+                    <Switch
+                        value={stallStatus}
+                        onValueChange={toggleStallStatus}
+                        thumbColor={stallStatus ? "#5af58c" : "#f25f5f"}
+                    />
                 </View>
             </View>
-        </>
+
+            <ScrollView contentContainerStyle={styles.bodyContainer}>
+                <View style={styles.menuCard}>
+                    <MenuItem
+                        icon="user"
+                        label="Edit Profile"
+                        onPress={() =>
+                            navigation.navigate("components/User/components/EditProfile", { user })
+                        }
+                    />
+                    <MenuItem
+                        icon="map"
+                        label="Location"
+                        onPress={() =>
+                            router.push({
+                                pathname: "/components/User/components/map",
+                            })
+                        }
+                    />
+                    <MenuItem
+                        iconLib={AntDesign}
+                        icon="notification"
+                        label="Notifications"
+                        onPress={() =>
+                            navigation.navigate("components/Vendor/components/Notification/notification")
+                        }
+                    />
+                    <MenuItem icon="sign-out" label="Log out" onPress={handleLogout} />
+                </View>
+            </ScrollView>
+        </View>
     );
 };
 
-export default Profile;
+const MenuItem = ({ iconLib: Icon = FontAwesome, icon, label, onPress }) => (
+    <TouchableOpacity style={styles.menuItem} onPress={onPress}>
+        <Icon name={icon} size={20} color="#fff" />
+        <Text style={styles.menuLabel}>{label}</Text>
+        <FontAwesome name="angle-right" size={20} color="#fff" style={styles.menuArrow} />
+    </TouchableOpacity>
+);
 
 const styles = StyleSheet.create({
-    background: {
+    screen: {
         flex: 1,
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: '#317256'
+        backgroundColor: "#eafff2",
     },
-    container: {
-        width: "100%",
+    headerContainer: {
+        backgroundColor: "#1e463a",
+        paddingTop:40,
+        paddingBottom: 60,
         alignItems: "center",
-        paddingHorizontal: 20,
+        borderBottomLeftRadius: 50,
+        borderBottomRightRadius: 50,
     },
-    card: {
+    profileImageWrapper: {
+        width: 90,
+        height: 90,
+        borderRadius: 45,
         backgroundColor: "#fff",
-        width: "100%",
-        padding: 20,
-        borderRadius: 20,
-        elevation: 5,
-        shadowColor: "#000",
-        shadowOpacity: 0.2,
-        shadowRadius: 10,
-        shadowOffset: { width: 0, height: 5 },
-    },
-    header: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 20,
+        marginBottom: 10,
+        overflow: "hidden",
     },
     avatar: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        marginRight: 15,
+        width: "100%",
+        height: "100%",
+    },
+    placeholderAvatar: {
+        width: "100%",
+        height: "100%",
+        backgroundColor: "#ccc",
     },
     name: {
         fontSize: 20,
         fontWeight: "bold",
+        color: "#fff",
+        marginTop: 5,
     },
-    country: {
-        fontSize: 16,
-        color: "gray",
+    email: {
+        fontSize: 14,
+        color: "#d4d4d4",
+        marginVertical: 2,
     },
-    actions: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        marginVertical: 10,
+    role: {
+        fontSize: 14,
+        color: "#a5d6a7",
+        fontStyle: "italic",
     },
-    actionButton: {
+    switchContainer: {
         flexDirection: "row",
         alignItems: "center",
-        padding: 10,
-        borderRadius: 5,
-        backgroundColor: "#fff",
-        flex: 1,
-        justifyContent: "center",
-        marginHorizontal: 5,
+        marginTop: 10,
     },
-    mailButton: {
-        backgroundColor: "#e91e63",
-    },
-    actionText: {
-        marginLeft: 5,
+    switchLabel: {
+        color: "#fff",
+        marginRight: 10,
         fontSize: 16,
     },
-    menu: {
-        marginTop: 10,
+    bodyContainer: {
+        padding: 20,
+        alignItems: "center",
+    },
+    menuCard: {
+        backgroundColor: "#1e463a",
+        borderRadius: 20,
+        width: "100%",
+        paddingVertical: 10,
+        paddingHorizontal: 15,
+        elevation: 4,
+        shadowColor: "#000",
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
     },
     menuItem: {
         flexDirection: "row",
         alignItems: "center",
         paddingVertical: 15,
+        borderBottomColor: "#2e6e5a",
         borderBottomWidth: 1,
-        borderBottomColor: "#ddd",
     },
-    menuText: {
-        fontSize: 18,
-        marginLeft: 10,
-    },
-    logoutButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        backgroundColor: "#e91e63",
-        padding: 15,
-        borderRadius: 10,
-        justifyContent: "center",
-        marginTop: 40,
-    },
-    logoutText: {
+    menuLabel: {
+        flex: 1,
         color: "#fff",
-        fontSize: 18,
-        marginRight: 10,
+        fontSize: 16,
+        marginLeft: 15,
+    },
+    menuArrow: {
+        opacity: 0.5,
     },
 });
+
+export default Profile;

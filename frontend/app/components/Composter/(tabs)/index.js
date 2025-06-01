@@ -1,20 +1,55 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, Animated } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { useEffect, useRef } from 'react';
 import baseURL from '../../../../assets/common/baseURL';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
+import Entypo from '@expo/vector-icons/Entypo';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { BarChart } from 'react-native-gifted-charts';
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user } = useSelector((state) => state.auth);
   const userId = user?._id || user?.user?._id;
+  const router = useRouter()
+  const [monthlyWasteData, setMonthlyWasteData] = useState([]);
   const [wasteCollected, setWasteCollected] = useState(0);
   const [monthlyWasteCollected, setMonthlyWasteCollected] = useState(0);
   const [activePickupRequest, setActivePickupRequest] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
+  // Transform data for BarChart (dummy example for last 6 months)
+  const prepareChartData = (pickups) => {
+    // Get last 6 months labels and sum kilos
+    const now = new Date();
+    const monthsLabels = [];
+    const dataMap = new Map();
+
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const label = date.toLocaleString('default', { month: 'short' });
+      monthsLabels.push(label);
+      dataMap.set(label, 0);
+    }
+
+    pickups.forEach(pickup => {
+      if (pickup.status === 'completed') {
+        const pickupDate = new Date(pickup.pickupTimestamp);
+        const label = pickupDate.toLocaleString('default', { month: 'short' });
+        if (dataMap.has(label)) {
+          dataMap.set(label, dataMap.get(label) + parseFloat(pickup.totalKilo || 0));
+        }
+      }
+    });
+
+    return monthsLabels.map(label => ({
+      value: dataMap.get(label),
+      label,
+      frontColor: '#2BA84A',
+    }));
+  };
 
   const fetchPickupSacks = async () => {
     try {
@@ -47,6 +82,8 @@ const index = () => {
       setWasteCollected(total);
       setMonthlyWasteCollected(thisMonthTotal);
       setActivePickupRequest(requestedPickups.length)
+      setMonthlyWasteData(prepareChartData(pickups));
+
     } catch (error) {
       console.error('Error getting Pickups:', error.message);
     }
@@ -65,7 +102,7 @@ const index = () => {
     try {
       const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
       const spoiledNotifications = data.notifications.filter(notification => notification.type === 'spoiled');
-      console.log(spoiledNotifications);
+      // console.log(spoiledNotifications);
       setNotifications(spoiledNotifications);
     } catch (error) {
       console.error("Error fetching notifications:", error);
@@ -86,11 +123,10 @@ const index = () => {
     }, [userId])
   );
 
-
   useEffect(() => {
     fetchPickupSacks();
   }, [userId]);
-  console.log(notifications, 'Notif')
+  // console.log(notifications, 'Notif')
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -101,35 +137,72 @@ const index = () => {
   }, [fadeAnim]);
 
   return (
-    <ScrollView style={styles.container}
-      contentContainerStyle={{ padding: 20, paddingBottom: 25 }} // allow scrolling past bottom
-
-    >
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Welcome,</Text>
-        <Text style={styles.name}>{user.user.name}</Text>
-        <Text style={styles.subtitle}>
-          Track and manage your waste collections efficiently
-        </Text>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 25 }}>
+      {/* Header */}
+      <View style={styles.headerContainer}>
+        <View>
+          <Text style={styles.greeting}>Welcome</Text>
+          <Text style={styles.name}>{user?.user?.name}</Text>
+        </View>
+        <View style={styles.iconGroup}>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/MySack/mySack')}
+          >
+            <Entypo name="shopping-cart" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/Chat/Chats')}
+          >
+            <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <View style={styles.statsContainer}>
+      {/* Chart */}
+      <View style={styles.chartCard}>
+        <Text style={styles.chartTitle}>Monthly Waste Collected (kg)</Text>
+        <BarChart
+          data={monthlyWasteData}
+          barWidth={16}
+          spacing={28}
+          height={220}
+          initialSpacing={10}
+          roundedTop
+          yAxisTextStyle={styles.axisText}
+          xAxisTextStyle={styles.axisText}
+          noOfSections={5}
+          maxValue={Math.max(...monthlyWasteData.map(d => d.value), 20)}
+          labelsExtraHeight={15}
+          frontColor="#2BA84A"
+          showVerticalLines
+        />
+      </View>
+
+      {/* Stats */}
+      <View style={styles.statsGrid}>
         <View style={styles.statCard}>
           <Text style={styles.statLabel}>Total Collected</Text>
-          <Text style={styles.statValue}>{wasteCollected} <Text style={styles.unit}>kg</Text></Text>
+          <Text style={styles.statValue}>
+            {wasteCollected} <Text style={styles.unit}>kg</Text>
+          </Text>
         </View>
         <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Monthly Waste</Text>
-          <Text style={styles.statValue}>{monthlyWasteCollected} <Text style={styles.unit}>kg</Text></Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Active Pickup Requests</Text>
-          <Text style={styles.statValue}>{activePickupRequest}</Text>
+          <Text style={styles.statLabel}>Monthly Average</Text>
+          <Text style={styles.statValue}>
+            {monthlyWasteCollected} <Text style={styles.unit}>kg</Text>
+          </Text>
         </View>
       </View>
+      <View style={[styles.statCard, styles.fullWidthCard]}>
+        <Text style={styles.statLabel}>Active Requests</Text>
+        <Text style={styles.statValue}>{activePickupRequest}</Text>
+      </View>
 
+      {/* Notifications */}
       <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
-      {notifications.map((notification, idx) => (
+      {notifications.slice(0, 3).map((notification, idx) => (
         <View key={notification._id || idx} style={styles.notificationCard}>
           <View style={styles.notificationLeft}>
             <View style={styles.notificationIcon}>
@@ -145,119 +218,154 @@ const index = () => {
         </View>
       ))}
     </ScrollView>
-
   );
+
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f8f8" },
-  header: { marginBottom: 20 },
-  greeting: { fontSize: 20, fontWeight: "600" },
-  name: { fontSize: 24, fontWeight: "bold", marginBottom: 5 },
-  subtitle: { color: "#666", fontSize: 14 },
+  container: {
+    flex: 1,
+    backgroundColor: '#E9FFF3',
+  },
 
-  statsContainer: {
-    flexDirection: "column",
-    gap: 15,
+  // Header
+  headerContainer: {
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1A2F23',
+    padding: 20,
+    height: 77,
+  },
+  greeting: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  name: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#2BA84A',
+    marginVertical: 4,
+    fontFamily: 'Inter-Medium',
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: '#E8F5E9',
+  },
+
+  // Chart
+  chartCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    paddingVertical: 20,
+    paddingHorizontal: 16,
+    marginHorizontal: 16,
     marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
+    elevation: 5,
+  },
+  chartTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#2BA84A',
+    marginBottom: 14,
+    textAlign: 'center',
+  },
+  axisText: {
+    fontSize: 13,
+    color: '#4B5563',
+    fontWeight: '600',
+  },
+
+  // Stats
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    gap: 12,
   },
   statCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 15,
+    flex: 1,
+    padding: 18,
+    backgroundColor: '#2A4535',
+    borderRadius: 16,
+    marginVertical: 8,
     elevation: 2,
   },
-  statLabel: { color: "#666", fontSize: 14 },
-  statValue: { fontSize: 22, fontWeight: "bold" },
-  unit: { fontSize: 14, fontWeight: "400" },
+  fullWidthCard: {
+    marginHorizontal: 16,
+  },
+  statLabel: {
+    fontSize: 14,
+    color: '#fff',
+    marginBottom: 4,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#2BA84A',
+  },
+  unit: {
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#fff',
+  },
 
-  quickActionsTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-  primaryButton: {
-    backgroundColor: "#2BA84A",
-    padding: 15,
-    borderRadius: 25,
-    alignItems: "center",
+  // Section Title
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    marginHorizontal: 16,
+    marginTop: 20,
     marginBottom: 10,
+    color: '#2BA84A',
   },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  outlineButton: {
-    borderColor: "#2BA84A",
-    borderWidth: 1.5,
-    padding: 15,
-    borderRadius: 25,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  outlineButtonText: { color: "#2BA84A", fontWeight: "bold" },
 
-  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-
-  sackItem: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-    borderLeftWidth: 5,
-    borderLeftColor: "#2BA84A",
-  },
-  sackInfo: { flexDirection: "row", alignItems: "center" },
-  sackIcon: {
-    backgroundColor: "#2BA84A",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  sackIconText: { fontSize: 18, color: "#fff" },
-  sackName: { fontWeight: "bold" },
-  sackWeight: { color: "#666", fontSize: 12 },
-  timeLeft: { color: "red", fontSize: 12, fontWeight: "600" },
+  // Notifications
   notificationCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 16,
-    marginVertical: 8,
+    padding: 14,
+    backgroundColor: '#2A4535',
     marginHorizontal: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    marginBottom: 10,
+    borderRadius: 12,
+    elevation: 2,
   },
   notificationLeft: {
+    marginRight: 10,
     justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 12,
   },
   notificationIcon: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#DCFCE7',
     padding: 10,
-    borderRadius: 50,
+    borderRadius: 999,
   },
   iconText: {
-    fontSize: 20,
+    fontSize: 16,
   },
   notificationRight: {
     flex: 1,
-    justifyContent: 'center',
   },
   notificationMessage: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: '#fff',
     marginBottom: 4,
   },
   notificationTime: {
     fontSize: 12,
-    color: '#888',
+    color: '#fff',
   },
 });
-
 
 export default index;

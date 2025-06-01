@@ -1,13 +1,16 @@
-import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
-import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Foundation from '@expo/vector-icons/Foundation';
 import { generateRoomId } from '../../../../../utils/generateRoom';
+import Constants from 'expo-constants';
+import { Ionicons } from '@expo/vector-icons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { FontAwesome } from '@expo/vector-icons';
+import Map from '../../../User/components/map';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
@@ -21,6 +24,8 @@ const SeePickUp = () => {
     const [review, setReview] = useState('');
     const [rating, setRating] = useState(0);
     const [submitted, setSubmitted] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [completeModal, setCompleteModal] = useState(false);
 
     useEffect(() => {
         const fetchSackSellers = async () => {
@@ -39,24 +44,18 @@ const SeePickUp = () => {
         };
 
         fetchSackSellers();
-    }, [userId]);
+    }, [pickup.sacks]);
 
     const handlePickupStatus = async () => {
         try {
             const { data } = await axios.put(`${baseURL}/sack/pickup-sack-now/${pickup._id}`);
             setPickupStatus(data.status);
-            Alert.alert(
-                "Now you are going to pickup.",
-                "Go to Maps",
-                [
-                    {
-                        text: "OK",
-                        onPress: () => {
-                            router.push('/components/User/components/map')
-                        },
-                    },
-                ]
-            );
+            setShowModal(true);
+
+            setTimeout(() => {
+                setShowModal(false);
+                navigation.goBack();
+            }, 2000);
         } catch (e) {
             console.log(e)
         }
@@ -84,27 +83,37 @@ const SeePickUp = () => {
     };
     useEffect(() => {
         fetchAllSackStatuses();
-    }, [userId]);
+    }, [pickup.sacks]);
 
-    const handleCompletePickUpStatus = async () => {
-        try {
-            const data = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`)
-            Alert.alert(
-                "Pickup Was Now Completed!!",
-                `Thankyou ${user.user.name}`,
-                [
-                    {
-                        text: "OK",
-                        onPress: () => {
-                            navigation.goBack()
-                        },
-                    },
-                ]
-            );
-        } catch (error) {
-            console.log('Error in completing pickup status', error.message)
-        }
-    }
+    const handleCompletePickUpStatus = () => {
+        Alert.alert(
+            "Proceed Either all the sacks are claimed or not.",
+            "But any sacks that weren't claimed will be redistributed to their respective stalls.",
+            [
+                {
+                    text: "Proceed",
+                    onPress: async () => {
+                        try {
+                            const response = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`);
+                            setCompleteModal(true);
+
+                            setTimeout(() => {
+                                setCompleteModal(false);
+                                navigation.goBack();
+                            }, 2000);
+                        } catch (error) {
+                            console.error("Error completing pickup:", error);
+                            Alert.alert("Error", "Failed to complete the pickup.");
+                        }
+                    }
+                },
+                {
+                    text: "Cancel",
+                    style: "cancel"
+                }
+            ]
+        );
+    };
 
     const handleRatingSubmit = async () => {
         if (!rating || review.trim() === '') {
@@ -116,8 +125,15 @@ const SeePickUp = () => {
                 review,
                 rating
             });
-            Alert.alert("Success", "Thank you for your feedback!");
+
             setSubmitted(true);
+
+            setTimeout(() => {
+                setReview('');
+                setRating(0);
+                setSubmitted(false);
+                setIsRatingModalVisible(false);
+            }, 2500);
         } catch (error) {
             console.error("Error submitting feedback:", error);
             Alert.alert("Error", "Could not submit your feedback.");
@@ -138,184 +154,321 @@ const SeePickUp = () => {
             ) === index
         );
     }) || [];
+    const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
 
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>See Pick Up</Text>
-            <View style={styles.pickupCard}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    {pickupStatus !== "completed" && (
-                        <TouchableOpacity onPress={() => handlePickupStatus()}>
-                            <MaterialCommunityIcons name="car-lifted-pickup" size={35} color="white" />
-                            <Text style={{ color: 'white' }}>Pickup</Text>
-                        </TouchableOpacity>
-                    )}
-                    <TouchableOpacity onPress={() => router.push({
-                        pathname: "/components/User/components/map",
-                    })}
-                    >
-                        <Foundation name="map" size={30} color="white" />
-                        <Text style={{ color: 'white' }}>Map</Text>
+        <>
+            <View style={styles.container}>
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity style={{
+                        padding: 8,
+                        borderRadius: 50,
+                    }} onPress={() => navigation.goBack()}>
+                        <View style={{ justifyContent: 'center', alignItems: 'center', height: 90 }}>
+                            <View style={{ marginRight: 10, flexDirection: 'row', }}>
+                                <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                                <View style={{ marginTop: 5, marginLeft: 10 }}>
+                                    <Text style={styles.greeting}>Pickup <Text style={{ fontSize: 18, fontWeight: '500' }}>Information</Text></Text>
+                                </View>
+                            </View>
+                        </View>
                     </TouchableOpacity>
                 </View>
-                <View style={styles.sackContainer}>
-                    <MaterialCommunityIcons name="sack" size={100} color="white" style={styles.sackImage} />
-                    <Text style={styles.sackWeight}>{pickup.totalKilo} KG</Text>
-                    <Text style={styles.text}>Status: {pickupStatus}</Text>
-                    {pickupStatus !== "completed" && (
-                        <Text style={styles.text}>
-                            Pickup Time: {new Date(new Date(pickup.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            })}{" "}
-                            {new Date(pickup.pickupTimestamp).toLocaleTimeString("en-US", {
-                                timeZone: "UTC",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                            })}
-                        </Text>
-                    )}
-                </View>
-            </View>
-
-            <Text style={styles.sectionTitle}>Stall/s Info</Text>
-
-            {Object.keys(sellers).length > 0 ? (
                 <FlatList
-                    data={uniqueSacks}
+                    data={pickup.sacks}
                     keyExtractor={(item) => item._id}
-                    renderItem={({ item }) => (
-                        <View style={styles.sackCard}>
-                            <Image
-                                source={{ uri: sellers[item.seller]?.stall?.stallImage?.url || "https://via.placeholder.com/150" }}
-                                style={styles.stallImage}
-                            />
-                            <View style={styles.sackInfo}>
-                                <Text style={styles.textWhite}>Stall #: {item.stallNumber}</Text>
-                                <Text style={styles.textWhite}>Seller: {sellers[item.seller]?.name || "Unknown"}</Text>
-                                <Text style={styles.textWhite}>Stall Address: {sellers[item.seller]?.stall?.stallAddress || "Unknown"}</Text>
-                                <Text style={styles.text}>
-                                    {sellers[item.seller]?.stall?.status === "open" ? "Open: 🟢" : "Close: 🔴"}
-                                </Text>
+                    ListHeaderComponent={
+                        <>
+                            <View style={styles.pickupCard}>
+                                <View style={styles.sackContainer}>
+                                    <MaterialCommunityIcons name="sack" size={30} color="white" style={styles.sackImage} />
+                                    <Text style={styles.sackWeight}>{pickup.totalKilo} KG</Text>
+                                    <Text style={styles.text}>Status: {pickupStatus}</Text>
+                                    {pickupStatus !== "completed" && (
+                                        <Text style={styles.text}>
+                                            Pickup Time: {new Date(new Date(pickup.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })}{" "}
+                                            {new Date(pickup.pickupTimestamp).toLocaleTimeString("en-US", {
+                                                timeZone: "UTC",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            })}
+                                        </Text>
+                                    )}
+                                </View>
+
+                                <View style={{ height: 200, borderRadius: 16, overflow: 'hidden' }}>
+                                    <Map />
+                                </View>
                             </View>
-                            <TouchableOpacity
-                                style={styles.chatButton}
-                                onPress={() => {
-                                    if (!userId || !sellers[item.seller]?._id) {
-                                        Alert.alert('Error', 'User or Seller ID missing');
-                                        return;
-                                    }
-
-                                    const roomId = generateRoomId(userId, sellers[item.seller]?._id);
-
-                                    router.push({
-                                        pathname: '/components/Composter/components/Chat/ChatRoom',
-                                        params: {
-                                            roomId,
-                                            userId,
-                                            receiverId: sellers[item.seller]?._id,
-                                            receiverName: sellers[item.seller]?.name || 'Vendor',
-                                        },
-                                    });
-                                }}
-                            >
-                                <FontAwesome name="comments" size={24} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    )}
-                />
-            ) : (
-                <Text style={styles.text}>Loading stall data...</Text>
-            )}
-
-            {pickupStatus === "completed" && !submitted && (
-                <View style={{ marginTop: 30, padding: 20, backgroundColor: "#3b3f47", borderRadius: 15 }}>
-                    <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Rate Your Pickup</Text>
-
-                    <Text style={{ color: 'white', marginBottom: 5 }}>Rating (1 to 5):</Text>
-                    <View style={{ flexDirection: 'row', marginBottom: 15 }}>
-                        {[1, 2, 3, 4, 5].map((num) => (
-                            <TouchableOpacity
-                                key={num}
-                                onPress={() => setRating(num)}
-                                style={{
-                                    backgroundColor: rating === num ? "#AFE1AF" : "#ccc",
-                                    padding: 10,
-                                    marginRight: 8,
+                        </>
+                    }
+                    renderItem={({ item }) => {
+                        const sackStatus = sackStatuses[item.sackId.toString()] || "Loading...";
+                        const backgroundColor = sackStatus === "claimed" ? "#009E60" : "#2A4535";
+                        return (
+                            <View style={{ flexDirection: 'column' }}>
+                                <View style={{
+                                    backgroundColor,
                                     borderRadius: 10,
-                                }}
-                            >
-                                <Text style={{ color: 'black', fontWeight: 'bold' }}>{num}</Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
+                                    flexDirection: 'row',
+                                    alignItems: 'center',
+                                    padding: 15,
+                                    marginVertical: 8,
+                                }}>
+                                    <Image
+                                        source={{ uri: sellers[item.seller]?.stall?.stallImage?.url || "https://via.placeholder.com/150" }}
+                                        style={styles.stallImage}
+                                    />
 
-                    <Text style={{ color: 'white', marginBottom: 5 }}>Review:</Text>
-                    <View style={{ backgroundColor: 'white', borderRadius: 10, padding: 10, marginBottom: 15 }}>
-                        <TextInput
-                            placeholder="Write your feedback..."
-                            placeholderTextColor="#aaa"
-                            multiline
-                            value={review}
-                            onChangeText={setReview}
-                            style={{ height: 80, color: 'black' }}
-                        />
-                    </View>
+                                    <View style={styles.sackInfo}>
+                                        <Text style={styles.textWhite}>Stall #: {item.stallNumber}</Text>
+                                        <View style={{ backgroundColor: '#3D5A48', padding: 10 }}>
+                                            <View style={{ backgroundColor: 'white', padding: 5, borderRadius: 5, marginBottom:4 }}>
+                                                <Text style={{
+                                                    fontSize: 9,
+                                                    color: 'black',
+                                                    marginBottom: 3,
+                                                }}>
+                                                    Item #: {item._id}
+                                                </Text>
+                                                <Text style={{
+                                                    fontSize: 9,
+                                                    color: 'black',
+                                                    marginBottom: 3,
+                                                }}>
+                                                    Description: {item.description}
+                                                </Text>
+                                            </View>
+                                            <Text style={{
+                                                fontSize: 15,
+                                                color: 'white',
+                                                marginBottom: 3,
+                                                fontWeight: 'bold'
+                                            }}>
+                                                Seller: {sellers[item.seller]?.name || "Unknown"}
+                                            </Text>
+                                            <Text style={{
+                                                fontSize: 12,
+                                                color: 'white',
+                                                marginBottom: 3,
+                                                color: '#9EE6B8'
+                                            }}>
+                                                Location: {sellers[item.seller]?.stall?.stallAddress || "Unknown"}
+                                            </Text>
+                                            <Text style={{
+                                                fontSize: 12,
+                                                color: 'white',
+                                                marginBottom: 3,
+                                                color: '#9EE6B8'
+                                            }}>
+                                                {sellers[item.seller]?.stall?.status === "open" ? "Open: 🟢" : "Close: 🔴"}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                    <View style={{ flexDirection: 'column' }}>
+                                        <Text style={{
+                                            fontSize: 13,
+                                            color: sackStatus === "pickup" ? "#9EE6B8" : "#FF5F1F",
+                                            marginBottom: 3,
+                                            marginLeft: 18,
+                                        }}>{sackStatus}</Text>
+                                        <Text style={{
+                                            fontSize: 18,
+                                            color: '#9EE6B8',
+                                            marginBottom: 3,
+                                            marginLeft: 18,
+                                        }}>{item.kilo} kg.</Text>
+                                        <TouchableOpacity
+                                            style={styles.chatButton}
+                                            onPress={() => {
+                                                if (!userId || !sellers[item.seller]?._id) {
+                                                    Alert.alert('Error', 'User or Seller ID missing');
+                                                    return;
+                                                }
 
-                    <TouchableOpacity
-                        style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10 }}
-                        onPress={handleRatingSubmit}
-                    >
-                        <Text style={{ color: 'black', textAlign: 'center', fontWeight: 'bold' }}>Submit Feedback</Text>
-                    </TouchableOpacity>
-                </View>
-            )}
+                                                const roomId = generateRoomId(userId, sellers[item.seller]?._id);
 
-            {pickupStatus !== "completed" && Object.values(sackStatuses).length > 0 && Object.values(sackStatuses).every(status => status === "claimed") && (
-                <TouchableOpacity
-                    style={{ backgroundColor: '#AFE1AF', padding: 10, borderRadius: 20, marginTop: 20 }}
-                    onPress={() => handleCompletePickUpStatus()}
-                >
-                    <Text style={{ color: 'black', textAlign: 'center' }}>All Claimed</Text>
-                </TouchableOpacity>
-            )}
-
-            <FlatList
-                data={pickup.sacks}
-                keyExtractor={(item) => item._id}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 10 }}
-                renderItem={({ item }) => {
-                    const sackStatus = sackStatuses[item.sackId] || "Loading...";
-                    const backgroundColor = sackStatus === "claimed" ? "#AFE1AF" : "gray";
-                    return (
-                        <View style={{
-                            marginTop: 20,
-                            marginRight: 10,
-                            flex: 1,
-                            flexDirection: 'row',
-                            alignItems: 'center',
-                            backgroundColor,
-                            padding: 10,
-                            borderRadius: 20
-                        }}>
-                            <Image
-                                source={{ uri: item.images[0]?.url || "https://via.placeholder.com/150" }}
-                                style={styles.stallImage}
-                            />
-                            <View style={{ backgroundColor: 'white', padding: 15, borderRadius: 20 }}>
-                                <Text style={{ color: 'black', fontSize: 10 }}>Stall# {item.stallNumber}</Text>
-                                <Text style={{ color: 'black', fontSize: 10 }}>Weight: {item.kilo} KG</Text>
-                                <Text style={{ color: 'black', fontSize: 10 }}>Status: {sackStatus}</Text>
+                                                router.push({
+                                                    pathname: '/components/User/components/Chat/ChatRoom',
+                                                    params: {
+                                                        roomId,
+                                                        userId,
+                                                        receiverId: sellers[item.seller]?._id,
+                                                        receiverName: sellers[item.seller]?.name || 'Vendor',
+                                                    },
+                                                });
+                                            }}
+                                        >
+                                            <FontAwesome name="comments" size={24} color="#fff" />
+                                        </TouchableOpacity>
+                                    </View>
+                                </View>
                             </View>
-                        </View>
-                    );
-                }}
-            />
-        </View>
+                        )
+                    }}
+                    ListFooterComponent={
+                        <>
+                            {/* Conditionally rendered buttons & modals */}
+                            {pickupStatus === "completed" && (
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10, width: '100%', marginBottom: 40, }}
+                                    onPress={() => setIsRatingModalVisible(true)}
+                                >
+                                    <Text style={{ textAlign: 'center', color: 'black', fontWeight: 'bold' }}>Submit a Review</Text>
+                                </TouchableOpacity>
+                            )}
+                            {pickupStatus === "pending" && (
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#AFE1AF', padding: 10, borderRadius: 20, marginTop: 20, marginBottom: 30 }}
+                                    onPress={handlePickupStatus}
+                                >
+                                    <Text style={{ color: 'black', textAlign: 'center' }}>Pickup Waste</Text>
+                                </TouchableOpacity>
+                            )}
+                            {pickupStatus !== "pending" && pickupStatus !== "completed" && (
+                                <TouchableOpacity
+                                    style={{ backgroundColor: '#AFE1AF', padding: 10, borderRadius: 20, marginTop: 20, marginBottom: 30 }}
+                                    onPress={() => handleCompletePickUpStatus()}
+                                >
+                                    <Text style={{ color: 'black', textAlign: 'center' }}>Done Pickup</Text>
+                                </TouchableOpacity>
+                            )}
+
+                            {/* Rating Modal */}
+                            <Modal
+                                animationType="slide"
+                                transparent={true}
+                                visible={isRatingModalVisible}
+                                onRequestClose={() => setIsRatingModalVisible(false)}
+                            >
+                                <View style={{
+                                    flex: 1,
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                }}>
+                                    <View style={{
+                                        backgroundColor: "#3b3f47",
+                                        padding: 20,
+                                        borderRadius: 15,
+                                        width: '85%',
+                                        alignItems: 'center',
+                                    }}>
+                                        {/* Close Button */}
+                                        <TouchableOpacity
+                                            onPress={() => setIsRatingModalVisible(false)}
+                                            style={{
+                                                position: 'absolute',
+                                                top: 10,
+                                                right: 10,
+                                                zIndex: 1,
+                                            }}
+                                        >
+                                            <Ionicons name="close" size={24} color="white" />
+                                        </TouchableOpacity>
+
+                                        {submitted ? (
+                                            <>
+                                                <Text style={{ color: 'white', fontSize: 18, fontWeight: 'bold', marginBottom: 20 }}>Thank you for your feedback!</Text>
+                                                <Image
+                                                    source={require('../../../../../assets/thank-you-banner.webp')} // Put your image in assets folder
+                                                    style={{ width: 200, height: 200, resizeMode: 'contain' }}
+                                                />
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Text style={{ color: 'white', fontSize: 16, fontWeight: 'bold', marginBottom: 10 }}>Rate Your Pickup</Text>
+
+                                                <Text style={{ color: 'white', marginBottom: 5 }}>Rating (1 to 5):</Text>
+                                                <View style={{ flexDirection: 'row', marginBottom: 15 }}>
+                                                    {[1, 2, 3, 4, 5].map((num) => (
+                                                        <TouchableOpacity
+                                                            key={num}
+                                                            onPress={() => setRating(num)}
+                                                            style={{ marginRight: 8 }}
+                                                        >
+                                                            <FontAwesome
+                                                                name={num <= rating ? "star" : "star-o"}
+                                                                size={30}
+                                                                color={num <= rating ? "#FFD700" : "#ccc"}
+                                                            />
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </View>
+
+                                                <Text style={{ color: 'white', marginBottom: 5 }}>Review:</Text>
+                                                <View style={{
+                                                    backgroundColor: 'white',
+                                                    borderRadius: 10,
+                                                    padding: 10,
+                                                    marginBottom: 15,
+                                                    width: '100%',
+                                                }}>
+                                                    <TextInput
+                                                        placeholder="Write your feedback..."
+                                                        placeholderTextColor="#aaa"
+                                                        multiline
+                                                        value={review}
+                                                        onChangeText={setReview}
+                                                        style={{ height: 80, color: 'black' }}
+                                                    />
+                                                </View>
+
+                                                <TouchableOpacity
+                                                    style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10, width: '100%' }}
+                                                    onPress={async () => {
+                                                        await handleRatingSubmit();
+                                                    }}
+                                                >
+                                                    <Text style={{ color: 'black', textAlign: 'center', fontWeight: 'bold' }}>Submit Feedback</Text>
+                                                </TouchableOpacity>
+                                            </>
+                                        )}
+                                    </View>
+                                </View>
+                            </Modal>
+                            {/* Completion Modal */}
+                            <Modal
+                                animationType="fade"
+                                transparent={true}
+                                visible={showModal}
+                                onRequestClose={() => setShowModal(false)}
+                            >
+                                <View style={styles.modalBackground}>
+                                    <View style={styles.modalCard}>
+                                        <View style={styles.checkmarkCircle}>
+                                            <Text style={styles.checkmark}>✓</Text>
+                                        </View>
+                                        <Text style={styles.modalTitle}>Pickup: Get Sacks Now!!</Text>
+                                    </View>
+                                </View>
+                            </Modal>
+                            {/* Completion Modal */}
+                            <Modal
+                                animationType="fade"
+                                transparent={true}
+                                visible={completeModal}
+                                onRequestClose={() => setShowModal(false)}
+                            >
+                                <View style={styles.modalBackground}>
+                                    <View style={styles.modalCard}>
+                                        <View style={styles.checkmarkCircle}>
+                                            <Text style={styles.checkmark}>✓</Text>
+                                        </View>
+                                        <Text style={styles.modalTitle}>Pickup Waste Completed!!</Text>
+                                    </View>
+                                </View>
+                            </Modal>
+                        </>
+                    }
+                />
+            </View >
+        </>
     );
 };
 
@@ -324,8 +477,38 @@ export default SeePickUp;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        paddingTop: Constants.statusBarHeight,
+    },
+    headerContainer: {
+        marginBottom: 15,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
         padding: 20,
-        backgroundColor: '#2a2e35',
+        height: 77,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        backgroundColor: '#E8F5E9',
     },
     title: {
         fontSize: 22,
@@ -337,7 +520,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: 'bold',
-        color: 'white',
+        color: 'black',
         marginTop: 15,
         marginBottom: 10,
     },
@@ -384,7 +567,6 @@ const styles = StyleSheet.create({
         backgroundColor: '#2E4237',
         padding: 20,
         borderRadius: 15,
-        marginBottom: 15,
     },
     sackWeight: {
         fontSize: 20,
@@ -401,5 +583,48 @@ const styles = StyleSheet.create({
         marginLeft: 8,
         color: '#fff',
         fontWeight: '600',
+    },
+    modalBackground: {
+        flex: 1,
+        backgroundColor: 'rgba(0,0,0,0.6)',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    modalCard: {
+        width: 280,
+        backgroundColor: '#A5D6A7',
+        borderRadius: 20,
+        padding: 20,
+        alignItems: 'center',
+    },
+    checkmarkCircle: {
+        width: 60,
+        height: 60,
+        borderRadius: 30,
+        backgroundColor: '#4CAF50',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginBottom: 12,
+    },
+    checkmark: {
+        color: 'white',
+        fontSize: 30,
+        fontWeight: 'bold',
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: 'bold',
+        color: '#2E7D32',
+        marginBottom: 10,
+    },
+    modalButton: {
+        backgroundColor: '#689F38',
+        paddingVertical: 8,
+        paddingHorizontal: 20,
+        borderRadius: 10,
+    },
+    modalButtonText: {
+        color: 'white',
+        fontWeight: 'bold',
     },
 });

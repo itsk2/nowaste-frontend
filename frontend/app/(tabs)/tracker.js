@@ -14,7 +14,7 @@ import * as ImagePicker from "expo-image-picker";
 import { Formik } from "formik";
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { inputRecordTrack } from "../(services)/api/Users/inputRecordTrack";
-import { useFocusEffect, useNavigation } from "expo-router";
+import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useSelector } from "react-redux";
 import { Picker } from "@react-native-picker/picker";
 import baseURL from "../../assets/common/baseURL";
@@ -35,6 +35,7 @@ export default function WeightProgressForm() {
     const [selectedRecord, setSelectedRecord] = useState(null);
     const [recommendation, setRecommendation] = useState(null);
     const [latestWeight, setLatestWeight] = useState(0);
+    const router = useRouter();
 
     const openImagePicker = async (setFieldValue) => {
         const result = await ImagePicker.launchImageLibraryAsync({
@@ -173,8 +174,8 @@ export default function WeightProgressForm() {
         <View style={styles.container}>
             <View style={styles.headerContainer}>
                 <View>
-                    <Text style={styles.greeting}>Welcome</Text>
-                    <Text style={styles.name}>{user?.user?.name}</Text>
+                    <Text style={styles.greeting}>Pig Weight</Text>
+                    <Text style={styles.name}>Tracker</Text>
                 </View>
                 <View style={styles.iconGroup}>
                     <TouchableOpacity
@@ -193,7 +194,7 @@ export default function WeightProgressForm() {
                 </View>
             </View>
             {/* Track Button */}
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', borderWidth: 2, padding: 6, borderRadius: 20, borderColor: '#eb6794', backgroundColor: 'green' }}>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignContent: 'center', alignItems: 'center', borderWidth: 2, padding: 6, borderRadius: 20, borderColor: '#eb6794', backgroundColor: '#2F4F39' }}>
                 <Text style={{ color: 'white', fontWeight: 'bold', fontSize: 16, marginLeft: 10 }}> Track {'\n'} Records</Text>
                 <MaterialCommunityIcons name="pig-variant" size={80} color="#eb6794" />
 
@@ -205,7 +206,7 @@ export default function WeightProgressForm() {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView style={{ marginTop: 20, backgroundColor: 'green', padding: 15, borderRadius: 20, borderColor: '#eb6794', borderWidth: 4 }}>
+            <ScrollView style={{ marginTop: 20, backgroundColor: '#2F4F39', padding: 15, borderTopLeftRadius: 20, borderTopRightRadius: 20, borderColor: '#eb6794', borderWidth: 4 }}>
                 {records.map((record, index) => (
                     <TouchableOpacity
                         key={record._id}
@@ -512,7 +513,7 @@ export default function WeightProgressForm() {
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: '#E9FFF3',
     },
     headerContainer: {
         marginBottom: 15,

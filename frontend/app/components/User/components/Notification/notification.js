@@ -8,13 +8,13 @@ import Footer from '../../../Footer';
 import Header from '../../../Header';
 import baseURL from '../../../../../assets/common/baseURL';
 import { timeAgo } from '../../../../../utils/timeAgo'; // Ensure this path is correct
-import { router } from 'expo-router';
+import { router, useNavigation } from 'expo-router';
 
 const Notification = () => {
     const [notifications, setNotifications] = useState([]);
     const { user } = useSelector((state) => state.auth);
     const userId = user.user._id;
-
+    const navigation = useNavigation();
     useEffect(() => {
         const fetchNotifications = async () => {
             try {
@@ -35,28 +35,35 @@ const Notification = () => {
                 <Text style={styles.messageText}>{item.message}</Text>
                 <Text style={styles.timestamp}>{timeAgo(new Date(item.createdAt))}</Text>
             </View>
-            <TouchableOpacity style={styles.button} onPress={() => router.push('/(tabs)/market')}>
-                <Text style={styles.buttonText}>View details</Text>
-            </TouchableOpacity>
         </View>
     );
 
     return (
         <>
             <View style={styles.container}>
-                <Header />
-                <Text style={styles.header}>Notifications</Text>
-                {notifications.length === 0 ? (
-                    <Text style={styles.noNotifications}>No notifications</Text>
-                ) : (
-                    <FlatList
-                        data={notifications}
-                        keyExtractor={(item) => item._id}
-                        renderItem={renderItem}
-                    />
-                )}
+                <View style={styles.headerContainer}>
+                    <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
+                        <View style={styles.iconGroup}>
+                            <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                        </View>
+                        <View style={{ marginLeft: 10 }}>
+                            <Text style={styles.greeting}>Sacks</Text>
+                            <Text style={styles.name}>Notifications</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+                <View style={{ padding: 15 }}>
+                    {notifications.length === 0 ? (
+                        <Text style={styles.noNotifications}>No notifications</Text>
+                    ) : (
+                        <FlatList
+                            data={notifications}
+                            keyExtractor={(item) => item._id}
+                            renderItem={renderItem}
+                        />
+                    )}
+                </View>
             </View>
-            <Footer />
         </>
     );
 };
@@ -66,9 +73,36 @@ export default Notification;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        paddingTop: Constants.statusBarHeight,
-        paddingHorizontal: 16,
         backgroundColor: '#f5f5f5',
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
+        padding: 20,
+        height: 90,
+    },
+    greeting: {
+        fontSize: 18,
+        fontWeight: '500',
+        color: '#fff',
+    },
+    name: {
+        fontSize: 23,
+        fontWeight: 'bold',
+        color: '#2BA84A',
+        marginVertical: 4,
+        fontFamily: 'Inter-Medium',
+    },
+    iconGroup: {
+        flexDirection: 'row',
+        gap: 12,
+    },
+    iconButton: {
+        padding: 8,
+        borderRadius: 50,
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     header: {
         fontSize: 20,

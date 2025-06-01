@@ -94,8 +94,8 @@ const Pickup = () => {
         <View style={styles.container}>
             <View style={styles.headerContainer}>
                 <View>
-                    <Text style={styles.greeting}>Welcome</Text>
-                    <Text style={styles.name}>{user?.user?.name}</Text>
+                    <Text style={styles.greeting}>Pickup</Text>
+                    <Text style={styles.name}>Status</Text>
                 </View>
                 <View style={styles.iconGroup}>
                     <TouchableOpacity
@@ -112,9 +112,6 @@ const Pickup = () => {
                         <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
                     </TouchableOpacity>
                 </View>
-            </View>
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>My Pickup</Text>
             </View>
             <View style={styles.listContainer}>
                 <FlatList
@@ -198,7 +195,7 @@ export default Pickup;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        backgroundColor: '#E9FFF3',
     },
     header: {
         alignItems: "center",

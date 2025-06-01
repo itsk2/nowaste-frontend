@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { View, Text, ScrollView, Image, StyleSheet, Animated } from 'react-native';
+import { View, Text, ScrollView, Image, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useSelector } from 'react-redux';
 import baseURL from '../../../../assets/common/baseURL';
-
+import { BarChart } from 'react-native-gifted-charts';
+import AntDesign from '@expo/vector-icons/AntDesign';
+import { useRouter } from 'expo-router';
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user } = useSelector((state) => state.auth);
@@ -13,8 +15,12 @@ const index = () => {
   const [pickupCount, setPickupCount] = useState(0);
   const [claimedCount, setClaimedCount] = useState(0);
   const [totalKilo, setTotalKilo] = useState(0);
+  const [monthlyData, setMonthlyData] = useState([]);
   const [monthlyAverage, setMonthlyAverage] = useState(0);
+  const [selectedMonthInfo, setSelectedMonthInfo] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const router = useRouter();
+
 
   useEffect(() => {
     const fetchSackCounts = async () => {
@@ -55,6 +61,27 @@ const index = () => {
         const monthlyTotal = currentMonthSacks.reduce((sum, sack) => {
           return sum + parseFloat(sack.kilo || 0);
         }, 0);
+
+        const monthlyTotals = Array(12).fill(0);
+
+        allSacks.forEach((sack) => {
+          const sackDate = new Date(sack.createdAt);
+          const month = sackDate.getMonth(); // 0 = January
+          monthlyTotals[month] += parseFloat(sack.kilo || 0);
+        });
+
+        const currentMonthIndex = new Date().getMonth(); // 0 = January
+
+        const graphData = monthlyTotals
+          .slice(0, currentMonthIndex + 1)
+          .map((value, index) => ({
+            value,
+            label: new Date(0, index).toLocaleString('default', { month: 'short' }),
+            frontColor: '#2BA84A',
+          }));
+
+        setMonthlyData(graphData);
+
         setMonthlyAverage(monthlyTotal);
 
       } catch (error) {
@@ -79,6 +106,9 @@ const index = () => {
     fetchSackCounts();
     fetchStoreSacks();
   }, [user?.user?._id]);
+  const handleBarPress = (item) => {
+    setSelectedMonthInfo(`Month: ${item.label}, Total: ${item.value} kg`);
+  };
 
   useEffect(() => {
     Animated.timing(fadeAnim, {
@@ -89,142 +119,173 @@ const index = () => {
   }, [fadeAnim]);
 
   return (
-    <ScrollView style={styles.container}
-      contentContainerStyle={{ padding: 20, paddingBottom: 25 }} // allow scrolling past bottom
-
-    >
-      <View style={styles.header}>
-        <Text style={styles.greeting}>Welcome,</Text>
-        <Text style={styles.name}>{user.user.name}</Text>
-        <Text style={styles.subtitle}>
-          Track and manage your waste collections efficiently
-        </Text>
-      </View>
-
-      <View style={styles.statsContainer}>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Total Collected</Text>
-          <Text style={styles.statValue}>{totalKilo} <Text style={styles.unit}>kg</Text></Text>
+    <ScrollView style={styles.container}>
+      {/* Header Section with Background and Greeting */}
+      <View style={styles.headerContainer}>
+        <View>
+          <Text style={styles.greeting}>Welcome</Text>
+          <Text style={styles.name}>{user.user.name}</Text>
         </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Monthly Waste</Text>
-          <Text style={styles.statValue}>{monthlyAverage} <Text style={styles.unit}>kg</Text></Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Posted Sacks</Text>
-          <Text style={styles.statValue}>{postedCounts}</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Active Pickup Requests</Text>
-          <Text style={styles.statValue}>{pickupCount}</Text>
-        </View>
-        <View style={styles.statCard}>
-          <Text style={styles.statLabel}>Claimed Requests</Text>
-          <Text style={styles.statValue}>{claimedCount}</Text>
+        <View style={styles.iconGroup}>
+          <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/components/Vendor/components/Notification/notification')}>
+            <AntDesign name="notification" size={18} color="2BA84A" />
+          </TouchableOpacity>
         </View>
       </View>
+      <View style={{ padding: 10 }}>
+        <Text style={styles.sectionTitle}>Monthly Waste</Text>
+        <View style={{ marginVertical: 10, padding: 10, backgroundColor: '#1A2F23', borderRadius: 10 }}>
+          <BarChart
+            data={monthlyData}
+            barWidth={24}
+            spacing={14}
+            roundedTop
+            hideRules
+            yAxisThickness={0}
+            xAxisColor="#ccc"
+            onPress={handleBarPress}
+            yAxisTextStyle={{ color: '#fff' }}
+            xAxisLabelTextStyle={{ color: '#fff' }}
+          />
+          {selectedMonthInfo && (
+            <Text style={{ marginTop: 10, fontSize: 16, fontWeight: 'bold', color: '#2BA84A', textAlign: 'center' }}>
+              {selectedMonthInfo}
+            </Text>
+          )}
+        </View>
+        {/* Stats Cards Section */}
 
-      <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
-      {notifications.map((notification, idx) => (
-        <View key={notification._id || idx} style={styles.notificationCard}>
-          <View style={styles.notificationLeft}>
-            <View style={styles.notificationIcon}>
-              <Text style={styles.iconText}>🔔</Text>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Total Collected</Text>
+            <Text style={styles.statValue}>{totalKilo} <Text style={styles.unit}>kg</Text></Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Monthly Waste</Text>
+            <Text style={styles.statValue}>{monthlyAverage} <Text style={styles.unit}>kg</Text></Text>
+          </View>
+        </View>
+        <View style={styles.statsContainer}>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Posted Sacks</Text>
+            <Text style={styles.statValue}>{postedCounts}</Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Active Pickup</Text>
+            <Text style={styles.statValue}>{pickupCount}</Text>
+          </View>
+        </View>
+
+        {/* Notifications Section */}
+        <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
+        {notifications.slice(0, 3).map((notification, idx) => (
+          <View key={notification._id || idx} style={styles.notificationCard}>
+            <View style={styles.notificationLeft}>
+              <View style={styles.notificationIcon}>
+                <Text style={styles.iconText}>🔔</Text>
+              </View>
+            </View>
+            <View style={styles.notificationRight}>
+              <Text style={styles.notificationMessage}>{notification.message}</Text>
+              <Text style={styles.notificationTime}>
+                {new Date(notification.createdAt).toLocaleString()}
+              </Text>
             </View>
           </View>
-          <View style={styles.notificationRight}>
-            <Text style={styles.notificationMessage}>{notification.message}</Text>
-            <Text style={styles.notificationTime}>
-              {new Date(notification.createdAt).toLocaleString()}
-            </Text>
-          </View>
-        </View>
-      ))}
+        ))}
+      </View>
     </ScrollView>
-
   );
 };
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f8f8f8" },
-  header: { marginBottom: 20 },
-  greeting: { fontSize: 20, fontWeight: "600" },
-  name: { fontSize: 24, fontWeight: "bold", marginBottom: 5 },
-  subtitle: { color: "#666", fontSize: 14 },
+  container: {
+    flex: 1,
+    backgroundColor: '#E9FFF3',
+  },
+
+  headerContainer: {
+    marginBottom: 15,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#1A2F23',
+    padding: 20,
+    height: 77,
+  },
+  greeting: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#fff',
+  },
+  name: {
+    fontSize: 23,
+    fontWeight: 'bold',
+    color: '#2BA84A',
+    marginVertical: 4,
+    fontFamily: 'Inter-Medium',
+  },
+  iconGroup: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  iconButton: {
+    padding: 8,
+    borderRadius: 50,
+    backgroundColor: '#E8F5E9',
+  },
 
   statsContainer: {
-    flexDirection: "column",
+    flexDirection: 'row',
     gap: 15,
     marginBottom: 20,
+    justifyContent: 'center'
   },
   statCard: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 15,
-    elevation: 2,
+    backgroundColor: '#203529',
+    padding: 18,
+    borderRadius: 16,
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.08,
+    shadowRadius: 4,
+    width: 170,
+    alignItems: 'center'
   },
-  statLabel: { color: "#666", fontSize: 14 },
-  statValue: { fontSize: 22, fontWeight: "bold" },
-  unit: { fontSize: 14, fontWeight: "400" },
+  statLabel: {
+    fontSize: 14,
+    color: 'white',
+    marginBottom: 6,
+  },
+  statValue: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#9EE6B8',
+  },
+  unit: {
+    fontSize: 14,
+    fontWeight: '400',
+    color: '#9EE6B8',
+  },
 
-  quickActionsTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-  primaryButton: {
-    backgroundColor: "#2BA84A",
-    padding: 15,
-    borderRadius: 25,
-    alignItems: "center",
-    marginBottom: 10,
+  sectionTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 5,
+    color: 'black',
   },
-  buttonText: { color: "#fff", fontWeight: "bold" },
-  outlineButton: {
-    borderColor: "#2BA84A",
-    borderWidth: 1.5,
-    padding: 15,
-    borderRadius: 25,
-    alignItems: "center",
-    marginBottom: 20,
-  },
-  outlineButtonText: { color: "#2BA84A", fontWeight: "bold" },
 
-  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 10 },
-
-  sackItem: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    padding: 15,
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 10,
-    borderLeftWidth: 5,
-    borderLeftColor: "#2BA84A",
-  },
-  sackInfo: { flexDirection: "row", alignItems: "center" },
-  sackIcon: {
-    backgroundColor: "#2BA84A",
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 10,
-  },
-  sackIconText: { fontSize: 18, color: "#fff" },
-  sackName: { fontWeight: "bold" },
-  sackWeight: { color: "#666", fontSize: 12 },
-  timeLeft: { color: "red", fontSize: 12, fontWeight: "600" },
   notificationCard: {
     flexDirection: 'row',
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: '#203529',
+    borderRadius: 16,
     padding: 16,
-    marginVertical: 8,
-    marginHorizontal: 16,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    elevation: 3,
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
   },
   notificationLeft: {
     justifyContent: 'center',
@@ -232,9 +293,9 @@ const styles = StyleSheet.create({
     marginRight: 12,
   },
   notificationIcon: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: '#D1FAE5',
     padding: 10,
-    borderRadius: 50,
+    borderRadius: 999,
   },
   iconText: {
     fontSize: 20,
@@ -244,16 +305,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   notificationMessage: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '500',
-    color: '#333',
+    color: 'white',
     marginBottom: 4,
   },
   notificationTime: {
     fontSize: 12,
-    color: '#888',
+    color: '#9CA3AF',
   },
 });
-
-
 export default index;

@@ -13,7 +13,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import FontAwesome6 from '@expo/vector-icons/FontAwesome6';
 import Entypo from '@expo/vector-icons/Entypo';
 
-const AdminHome = () => {
+const Analytics = () => {
     const [roleCounts, setRoleCounts] = useState({ farmer: 0, composter: 0, vendor: 0 });
     const [numStalls, setStalls] = useState(0);
     const [barData, setBarData] = useState([]);
@@ -206,79 +206,133 @@ const AdminHome = () => {
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 20, }}>
             <View style={{ flex: 1, alignItems: 'center', }}>
                 <View style={styles.header}>
-                    <Text style={styles.headerText}>Dashboard</Text>
+                    <Text style={styles.headerText}>Analytics</Text>
                 </View>
-
-                {/* Stats Section */}
-                <View style={styles.statsContainer}>
-                    {Object.entries(roleCounts).map(([role, count]) => {
-                        let IconComponent;
-
-                        if (role === "farmer") {
-                            IconComponent = <FontAwesome name="user" size={24} color="black" />;
-                        } else if (role === "composter") {
-                            IconComponent = <MaterialIcons name="takeout-dining" size={24} color="black" />;
-                        } else if (role === "vendor") {
-                            IconComponent = <FontAwesome6 name="user-ninja" size={24} color="black" />;
-                        }
-
-                        return (
-                            <View key={role} style={styles.statBox}>
-                                {IconComponent}
-                                <Text style={styles.statText}>
-                                    {role.charAt(0).toUpperCase() + role.slice(1)}/s: {count}
-                                </Text>
-                            </View>
-                        );
-                    })}
-                    <View style={styles.statBox}>
-                        <Entypo name="shop" size={24} color="black" />
-                        <Text style={styles.statText}>Stall/s: {numStalls}</Text>
-                    </View>
-                </View>
-
-                {/* Reports Header */}
-                <View style={styles.reportHeader}>
-                    <Text style={styles.reportHeaderText}>Reports</Text>
-                </View>
-
                 {/* Charts */}
                 <View style={styles.chartContainer}>
-                    <View style={{ marginTop: 20, width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center' }}>
-                        <Text style={styles.chartTitle}>Sacks This Month</Text>
-                        <View style={{ alignSelf: 'center' }}>
-                            <BarChart
-                                data={barMonth}
-                                barWidth={30}
-                                height={150}
+                    <View>
+                        <View style={{ marginTop: 20, width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center' }}>
+                            <Text style={styles.chartTitle}>Predicted Waste for Next 7 Days</Text>
+                            <ScrollView showsHorizontalScrollIndicator={false} horizontal>
+                                <View>
+                                    {/* Table Header */}
+                                    <View style={[styles.tableRow, styles.tableHeader]}>
+                                        <Text style={[styles.tableCell, styles.stallCell]}>Stall</Text>
+                                        {predictedWaste.length > 0 &&
+                                            [...new Set(predictedWaste.map(item => item.date))].map((date, index) => {
+                                                const formattedDate = new Date(date).toLocaleString('en-US', { month: 'short', day: 'numeric' });
+                                                return (
+                                                    <Text key={index} style={styles.tableCell}>{formattedDate}</Text>
+                                                );
+                                            })}
+                                    </View>
+
+                                    {/* Table Body */}
+                                    {[...new Set(predictedWaste.map(item => item.stallNumber))].map((stall, index) => (
+                                        <View key={index} style={styles.tableRow}>
+                                            <Text style={[styles.tableCell, styles.stallCell]}>{stall}</Text>
+                                            {predictedWaste
+                                                .filter(item => item.stallNumber === stall)
+                                                .map((item, i) => (
+                                                    <Text key={i} style={styles.tableCell}>{item.predicted_kilos.toFixed(2)} kg</Text>
+                                                ))}
+                                        </View>
+                                    ))}
+                                </View>
+                            </ScrollView>
+                            <View style={{ marginTop: 15 }}>
+                                <BarChart
+                                    data={predictedWaste.map(item => ({
+                                        label: item.stallNumber,
+                                        value: item.predicted_kilos,
+                                    }))}
+                                    barWidth={30}
+                                    height={150}
+                                    showYAxisIndices
+                                    yAxisThickness={1}
+                                    xAxisThickness={1}
+                                    hideRules
+                                    frontColor="#E91E63"
+                                />
+                            </View>
+                        </View>
+                        <View style={{ marginTop: 20, width: "90%", padding: 5, borderWidth: 2, alignSelf: 'center' }}>
+                            <Text style={styles.chartTitle}>Waste Collection & CO₂ Savings</Text>
+                            <View style={{ flexDirection: "row", justifyContent: "center", marginBottom: 10 }}>
+                                <View style={{ flexDirection: "row", alignItems: "center", marginRight: 15 }}>
+                                    <View style={{ width: 12, height: 12, backgroundColor: "green", marginRight: 5 }} />
+                                    <Text style={{ fontSize: 12 }}>Waste Collected (kg)</Text>
+                                </View>
+                                <View style={{ flexDirection: "row", alignItems: "center" }}>
+                                    <View style={{ width: 12, height: 12, backgroundColor: "blue", marginRight: 5 }} />
+                                    <Text style={{ fontSize: 12 }}>CO₂ Saved (kg)</Text>
+                                </View>
+                            </View>
+                            <LineChart
+                                data={wasteData}
+                                data2={co2Data}
+                                color1="green"
+                                color2="blue"
+                                width={245}
+                                height={200}
+                                thickness={2}
+                                curved
                                 showYAxisIndices
-                                yAxisThickness={1}
-                                xAxisThickness={1}
+                                yAxisTextStyle={{ fontSize: 12 }}
+                                xAxisTextStyle={{ fontSize: 12 }}
+                                yAxisLabelSuffix=" kg"
+                                dataPointsColor1="green"
+                                dataPointsColor2="blue"
                                 hideRules
-                                frontColor="#E91E63"
+                                data2StrokeDashArray={[5, 5]}
                             />
                         </View>
-                    </View>
-                    <View style={{ marginTop: 40, width: "100%", padding: 5, borderWidth: 2, alignSelf: 'center' }}>
-                        <Text style={styles.chartTitle}>Kilograms of Sacks {'\n'} This Month</Text>
-                        <View style={{ alignItems: 'center' }}>
-                            <PieChart
-                                data={pieData}
-                                radius={100}
-                                showText
-                                textColor="black"
-                                showValuesAsLabels
-                                textSize={14}
-                                focusOnPress
-                            />
-                            <View style={{ marginTop: 10, flexDirection: 'row', }}>
-                                {pieData.map((item, index) => (
-                                    <View key={index} style={{ flexDirection: "row", alignItems: "center", marginVertical: 5 }}>
-                                        <View style={{ width: 12, height: 12, backgroundColor: item.color, marginRight: 8, borderRadius: 6, marginLeft: 8 }} />
-                                        <Text style={{ fontSize: 14 }}>{item.label}</Text>
-                                    </View>
-                                ))}
+                        <View style={{ marginTop: 20, width: "90%", padding: 5, borderWidth: 2, alignSelf: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center", marginBottom: 10 }}>
+                                Waste & CO₂ Data Table
+                            </Text>
+                            <View style={{ flexDirection: "row", backgroundColor: "#ccc", padding: 10 }}>
+                                <Text style={{ flex: 1, fontWeight: "bold", textAlign: "center" }}>Date</Text>
+                                <Text style={{ flex: 1, fontWeight: "bold", textAlign: "center" }}>Waste (kg)</Text>
+                                <Text style={{ flex: 1, fontWeight: "bold", textAlign: "center" }}>CO₂ (kg)</Text>
                             </View>
+                            {wasteData.map((item, index) => (
+                                <View key={index} style={{ flexDirection: "row", padding: 10, borderBottomWidth: 1, borderBottomColor: "#ddd" }}>
+                                    <Text style={{ flex: 1, textAlign: "center" }}>{item.label}</Text>
+                                    <Text style={{ flex: 1, textAlign: "center" }}>{item.value.toFixed(2)}</Text>
+                                    <Text style={{ flex: 1, textAlign: "center" }}>{co2Data[index]?.value.toFixed(2) || "0.00"}</Text>
+                                </View>
+                            ))}
+                            <View style={{ flexDirection: "row", padding: 10, backgroundColor: "#ddd", marginTop: 5 }}>
+                                <Text style={{ flex: 1, fontWeight: "bold", textAlign: "center" }}>Total</Text>
+                                <Text style={{ flex: 1, fontWeight: "bold", textAlign: "center" }}>{totalWaste.toFixed(2)}</Text>
+                                <Text style={{ flex: 1, fontWeight: "bold", textAlign: "center" }}>{totalCO2.toFixed(2)}</Text>
+                            </View>
+                        </View>
+                        <View style={{ marginTop: 20, width: "90%", padding: 5, borderWidth: 2, alignSelf: 'center' }}>
+                            <Text style={{ fontSize: 16, fontWeight: "bold", textAlign: "center", marginBottom: 10, borderWidth: 2, padding: 5 }}>
+                                Waste Generation Trend
+                            </Text>
+                            <LineChart
+                                data={generationTrend}
+                                width={245}
+                                height={150}
+                                spacing={40}
+                                thickness={3}
+                                color="red"
+                                yAxisTextStyle={{ fontSize: 12 }}
+                                xAxisLabelTextStyle={{ fontSize: 12, rotate: -45 }}
+                                areaChart={false}
+                                curved={false}
+                                dashedLine={true}
+                                hideDataPoints={false}
+                                dataPointsColor="blue"
+                                dataPointsRadius={4}
+                                yAxisOffset={0}
+                                yAxisSide="left"
+                                maxValue={Math.max(...upperBound) + 20}
+                                minValue={Math.min(...lowerBound) - 20}
+                            />
                         </View>
                     </View>
                 </View>
@@ -392,4 +446,4 @@ const styles = StyleSheet.create({
     }
 });
 
-export default AdminHome;
+export default Analytics;

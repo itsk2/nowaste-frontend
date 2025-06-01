@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, Alert } from 'react-native';
+import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import React, { useEffect, useState } from 'react';
 import { router, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useSelector } from 'react-redux';
@@ -6,6 +6,7 @@ import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Foundation from '@expo/vector-icons/Foundation';
+import { Ionicons } from '@expo/vector-icons';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
@@ -73,71 +74,12 @@ const SeePickUp = () => {
         }
     };
     return (
-        <View style={styles.container}>
-            <Text style={styles.title}>See Pick Up</Text>
-
-            <View style={styles.pickupCard}>
-                <View style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
-                    {status !== "Claimed" && (
-                        <TouchableOpacity
-                            onPress={handleCompleteSackStatus}
-                            style={{ backgroundColor: 'green', padding: 10, borderRadius: 20 }}
-                        >
-                            <Text style={{ color: 'white', marginTop: 5 }}>Confirm</Text>
-                        </TouchableOpacity>
-                    )}
-                    <TouchableOpacity onPress={() => router.push({
-                        pathname: "/components/User/components/map",
-                    })}
-                    >
-                        <Foundation name="map" size={30} color="white" />
-                        <Text style={{ color: 'white' }}>Map</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.sackContainer}>
-                    <MaterialCommunityIcons name="sack" size={100} color="white" style={styles.sackImage} />
-                    <Text style={styles.sackWeight}>{totalSellerKilo} KG</Text>
-                    <Text style={{ color: 'white', fontSize: 18 }}>Status:
-                        <Text style={{ color: '#AFE1AF', fontSize: 18 }}> {status}</Text>
-                    </Text>
-                    {status !== "Claimed" && (
-                        <Text style={styles.text}>
-                            Pickup Time: {new Date(new Date(pickup.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                            })}{" "}
-                            {new Date(pickup.pickupTimestamp).toLocaleTimeString("en-US", {
-                                timeZone: "UTC",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                                hour12: true,
-                            })}
-                        </Text>
-                    )}
-                </View>
-            </View>
-
-            {/* Display Buyer Information */}
-            {buyer && (
-                <View style={styles.buyerCard}>
-                    <Text style={styles.sectionTitle}>Collector Details</Text>
-                    <Image source={{ uri: buyer.avatar?.url || "https://via.placeholder.com/100" }} style={styles.buyerImage} />
-                    <Text style={styles.textWhite}>Name: {buyer.name}</Text>
-                    <Text style={styles.textWhite}>Email: {buyer.email}</Text>
-                    <Text style={styles.textWhite}>
-                        Address: {buyer.address?.lotNum}, {buyer.address?.street}, {buyer.address?.baranggay}, {buyer.address?.city}
-                    </Text>
-                </View>
-            )}
-
-            <Text style={styles.sectionTitle}>Your Sacks</Text>
-
-            <FlatList
-                data={mySacks}
-                keyExtractor={(item) => item._id}
-                renderItem={({ item }) => (
+        <FlatList
+            style={styles.container}
+            data={mySacks}
+            keyExtractor={(item) => item._id}
+            renderItem={({ item }) => (
+                <View style={{ width: '95%', alignSelf: 'center' }}>
                     <View style={styles.sackCard}>
                         <Image
                             source={{ uri: item.images[0]?.url || "https://via.placeholder.com/150" }}
@@ -150,11 +92,86 @@ const SeePickUp = () => {
                             <Text style={styles.textWhite}>Location: {item.location}</Text>
                         </View>
                     </View>
-                )}
-                ListEmptyComponent={<Text style={styles.textWhite}>No sacks found for this seller.</Text>}
-            />
-        </View>
+                </View>
+
+            )}
+            ListEmptyComponent={<Text style={styles.textWhite}>No sacks found for this seller.</Text>}
+            ListHeaderComponent={
+                <>
+                    <View style={styles.headerContainer}>
+                        <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                                <View style={styles.iconGroup}>
+                                    <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
+                                </View>
+                                <Text style={styles.greeting}>   Pickup </Text>
+                                <Text style={styles.name}>Detail</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
+                    <View style={{ padding: 10, }}>
+                        <View style={styles.pickupCard}>
+                            <View><Text style={styles.textWhite}>Pickup ID: {pickup._id}</Text></View>
+                            <View style={styles.sackContainer}>
+                                <Text style={{ color: 'white', fontSize: 14 }}>Status:
+                                    <Text style={{ color: '#AFE1AF', fontSize: 14 }}> {status}</Text>
+                                </Text>
+                                <View style={{ backgroundColor: '#1A2F23', padding: 20, marginBottom: 5, flexDirection: 'row', alignItems: 'center' }}>
+                                    <MaterialCommunityIcons name="sack" size={80} color="white" />
+                                    <Text style={styles.sackWeight}>{totalSellerKilo} KG</Text>
+                                </View>
+                                {status !== "claimed" && (
+                                    <Text style={styles.text}>
+                                        Pickup Time: {new Date(new Date(pickup.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                            year: "numeric",
+                                            month: "long",
+                                            day: "numeric",
+                                        })}{" "}
+                                        {new Date(pickup.pickupTimestamp).toLocaleTimeString("en-US", {
+                                            timeZone: "UTC",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: true,
+                                        })}
+                                    </Text>
+                                )}
+                            </View>
+
+                            {buyer && (
+                                <>
+                                    <Text style={styles.sectionTitle}>Collector Details</Text>
+                                    <View style={styles.buyerCard}>
+                                        <Image source={{ uri: buyer.avatar?.url || "https://via.placeholder.com/100" }} style={styles.buyerImage} />
+                                        <View style={{ marginLeft: 10, padding: 10, borderRadius: 5, width: 230 }}>
+                                            <Text style={styles.textWhite}>Name: {buyer.name}</Text>
+                                            <Text style={styles.textWhite}>Email: {buyer.email}</Text>
+                                            <Text style={styles.textWhite}>
+                                                Address: {buyer.address?.lotNum}, {buyer.address?.street}{"\n"}
+                                                {buyer.address?.baranggay}, {buyer.address?.city}
+                                            </Text>
+                                        </View>
+                                    </View>
+                                </>
+                            )}
+                        </View>
+                    </View>
+                    {status !== "Claimed" && (
+                        <View style={{ alignItems: 'center' }}>
+                            <TouchableOpacity
+                                onPress={handleCompleteSackStatus}
+                                style={{ backgroundColor: '#4CAF50', padding: 10, borderRadius: 20, marginBottom: 10, width: "80%" }}
+                            >
+                                <Text style={{ color: 'white', marginTop: 5, textAlign: 'center' }}>Handed Sacks</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                    <Text style={{ textAlign: 'center' }}>Sack/s to Pickup</Text>
+                </>
+            }
+
+        />
     );
+
 };
 
 export default SeePickUp;
@@ -162,79 +179,105 @@ export default SeePickUp;
 const styles = StyleSheet.create({
     container: {
         flex: 1,
+        backgroundColor: '#E9FFF3',
+    },
+    headerContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        backgroundColor: '#1A2F23',
         padding: 20,
-        backgroundColor: '#2a2e35',
+        height: 90,
+        shadowColor: '#2BA84A',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.4,
+        shadowRadius: 8,
     },
-    title: {
-        fontSize: 22,
-        fontWeight: 'bold',
-        color: 'white',
-        textAlign: 'center',
-        marginBottom: 20,
+    greeting: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#B5FDC2',
     },
-    sectionTitle: {
-        fontSize: 18,
-        fontWeight: 'bold',
-        color: 'white',
-        marginTop: 15,
-        marginBottom: 10,
+    name: {
+        fontSize: 16,
+        fontWeight: '600',
+        color: '#B5FDC2',
+    },
+    iconButton: {
+        padding: 6,
+        backgroundColor: '#1A2F23',
+        borderRadius: 100,
     },
     pickupCard: {
-        backgroundColor: '#3b3f47',
-        borderRadius: 10,
-        padding: 15,
-        marginBottom: 15,
+        backgroundColor: '#2A4535',
+        borderRadius: 20,
+        padding: 16,
+        marginBottom: 16,
+        backdropFilter: 'blur(10px)',
+        shadowColor: '#AFE1AF',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.2,
+        shadowRadius: 10,
     },
     text: {
-        fontSize: 14,
-        color: 'white',
+        fontSize: 13,
+        color: '#E0F4E5',
         marginTop: 5,
     },
+    textWhite: {
+        fontSize: 13,
+        color: 'white',
+    },
     sackCard: {
-        backgroundColor: '#4a4e57',
-        borderRadius: 10,
+        backgroundColor: '#2A4535',
+        borderRadius: 15,
         flexDirection: 'row',
         alignItems: 'center',
-        padding: 15,
+        padding: 16,
         marginVertical: 8,
+        shadowColor: '#2BA84A',
+        shadowOpacity: 0.15,
+        shadowRadius: 4,
     },
     stallImage: {
-        width: 70,
-        height: 70,
-        borderRadius: 10,
-        marginRight: 15,
+        width: 75,
+        height: 75,
+        borderRadius: 12,
+        marginRight: 12,
     },
     sackInfo: {
         flex: 1,
     },
-    textWhite: {
-        fontSize: 12,
-        color: 'white',
-        marginBottom: 3,
-    },
     sackContainer: {
         alignItems: 'center',
-        backgroundColor: '#2E4237',
-        padding: 20,
+        marginTop: 10,
         borderRadius: 15,
-        marginBottom: 15,
     },
     sackWeight: {
-        fontSize: 20,
+        fontSize: 18,
         fontWeight: 'bold',
         color: 'white',
+        marginBottom: 4,
     },
     buyerCard: {
-        backgroundColor: '#4a4e57',
-        borderRadius: 10,
+        borderRadius: 15,
         padding: 15,
+        marginVertical: 10,
+        flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 15,
     },
     buyerImage: {
-        width: 80,
-        height: 80,
-        borderRadius: 40,
-        marginBottom: 10,
+        width: 70,
+        height: 70,
+        borderRadius: 35,
+        borderWidth: 2,
+        borderColor: '#AFE1AF',
+    },
+    sectionTitle: {
+        fontSize: 16,
+        fontWeight: '700',
+        color: 'white',
+        marginTop: 20,
+        marginBottom: 8,
     },
 });
