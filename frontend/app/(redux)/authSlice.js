@@ -23,6 +23,7 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginAction: (state, action) => {
+      console.log(action)
       state.user = action.payload;
       state.loading = false;
       AsyncStorage.setItem("userInfo", JSON.stringify(action.payload));

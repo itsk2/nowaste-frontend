@@ -88,14 +88,36 @@ export default function Login() {
                                 setIsLoading(true);
                                 mutation.mutateAsync(values)
                                     .then((data) => {
+                                        if (data?.user?.isDeleted) {
+                                            setIsLoading(false);
+                                            Alert.alert(
+                                                "Account Deleted",
+                                                "Your account has been deleted. Please contact support.",
+                                                [{ text: "OK" }]
+                                            );
+                                            return;
+                                        }
                                         dispatch(loginAction(data));
                                     })
                                     .catch((error) => {
                                         setIsLoading(false);
-                                        Alert.alert(
-                                            "Login Failed", "Your Email or Password is Incorrent. Try Again",
-                                            [{ text: "OK" }]
-                                        );
+
+                                        const errorMessage =
+                                            error?.response?.data?.message || "An unexpected error occurred.";
+
+                                        if (errorMessage === "Account has been deleted") {
+                                            Alert.alert(
+                                                "Account Deleted",
+                                                "Contact Support: #09755663543, Lira Baltazar",
+                                                [{ text: "OK" }]
+                                            );
+                                        } else {
+                                            Alert.alert(
+                                                "Login Failed",
+                                                errorMessage,
+                                                [{ text: "OK" }]
+                                            );
+                                        }
                                     });
                             }}
                         >
