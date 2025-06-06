@@ -13,19 +13,34 @@ const Map = () => {
   };
 
   useEffect(() => {
+    let subscription;
+
     (async () => {
       let { status } = await Location.requestForegroundPermissionsAsync();
       if (status !== 'granted') {
         console.log('Permission to access location was denied');
         return;
       }
-      let userLocation = await Location.getCurrentPositionAsync({});
-      setLocation(userLocation.coords);
-
-      fetchDirections(userLocation.coords);
+      subscription = await Location.watchPositionAsync(
+        {
+          accuracy: Location.Accuracy.High,
+          timeInterval: 5000,
+          distanceInterval: 7,
+        },
+        (newLocation) => {
+          const coords = newLocation.coords;
+          setLocation(coords);
+          fetchDirections(coords);
+        }
+      );
     })();
-  }, []);
 
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
 
   const fetchDirections = async (userLocation) => {
     if (!userLocation) {
