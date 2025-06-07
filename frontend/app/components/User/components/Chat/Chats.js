@@ -42,7 +42,7 @@ const Chats = () => {
             const { data } = await axios.get(`${baseURL}/get-user/${otherUserId}`);
             info[otherUserId] = data.user;
           } catch (err) {
-            console.error(`Failed to fetch user ${otherUserId}`, err);
+            // console.error(`Failed to fetch user ${otherUserId}`, err);
           }
         }
       }));

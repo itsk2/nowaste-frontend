@@ -40,7 +40,7 @@ const Profile = () => {
                 status: newStatus,
             });
         } catch (error) {
-            console.error("Error updating stall status:", error);
+            // console.error("Error updating stall status:", error);
             setStallStatus(stallStatus); // revert if failed
         }
     };
@@ -50,7 +50,7 @@ const Profile = () => {
             const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
             setUser(data.data.user);
         } catch (error) {
-            console.error("Error fetching user:", error);
+            // console.error("Error fetching user:", error);
         }
     };
 

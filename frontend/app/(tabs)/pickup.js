@@ -8,6 +8,7 @@ import baseURL from '../../assets/common/baseURL';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const Pickup = () => {
     const { user } = useSelector((state) => state.auth);
@@ -21,13 +22,13 @@ const Pickup = () => {
             const pickUpSacks = response.data.pickUpSacks;
 
             if (!Array.isArray(pickUpSacks)) {
-                console.error("pickUpSacks is not an array:", pickUpSacks);
+                // console.error("pickUpSacks is not an array:", pickUpSacks);
                 return;
             }
 
             const now = new Date();
             const nowUTC8 = new Date(now.getTime() + 8 * 60 * 60 * 1000);
-            console.log(pickUpSacks, 'Sacks');
+            // console.log(pickUpSacks, 'Sacks');
 
             for (const sack of pickUpSacks) {
                 const pickupTimestamp = new Date(sack.pickupTimestamp);
@@ -53,7 +54,7 @@ const Pickup = () => {
 
             setMySacks(pickUpSacks);
         } catch (error) {
-            console.error("Error fetching sacks:", error.response?.data || error.message);
+            // console.error("Error fetching sacks:", error.response?.data || error.message);
         }
     };
 
@@ -71,7 +72,7 @@ const Pickup = () => {
             );
             setSellers((prevSellers) => ({ ...prevSellers, ...sellerData }));
         } catch (error) {
-            console.error("Error fetching sellers:", error);
+            // console.error("Error fetching sellers:", error);
         }
     };
     useFocusEffect(
@@ -110,6 +111,13 @@ const Pickup = () => {
                         onPress={() => router.push('components/User/components/Chat/Chats')}
                     >
                         <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/Notification/notification')}
+                    >
+                        <Ionicons name="notifications-sharp" size={24} color="#2BA84A" />
                     </TouchableOpacity>
                 </View>
             </View>

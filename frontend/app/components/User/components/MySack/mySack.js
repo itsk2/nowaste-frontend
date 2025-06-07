@@ -33,7 +33,7 @@ const MySack = () => {
             const pendingSacks = data.mySack.filter(sack => sack.status === "pending");
             setMySacks(pendingSacks);
         } catch (error) {
-            console.error("Error fetching:", error);
+            // console.error("Error fetching:", error);
         }
     };
 
@@ -55,7 +55,7 @@ const MySack = () => {
                 navigation.goBack();
             }, 1500);
         } catch (error) {
-            console.error("Error picking up sacks:", error);
+            // console.error("Error picking up sacks:", error);
         }
     };
 

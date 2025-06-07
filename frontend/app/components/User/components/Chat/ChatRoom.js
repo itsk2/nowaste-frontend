@@ -28,7 +28,7 @@ const ChatRoom = () => {
                 });
                 setParticipants(response.data);
             } catch (error) {
-                console.error("Failed to fetch chat users:", error);
+                // console.error("Failed to fetch chat users:", error);
             }
         };
 
@@ -50,7 +50,7 @@ const ChatRoom = () => {
             await sendMessage(roomId, userId, receiverId, inputText.trim());
             setInputText("");
         } catch (error) {
-            console.error("Failed to send message:", error);
+            // console.error("Failed to send message:", error);
         }
     };
     const receiver = participants.find(p => p._id === receiverId);

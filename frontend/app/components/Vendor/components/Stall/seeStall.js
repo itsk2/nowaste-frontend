@@ -112,10 +112,6 @@ const SeeStall = () => {
                   <Text style={styles.cardInfoText}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
                   <Text style={styles.cardInfoText}>Spoilage: {new Date(item.dbSpoil).toLocaleDateString()}</Text>
                 </View>
-
-                <TouchableOpacity style={styles.detailsButton}>
-                  <Text style={styles.detailsText}>View details</Text>
-                </TouchableOpacity>
               </View>
             )}
           />

@@ -8,6 +8,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BarChart } from 'react-native-gifted-charts';
+const ITEMS_PER_PAGE = 5;
 
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -136,6 +137,32 @@ const index = () => {
     }).start();
   }, [fadeAnim]);
 
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
+  const startIdx = currentPage * ITEMS_PER_PAGE;
+  const currentItems = notifications.slice(startIdx, startIdx + ITEMS_PER_PAGE);
+
+  const timeAgo = (dateStr) => {
+    const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
+    const intervals = [
+      { label: 'year', seconds: 31536000 },
+      { label: 'month', seconds: 2592000 },
+      { label: 'day', seconds: 86400 },
+      { label: 'hour', seconds: 3600 },
+      { label: 'minute', seconds: 60 },
+      { label: 'second', seconds: 1 },
+    ];
+
+    for (const i of intervals) {
+      const count = Math.floor(seconds / i.seconds);
+      if (count > 0) return `${count} ${i.label}${count !== 1 ? 's' : ''} ago`;
+    }
+    return 'just now';
+  };
+
+  // console.log(notifications,'notifications')
+
   return (
     <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: 25 }}>
       {/* Header */}
@@ -202,21 +229,56 @@ const index = () => {
 
       {/* Notifications */}
       <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
-      {notifications.slice(0, 3).map((notification, idx) => (
-        <View key={notification._id || idx} style={styles.notificationCard}>
-          <View style={styles.notificationLeft}>
-            <View style={styles.notificationIcon}>
-              <Text style={styles.iconText}>🔔</Text>
+      <View>
+        {currentItems.map((notification, idx) => (
+          <TouchableOpacity
+            key={notification._id || idx} // ✅ key moved here
+            onPress={() =>
+              router.push({
+                pathname: "/components/Composter/components/Stall/seeStall",
+                params: { stall: JSON.stringify(notification.stall) },
+              })
+            }
+          >
+            <View style={styles.notificationCard}>
+              <View style={styles.notificationLeft}>
+                <View style={styles.notificationIcon}>
+                  <Text style={styles.iconText}>🔔</Text>
+                </View>
+              </View>
+              <View style={styles.notificationRight}>
+                <Text style={styles.notificationMessage}>{notification.message}</Text>
+                <Text style={styles.notificationTime}>
+                  {timeAgo(notification.createdAt)}
+                </Text>
+              </View>
             </View>
-          </View>
-          <View style={styles.notificationRight}>
-            <Text style={styles.notificationMessage}>{notification.message}</Text>
-            <Text style={styles.notificationTime}>
-              {new Date(notification.createdAt).toLocaleString()}
-            </Text>
-          </View>
+          </TouchableOpacity>
+        ))}
+
+        {/* Pagination Buttons */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+          <TouchableOpacity
+            onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+            disabled={currentPage === 0}
+            style={[styles.paginationButton, currentPage === 0 && { opacity: 0.5 }]}
+          >
+            <Text style={styles.paginationText}>← Previous</Text>
+          </TouchableOpacity>
+
+          <Text style={styles.pageIndicator}>
+            Page {currentPage + 1} of {totalPages}
+          </Text>
+
+          <TouchableOpacity
+            onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+            disabled={currentPage >= totalPages - 1}
+            style={[styles.paginationButton, currentPage >= totalPages - 1 && { opacity: 0.5 }]}
+          >
+            <Text style={styles.paginationText}>Next →</Text>
+          </TouchableOpacity>
         </View>
-      ))}
+      </View>
     </ScrollView>
   );
 
@@ -253,6 +315,21 @@ const styles = StyleSheet.create({
   iconGroup: {
     flexDirection: 'row',
     gap: 12,
+  },
+  paginationButton: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    backgroundColor: '#ccc',
+    borderRadius: 6,
+  },
+  paginationText: {
+    fontSize: 14,
+    color: '#333',
+  },
+  pageIndicator: {
+    alignSelf: 'center',
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   iconButton: {
     padding: 8,

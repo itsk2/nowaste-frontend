@@ -18,7 +18,7 @@ const Notification = () => {
                 const { data } = await axios.get(`${baseURL}/notifications/users-get-notif/${userId}`);
                 setNotifications(data.notifications);
             } catch (error) {
-                console.error("Error fetching notifications:", error);
+                // console.error("Error fetching notifications:", error);
             }
         };
 

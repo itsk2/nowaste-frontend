@@ -10,6 +10,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 const SeeStall = () => {
     const { stall } = useLocalSearchParams();
     const stallData = stall ? JSON.parse(stall) : {};
+    // console.log(stallData, 'StallData')
     const sellerId = stallData?.user || []
     const { user } = useSelector((state) => state.auth);
     const userId = user.user._id

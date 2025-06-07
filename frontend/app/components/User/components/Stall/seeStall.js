@@ -10,7 +10,9 @@ import { Ionicons } from '@expo/vector-icons';
 const SeeStall = () => {
     const { stall } = useLocalSearchParams();
     const stallData = stall ? JSON.parse(stall) : {};
+    // console.log(stallData, 'StallData')
     const sellerId = stallData?.user || [];
+    // console.log(sellerId, 'StallData')
     const { user } = useSelector((state) => state.auth);
     const userId = user.user._id;
     const [sackData, setStoreSacks] = useState([]);
@@ -24,7 +26,7 @@ const SeeStall = () => {
             const filteredSacks = data.sacks.filter(sack => sack.status === "posted");
             setStoreSacks(filteredSacks);
         } catch (error) {
-            console.error("Error fetching sacks:", error);
+            // console.error("Error fetching sacks:", error);
         }
     };
 
@@ -33,7 +35,7 @@ const SeeStall = () => {
             const { data } = await axios.get(`${baseURL}/ml/optimal-collection-schedule`);
             setOptimalSchedule(data);
         } catch (error) {
-            console.error("Error fetching predicted waste data:", error);
+            // console.error("Error fetching predicted waste data:", error);
         }
     };
 

@@ -22,7 +22,7 @@ const Stall = () => {
       const data = await getVendorStall(userId);
       setStore(data.stall);
     } catch (error) {
-      console.error("Error fetching store:", error);
+      // console.error("Error fetching store:", error);
     }
   };
 
@@ -31,7 +31,7 @@ const Stall = () => {
       const data = await getAllStalls();
       setAllStalls(data.stalls);
     } catch (error) {
-      console.error("Error fetching stalls:", error);
+      // console.error("Error fetching stalls:", error);
     }
   };
 

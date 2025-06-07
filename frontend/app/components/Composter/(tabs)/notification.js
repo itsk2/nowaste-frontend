@@ -39,13 +39,25 @@ const Notification = () => {
     );
 
     const renderItem = ({ item }) => (
-        <View style={styles.notificationCard}>
-            <Ionicons name="notifications-outline" size={24} color="white" style={styles.icon} />
-            <View style={styles.textContainer}>
-                <Text style={styles.messageText}>{item.message}</Text>
-                <Text style={styles.timestamp}>{timeAgo(new Date(item.createdAt))}</Text>
-            </View>
-        </View>
+        <>
+            <TouchableOpacity
+                key={item._id || idx} // ✅ key moved here
+                onPress={() =>
+                    router.push({
+                        pathname: "/components/User/components/Stall/seeStall",
+                        params: { stall: JSON.stringify(item.stall) },
+                    })
+                }
+            >
+                <View style={styles.notificationCard}>
+                    <Ionicons name="notifications-outline" size={24} color="white" style={styles.icon} />
+                    <View style={styles.textContainer}>
+                        <Text style={styles.messageText}>{item.message}</Text>
+                        <Text style={styles.timestamp}>{timeAgo(new Date(item.createdAt))}</Text>
+                    </View>
+                </View>
+            </TouchableOpacity>
+        </>
     );
 
     return (

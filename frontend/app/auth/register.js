@@ -7,6 +7,10 @@ import * as ImagePicker from 'expo-image-picker';
 import { registerUser } from '../(services)/api/Users/registerUserAPI';
 import Constants from 'expo-constants';
 import { Picker } from '@react-native-picker/picker';
+import { loginAction } from '../(redux)/authSlice';
+import { useDispatch } from 'react-redux';
+import { loginUser } from '../(services)/api/Users/loginUserAPI';
+import { useMutation } from '@tanstack/react-query';
 
 
 // Schema
@@ -21,19 +25,66 @@ const RegisterSchema = Yup.object().shape({
 const Register = () => {
   const [avatar, setAvatar] = useState(null);
   const router = useRouter();
-
+  const dispatch = useDispatch();
+  const mutation = useMutation({
+    mutationFn: loginUser,
+    mutationKey: ["login"],
+  });
   const pickImage = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.All,
-      allowsEditing: true,
-      aspect: [4, 3],
-      quality: 1,
-    });
+    Alert.alert(
+      "Select Image Source",
+      "Choose an option",
+      [
+        {
+          text: "Camera",
+          onPress: async () => {
+            const permission = await ImagePicker.requestCameraPermissionsAsync();
+            if (permission.status !== "granted") {
+              Alert.alert("Permission Denied", "Camera access is required.");
+              return;
+            }
 
-    if (!result.canceled) {
-      setAvatar(result.assets[0].uri);
-    }
+            const result = await ImagePicker.launchCameraAsync({
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 1,
+            });
+
+            if (!result.canceled) {
+              setAvatar(result.assets[0].uri);
+            }
+          },
+        },
+        {
+          text: "Gallery",
+          onPress: async () => {
+            const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+            if (permission.status !== "granted") {
+              Alert.alert("Permission Denied", "Gallery access is required.");
+              return;
+            }
+
+            const result = await ImagePicker.launchImageLibraryAsync({
+              mediaTypes: ImagePicker.MediaTypeOptions.Images,
+              allowsEditing: true,
+              aspect: [4, 3],
+              quality: 1,
+            });
+
+            if (!result.canceled) {
+              setAvatar(result.assets[0].uri);
+            }
+          },
+        },
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+      ],
+      { cancelable: true }
+    );
   };
+
 
   return (
     <>
@@ -63,6 +114,17 @@ const Register = () => {
                     ...values,
                     avatar,
                   });
+
+                  const data = {
+                    email: values.email,
+                    password: values.password,
+                  };
+
+                  mutation.mutateAsync(data)
+                    .then((values) => {
+                      dispatch(loginAction(values));
+                    })
+
                   Alert.alert(
                     "Registered Successfully",
                     "You have been registered.",
@@ -70,7 +132,7 @@ const Register = () => {
                       {
                         text: "OK",
                         onPress: () => {
-                          router.push('/auth/login');
+                          router.push("/components/User/addAddress");
                         },
                       },
                     ]
@@ -80,11 +142,7 @@ const Register = () => {
                   Alert.alert(
                     "Registration Failed",
                     error.response?.data?.message || "An error occurred during registration. Please try again.",
-                    [
-                      {
-                        text: "OK",
-                      },
-                    ]
+                    [{ text: "OK" }]
                   );
                 }
               }}

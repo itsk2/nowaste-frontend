@@ -7,6 +7,7 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { BarChart } from 'react-native-gifted-charts';
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const Index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -20,7 +21,9 @@ const Index = () => {
   const [activePickupRequest, setActivePickupRequest] = useState(0);
   const [notifications, setNotifications] = useState([]);
 
-  // Transform data for BarChart (dummy example for last 6 months)
+  // notifications.forEach((notif, i) => {
+  //   console.log(`Notification #${i + 1} Stall:`, notif.stall);
+  // });
   const prepareChartData = (pickups) => {
     // Get last 6 months labels and sum kilos
     const now = new Date();
@@ -86,7 +89,7 @@ const Index = () => {
       // Set chart data for last 6 months
       setMonthlyWasteData(prepareChartData(pickups));
     } catch (error) {
-      console.error('Error getting Pickups:', error.message);
+      // console.error('Error getting Pickups:', error.message);
     }
   };
 
@@ -96,7 +99,7 @@ const Index = () => {
       const newSackNotifications = data.notifications.filter(notification => notification.type === 'new_sack');
       setNotifications(newSackNotifications);
     } catch (error) {
-      console.error("Error fetching notifications:", error);
+      // console.error("Error fetching notifications:", error);
     }
   };
 
@@ -131,6 +134,23 @@ const Index = () => {
     return null;
   }
 
+  const timeAgo = (dateStr) => {
+    const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
+    const intervals = [
+      { label: 'year', seconds: 31536000 },
+      { label: 'month', seconds: 2592000 },
+      { label: 'day', seconds: 86400 },
+      { label: 'hour', seconds: 3600 },
+      { label: 'minute', seconds: 60 },
+      { label: 'second', seconds: 1 },
+    ];
+
+    for (const i of intervals) {
+      const count = Math.floor(seconds / i.seconds);
+      if (count > 0) return `${count} ${i.label}${count !== 1 ? 's' : ''} ago`;
+    }
+    return 'just now';
+  };
   return (
     <ScrollView style={styles.container}>
       <View style={styles.headerContainer}>
@@ -151,6 +171,12 @@ const Index = () => {
             onPress={() => router.push('components/User/components/Chat/Chats')}
           >
             <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/Notification/notification')}
+          >
+            <Ionicons name="notifications-sharp" size={24} color="#2BA84A" />
           </TouchableOpacity>
         </View>
       </View>
@@ -195,21 +221,28 @@ const Index = () => {
       </View>
 
       <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
-      {notifications.slice(0, 3).map((notification, idx) => (
-        <View key={notification._id || idx} style={styles.notificationCard}>
-          <View style={styles.notificationLeft}>
-            <View style={styles.notificationIcon}>
-              <Text style={styles.iconText}>🔔</Text>
+      {notifications.length > 0 && (
+        <TouchableOpacity
+          onPress={() => router.push({
+            pathname: "/components/User/components/Stall/seeStall",
+            params: { stall: JSON.stringify(notifications[0].stall) },
+          })}
+        >
+          <View key={notifications[0]._id} style={styles.notificationCard}>
+            <View style={styles.notificationLeft}>
+              <View style={styles.notificationIcon}>
+                <Text style={styles.iconText}>🔔</Text>
+              </View>
+            </View>
+            <View style={styles.notificationRight}>
+              <Text style={styles.notificationMessage}>{notifications[0].message}</Text>
+              <Text style={styles.notificationTime}>
+                {timeAgo(notifications[0].createdAt)}
+              </Text>
             </View>
           </View>
-          <View style={styles.notificationRight}>
-            <Text style={styles.notificationMessage}>{notification.message}</Text>
-            <Text style={styles.notificationTime}>
-              {new Date(notification.createdAt).toLocaleString()}
-            </Text>
-          </View>
-        </View>
-      ))}
+        </TouchableOpacity>
+      )}
     </ScrollView>
   );
 };

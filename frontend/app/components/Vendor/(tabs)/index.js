@@ -7,6 +7,8 @@ import baseURL from '../../../../assets/common/baseURL';
 import { BarChart } from 'react-native-gifted-charts';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import { useRouter } from 'expo-router';
+const ITEMS_PER_PAGE = 5;
+
 const index = () => {
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const { user } = useSelector((state) => state.auth);
@@ -31,7 +33,7 @@ const index = () => {
         setClaimedCount(response.data.claimedSacksCount);
         // console.log(response)
       } catch (error) {
-        console.error('Error fetching sack status:', error);
+        // console.error('Error fetching sack status:', error);
       }
     };
     const fetchStoreSacks = async () => {
@@ -85,18 +87,16 @@ const index = () => {
         setMonthlyAverage(monthlyTotal);
 
       } catch (error) {
-        console.error("Error fetching:", error);
+        // console.error("Error fetching:", error);
       }
     };
 
     const fetchNotifications = async () => {
       try {
-        const { data } = await axios.get(`${baseURL}/notifications/users-get-notif/${userId}`);
-
-        const newSackNotifications = data.notifications.filter(notification => notification.type === 'pickup');
-
-        console.log(newSackNotifications);
-        setNotifications(newSackNotifications);
+        const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
+        const spoiledNotifications = data.notifications.filter(notification => notification.type === 'trashed' || notification.type === 'pickup' || notification.type === 'spoiled');
+        // console.log(spoiledNotifications);
+        setNotifications(spoiledNotifications);
       } catch (error) {
         console.error("Error fetching notifications:", error);
       }
@@ -117,6 +117,31 @@ const index = () => {
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
+
+
+  const timeAgo = (dateStr) => {
+    const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
+    const intervals = [
+      { label: 'year', seconds: 31536000 },
+      { label: 'month', seconds: 2592000 },
+      { label: 'day', seconds: 86400 },
+      { label: 'hour', seconds: 3600 },
+      { label: 'minute', seconds: 60 },
+      { label: 'second', seconds: 1 },
+    ];
+
+    for (const i of intervals) {
+      const count = Math.floor(seconds / i.seconds);
+      if (count > 0) return `${count} ${i.label}${count !== 1 ? 's' : ''} ago`;
+    }
+    return 'just now';
+  };
+
+  const [currentPage, setCurrentPage] = useState(0);
+
+  const totalPages = Math.ceil(notifications.length / ITEMS_PER_PAGE);
+  const startIdx = currentPage * ITEMS_PER_PAGE;
+  const currentItems = notifications.slice(startIdx, startIdx + ITEMS_PER_PAGE);
 
   return (
     <ScrollView style={styles.container}>
@@ -157,7 +182,7 @@ const index = () => {
 
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Total Collected</Text>
+            <Text style={styles.statLabel}>Total Kilo Distributed</Text>
             <Text style={styles.statValue}>{totalKilo} <Text style={styles.unit}>kg</Text></Text>
           </View>
           <View style={styles.statCard}>
@@ -177,22 +202,47 @@ const index = () => {
         </View>
 
         {/* Notifications Section */}
-        <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
-        {notifications.slice(0, 3).map((notification, idx) => (
-          <View key={notification._id || idx} style={styles.notificationCard}>
-            <View style={styles.notificationLeft}>
-              <View style={styles.notificationIcon}>
-                <Text style={styles.iconText}>🔔</Text>
+        <Text style={styles.sectionTitle}>Recent Notification at Stall</Text>
+        <View>
+          {currentItems.map((notification, idx) => (
+            <View style={styles.notificationCard}>
+              <View style={styles.notificationLeft}>
+                <View style={styles.notificationIcon}>
+                  <Text style={styles.iconText}>🔔</Text>
+                </View>
+              </View>
+              <View style={styles.notificationRight}>
+                <Text style={styles.notificationMessage}>{notification.message}</Text>
+                <Text style={styles.notificationTime}>
+                  {timeAgo(notification.createdAt)}
+                </Text>
               </View>
             </View>
-            <View style={styles.notificationRight}>
-              <Text style={styles.notificationMessage}>{notification.message}</Text>
-              <Text style={styles.notificationTime}>
-                {new Date(notification.createdAt).toLocaleString()}
-              </Text>
-            </View>
+          ))}
+
+          {/* Pagination Buttons */}
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+            <TouchableOpacity
+              onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
+              disabled={currentPage === 0}
+              style={[styles.paginationButton, currentPage === 0 && { opacity: 0.5 }]}
+            >
+              <Text style={styles.paginationText}>← Previous</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.pageIndicator}>
+              Page {currentPage + 1} of {totalPages}
+            </Text>
+
+            <TouchableOpacity
+              onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
+              disabled={currentPage >= totalPages - 1}
+              style={[styles.paginationButton, currentPage >= totalPages - 1 && { opacity: 0.5 }]}
+            >
+              <Text style={styles.paginationText}>Next →</Text>
+            </TouchableOpacity>
           </View>
-        ))}
+        </View>
       </View>
     </ScrollView>
   );

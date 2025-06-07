@@ -7,6 +7,7 @@ import { getAllStalls } from '../(services)/api/Users/getAllStalls';
 import Header from '../components/Header';
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 const Market = () => {
   const [allStalls, setAllStalls] = useState([]);
@@ -18,7 +19,7 @@ const Market = () => {
       const data = await getAllStalls();
       setAllStalls(data.stalls);
     } catch (error) {
-      console.error("Error fetching stalls:", error);
+      // console.error("Error fetching stalls:", error);
     }
   };
 
@@ -47,6 +48,13 @@ const Market = () => {
             onPress={() => router.push('components/User/components/Chat/Chats')}
           >
             <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => router.push('components/User/components/Notification/notification')}
+          >
+            <Ionicons name="notifications-sharp" size={24} color="#2BA84A" />
           </TouchableOpacity>
         </View>
       </View>

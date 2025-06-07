@@ -20,10 +20,9 @@ import { Picker } from "@react-native-picker/picker";
 import baseURL from "../../assets/common/baseURL";
 import axios from "axios";
 import { LineChart } from 'react-native-gifted-charts';
-import Header from "../components/Header";
 import Entypo from '@expo/vector-icons/Entypo';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import Constants from "expo-constants";
+import Ionicons from "@expo/vector-icons/Ionicons";
 
 export default function WeightProgressForm() {
     const navigation = useNavigation();
@@ -54,7 +53,7 @@ export default function WeightProgressForm() {
             const res = await axios.get(`${baseURL}/track/get-records/${userId}`);
             setRecords(res.data.records);
         } catch (error) {
-            console.error("Error fetching records data:", error);
+            // console.error("Error fetching records data:", error);
         }
     };
 
@@ -190,6 +189,13 @@ export default function WeightProgressForm() {
                         onPress={() => router.push('components/User/components/Chat/Chats')}
                     >
                         <MaterialIcons name="chat-bubble-outline" size={18} color="#2BA84A" />
+                    </TouchableOpacity>
+
+                    <TouchableOpacity
+                        style={styles.iconButton}
+                        onPress={() => router.push('components/User/components/Notification/notification')}
+                    >
+                        <Ionicons name="notifications-sharp" size={24} color="#2BA84A" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -390,7 +396,6 @@ export default function WeightProgressForm() {
                             <Formik
                                 initialValues={{ notice: "", kilo: "", pigName: "", feed: "" }}
                                 onSubmit={async (values) => {
-                                    console.log("Form submitted with values:", values);
                                     setModalVisible(false);
                                     try {
                                         const response = await inputRecordTrack({
@@ -399,7 +404,7 @@ export default function WeightProgressForm() {
                                             userId
                                         });
                                     } catch (error) {
-                                        console.error('Registration failed:', error.response?.data?.message || error.message);
+                                        // console.error('Registration failed:', error.response?.data?.message || error.message);
                                         Alert.alert(
                                             "Registration Failed",
                                             error.response?.data?.message || "An error occurred during registration. Please try again.",

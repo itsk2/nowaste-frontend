@@ -1,13 +1,14 @@
 import axios from 'axios';
 import baseURL from '../../../../assets/common/baseURL'
 
-const addVendorStall = async ({ _id, stallDescription, stallAddress, stallNumber, stallHours, avatar }) => {
+const addVendorStall = async ({ _id, stallDescription, stallAddress, stallNumber, openHours, closeHours, avatar }) => {
     try {
         const formData = new FormData();
         formData.append("stallDescription", stallDescription);
         formData.append("stallAddress", stallAddress);
         formData.append("stallNumber", stallNumber);
-        formData.append("stallHours", stallHours);
+        formData.append("openHours", openHours);
+        formData.append("closeHours", closeHours);
 
         if (avatar) {
             const fileName = avatar.split("/").pop();
