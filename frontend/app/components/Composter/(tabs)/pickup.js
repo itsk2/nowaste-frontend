@@ -10,7 +10,7 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const Pickup = () => {
     const { user } = useSelector((state) => state.auth);
-    const userId = user.user._id;
+    const userId = user?._id || user?.user?._id;
     const [mySack, setMySacks] = useState([]);
     const [sellers, setSellers] = useState({});
 

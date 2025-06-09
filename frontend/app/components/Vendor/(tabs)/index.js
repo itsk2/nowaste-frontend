@@ -149,7 +149,7 @@ const index = () => {
       <View style={styles.headerContainer}>
         <View>
           <Text style={styles.greeting}>Welcome</Text>
-          <Text style={styles.name}>{user.user.name}</Text>
+          <Text style={styles.name}>{user?.user?.name}</Text>
         </View>
         <View style={styles.iconGroup}>
           <TouchableOpacity style={styles.iconButton} onPress={() => router.push('/components/Vendor/components/Notification/notification')}>
@@ -205,7 +205,8 @@ const index = () => {
         <Text style={styles.sectionTitle}>Recent Notification at Stall</Text>
         <View>
           {currentItems.map((notification, idx) => (
-            <View style={styles.notificationCard}>
+            <View style={styles.notificationCard} key={idx} // ✅ key moved here
+            >
               <View style={styles.notificationLeft}>
                 <View style={styles.notificationIcon}>
                   <Text style={styles.iconText}>🔔</Text>

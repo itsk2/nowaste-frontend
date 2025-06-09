@@ -110,10 +110,10 @@ const UserAddress = () => {
                   <Text style={styles.menuText}>City: {address.city}</Text>
                 </View>
                 <TouchableOpacity
-                  style={styles.button}
+                  style={{ backgroundColor: '#1e88e5', padding: 15, borderRadius: 7, marginTop: 7, }}
                   onPress={() => router.push("/components/Vendor/(tabs)/")}
                 >
-                  <Text style={styles.buttonText}>Enter Home Address</Text>
+                  <Text style={styles.buttonText}>Proceed</Text>
                 </TouchableOpacity>
               </View>
             ) : (

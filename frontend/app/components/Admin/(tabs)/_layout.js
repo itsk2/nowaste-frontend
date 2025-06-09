@@ -12,6 +12,7 @@ import { useSelector } from "react-redux";
 import { FontAwesome } from "@expo/vector-icons";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Ionicons } from "@expo/vector-icons";
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 
 export default function RootLayout() {
     const { user } = useSelector((state) => state.auth);
@@ -62,6 +63,11 @@ export default function RootLayout() {
             route: "/components/Admin/analytics",
         },
         {
+            label: "Market",
+            icon: <FontAwesome5 name="store" size={24} color="white" />,
+            route: "/components/Admin/marketAnalytics",
+        },
+        {
             label: "Profile",
             icon: <FontAwesome name="user" size={24} color="white" />,
             route: "/components/Admin/profile",
@@ -76,7 +82,7 @@ export default function RootLayout() {
                     <Ionicons name="menu" size={28} color="white" />
                 </TouchableOpacity>
 
-                <View style={{ marginLeft: 30}}>
+                <View style={{ marginLeft: 30 }}>
                     <Text style={{ color: 'white', textAlign: 'center' }}>Admin Dashboard</Text>
                     <Text style={{ color: 'white', textAlign: 'center' }}>Track and manage, market waste collection.</Text>
                 </View>

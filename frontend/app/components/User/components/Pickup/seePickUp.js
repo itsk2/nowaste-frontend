@@ -33,6 +33,8 @@ const SeePickUp = () => {
     const [submitted, setSubmitted] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [completeModal, setCompleteModal] = useState(false);
+    const [selectedSack, setSelectedSack] = useState(null);
+    // console.log(selectedSackId, 'ID SELECTED')
 
     const navigation = useNavigation()
 
@@ -93,7 +95,7 @@ const SeePickUp = () => {
             console.error("Error fetching sack statuses:", error);
         }
     };
-    // console.log(sackStatuses,'Statuses')
+    // console.log(selectedSack, 'Selected sack')
     useEffect(() => {
         fetchAllSackStatuses();
     }, [userId]);
@@ -128,48 +130,30 @@ const SeePickUp = () => {
         );
     };
 
-    const handleRatingSubmit = async () => {
-        if (!rating || review.trim() === '') {
-            return Alert.alert("Incomplete", "Please provide both a rating and review.");
-        }
-
+    const handleRatingSubmit = async (selectedSackId) => {
+        console.log(selectedSackId)
         try {
-            const { data } = await axios.put(`${baseURL}/sack/rate-transaction/${pickup._id}`, {
+            const { data } = await axios.put(`${baseURL}/sack/rate-transaction/${selectedSackId}`, {
                 review,
                 rating
             });
 
             setSubmitted(true);
 
-            // Auto-close modal after 2.5 seconds
             setTimeout(() => {
                 setIsRatingModalVisible(false);
                 setSubmitted(false);
                 setRating(0);
                 setReview('');
+                setSelectedSack(null);
             }, 2500);
         } catch (error) {
-            console.error("Error submitting feedback:", error);
+            console.error("Error submitting feedback:", error.message);
             Alert.alert("Error", "Could not submit your feedback.");
         }
     };
 
-    const uniqueSacks = pickup?.sacks?.filter((sack, index, self) => {
-        const seller = sellers[sack.seller];
-
-        if (!seller) return false;
-
-        const stallId = seller.stall?.stallNumber?.toString();
-
-        // Check if this stallNumber was already used
-        return (
-            self.findIndex(
-                (s) => sellers[s.seller]?.stall?.stallNumber?.toString() === stallId
-            ) === index
-        );
-    }) || [];
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
-    const [isMapVisible, setIsMapVisible] = useState(false);
 
     return (
         <>
@@ -284,6 +268,17 @@ const SeePickUp = () => {
                                                 </Text>
                                             </View>
                                         </View>
+                                        {pickupStatus === "completed" && (
+                                            <TouchableOpacity
+                                                style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10, width: '100%', height: 'auto' }}
+                                                onPress={() => {
+                                                    setSelectedSack(item);
+                                                    setIsRatingModalVisible(true);
+                                                }}
+                                            >
+                                                <Text style={{ textAlign: 'center', color: 'black', fontWeight: 'bold', fontSize: 12 }}>Submit a Review</Text>
+                                            </TouchableOpacity>
+                                        )}
                                     </View>
                                     <View style={{ flexDirection: 'column' }}>
                                         <Text style={{
@@ -329,14 +324,6 @@ const SeePickUp = () => {
                     ListFooterComponent={
                         <>
                             {/* Conditionally rendered buttons & modals */}
-                            {pickupStatus === "completed" && (
-                                <TouchableOpacity
-                                    style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10, width: '100%', marginBottom: 40, }}
-                                    onPress={() => setIsRatingModalVisible(true)}
-                                >
-                                    <Text style={{ textAlign: 'center', color: 'black', fontWeight: 'bold' }}>Submit a Review</Text>
-                                </TouchableOpacity>
-                            )}
                             {pickupStatus === "pending" && (
                                 <TouchableOpacity
                                     style={{ backgroundColor: '#AFE1AF', padding: 10, borderRadius: 20, marginTop: 20, marginBottom: 30 }}
@@ -437,7 +424,7 @@ const SeePickUp = () => {
                                                 <TouchableOpacity
                                                     style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10, width: '100%' }}
                                                     onPress={async () => {
-                                                        await handleRatingSubmit();
+                                                        await handleRatingSubmit(selectedSack.sackId);
                                                     }}
                                                 >
                                                     <Text style={{ color: 'black', textAlign: 'center', fontWeight: 'bold' }}>Submit Feedback</Text>

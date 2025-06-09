@@ -41,7 +41,7 @@ const CreateSack = () => {
                         });
 
                         if (!result.canceled) {
-                            setAvatar(result.assets[0].uri);
+                            setImage(result.assets[0].uri);
                         }
                     },
                 },
@@ -62,7 +62,7 @@ const CreateSack = () => {
                         });
 
                         if (!result.canceled) {
-                            setAvatar(result.assets[0].uri);
+                            setImage(result.assets[0].uri);
                         }
                     },
                 },
@@ -164,6 +164,8 @@ const CreateSack = () => {
                                 <Text style={styles.errorText}>{errors.description}</Text>
                             )}
 
+                            <Text style={styles.kiloHint}>How many kilo/s do you have?</Text>
+
                             <View style={styles.sackRow}>
                                 <TouchableOpacity onPress={() => decrement(setFieldValue)} style={styles.sackButton}>
                                     <Text style={styles.sackButtonText}>-</Text>
@@ -181,7 +183,6 @@ const CreateSack = () => {
                                     <Text style={styles.sackButtonText}>+</Text>
                                 </TouchableOpacity>
                             </View>
-                            <Text style={styles.kiloHint}>How many kilo/s do you have?</Text>
 
                             <View style={styles.dropdownWrapper}>
                                 <Picker

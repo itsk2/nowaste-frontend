@@ -230,13 +230,13 @@ const index = () => {
       {/* Notifications */}
       <Text style={styles.sectionTitle}>Recent Available Sacks</Text>
       <View>
-        {currentItems.map((notification, idx) => (
+        {notifications.length > 0 && (
           <TouchableOpacity
-            key={notification._id || idx} // ✅ key moved here
+            key={notifications[0]._id || idx} // ✅ key moved here
             onPress={() =>
               router.push({
                 pathname: "/components/Composter/components/Stall/seeStall",
-                params: { stall: JSON.stringify(notification.stall) },
+                params: { stall: JSON.stringify(notifications[0].stall) },
               })
             }
           >
@@ -247,37 +247,14 @@ const index = () => {
                 </View>
               </View>
               <View style={styles.notificationRight}>
-                <Text style={styles.notificationMessage}>{notification.message}</Text>
+                <Text style={styles.notificationMessage}>{notifications[0].message}</Text>
                 <Text style={styles.notificationTime}>
-                  {timeAgo(notification.createdAt)}
+                  {timeAgo(notifications[0].createdAt)}
                 </Text>
               </View>
             </View>
           </TouchableOpacity>
-        ))}
-
-        {/* Pagination Buttons */}
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
-          <TouchableOpacity
-            onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
-            disabled={currentPage === 0}
-            style={[styles.paginationButton, currentPage === 0 && { opacity: 0.5 }]}
-          >
-            <Text style={styles.paginationText}>← Previous</Text>
-          </TouchableOpacity>
-
-          <Text style={styles.pageIndicator}>
-            Page {currentPage + 1} of {totalPages}
-          </Text>
-
-          <TouchableOpacity
-            onPress={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages - 1))}
-            disabled={currentPage >= totalPages - 1}
-            style={[styles.paginationButton, currentPage >= totalPages - 1 && { opacity: 0.5 }]}
-          >
-            <Text style={styles.paginationText}>Next →</Text>
-          </TouchableOpacity>
-        </View>
+        )}
       </View>
     </ScrollView>
   );
