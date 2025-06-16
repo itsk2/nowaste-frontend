@@ -184,6 +184,21 @@ const SeePickUp = () => {
                                             })}
                                         </Text>
                                     )}
+                                    {pickupStatus === "completed" && (
+                                        <Text style={styles.text}>
+                                            Picked Up Completed Date: {new Date(new Date(pickup.pickedUpDate).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })}{" "}
+                                            {new Date(pickup.pickedUpDate).toLocaleTimeString("en-US", {
+                                                timeZone: "UTC",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            })}
+                                        </Text>
+                                    )}
                                 </View>
 
                                 <View style={{ height: 200, borderRadius: 16, overflow: 'hidden' }}>

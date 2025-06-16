@@ -11,22 +11,21 @@ export default function DashboardCard05() {
     const fetchReviews = async () => {
         try {
             const { data } = await axios.get(`${baseURL}/get-ratings-reviews`);
-            const now = new Date();
-            const first = new Date(now.setDate(now.getDate() - now.getDay()));
-            first.setHours(0, 0, 0, 0);
-            const last = new Date(first);
-            last.setDate(last.getDate() + 6);
-            last.setHours(23, 59, 59, 999);
-
             const arr = [];
+
             data.data.forEach(u => {
                 (u.stall?.review || []).forEach(r => {
-                    const d = new Date(r.date);
-                    if (d >= first && d <= last && r.text?.trim()) {
-                        arr.push({ text: r.text, date: d, user: u.name, email: u.email });
+                    if (r.text?.trim()) {
+                        arr.push({
+                            text: r.text,
+                            date: new Date(r.date),
+                            user: u.name,
+                            email: u.email
+                        });
                     }
                 });
             });
+
             setReviews(arr);
         } catch (e) {
             console.error(e);
@@ -59,7 +58,7 @@ export default function DashboardCard05() {
                         <View style={styles.review}>
                             <Text>“{item.text}”</Text>
                             <Text style={styles.meta}>
-                                — {item.user} {item.email ? `(${item.email})` : ''}
+                                to — {item.user} {item.email ? `(${item.email})` : ''}
                             </Text>
                         </View>
                     )}

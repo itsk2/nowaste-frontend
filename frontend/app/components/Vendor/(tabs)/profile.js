@@ -12,7 +12,6 @@ import Constants from "expo-constants";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { FontAwesome } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import axios from "axios";
 import baseURL from "../../../../assets/common/baseURL";
@@ -110,6 +109,16 @@ const Profile = () => {
                         }
                     />
                     <MenuItem
+                        iconLib={FontAwesome}
+                        icon="list-alt"
+                        label="Price List"
+                        onPress={() =>
+                            router.push({
+                                pathname: "/components/Vendor/components/MarketList",
+                            })
+                        }
+                    />
+                    <MenuItem
                         iconLib={AntDesign}
                         icon="notification"
                         label="Notifications"
@@ -139,7 +148,7 @@ const styles = StyleSheet.create({
     },
     headerContainer: {
         backgroundColor: "#1e463a",
-        paddingTop:40,
+        paddingTop: 40,
         paddingBottom: 60,
         alignItems: "center",
         borderBottomLeftRadius: 50,

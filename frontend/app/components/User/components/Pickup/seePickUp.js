@@ -200,7 +200,7 @@ const SeePickUp = () => {
                                     )}
                                     {pickupStatus === "completed" && (
                                         <Text style={styles.text}>
-                                            Picked Up Time: {new Date(new Date(pickup.pickedUpDate).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                            Picked Up Completed Date: {new Date(new Date(pickup.pickedUpDate).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
                                                 year: "numeric",
                                                 month: "long",
                                                 day: "numeric",
