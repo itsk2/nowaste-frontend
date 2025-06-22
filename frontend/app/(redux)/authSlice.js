@@ -63,6 +63,15 @@ export const loadUser = () => async (dispatch) => {
 // At the bottom of authSlice.js
 export const logout = () => async (dispatch) => {
   try {
+    const user = getState().auth.user;
+
+    // ✅ Clear token in backend
+    if (user?._id) {
+      await axios.put(`${baseURL}/push/update/token`, {
+        userId: user._id,
+        expoPushToken: null, 
+      });
+    }
     await AsyncStorage.removeItem("userInfo");
     dispatch(logoutAction());
   } catch (error) {

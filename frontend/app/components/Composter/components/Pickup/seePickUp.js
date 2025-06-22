@@ -28,24 +28,33 @@ const SeePickUp = () => {
     const [completeModal, setCompleteModal] = useState(false);
     const [selectedSack, setSelectedSack] = useState(null);
 
-    useEffect(() => {
-        const fetchSackSellers = async () => {
-            try {
-                const sellerData = {};
-                await Promise.all(
-                    pickup.sacks.map(async (item) => {
-                        const { data } = await axios.get(`${baseURL}/get-user/${item.seller}`);
-                        sellerData[item.seller] = data.user;
-                    })
-                );
-                setSellers(sellerData);
-            } catch (error) {
-                console.error('Error fetching sellers:', error);
-            }
-        };
+    const fetchSackSellers = async () => {
+        try {
+            const sellerData = {};
+            await Promise.all(
+                pickup.sacks.map(async (item) => {
+                    const { data } = await axios.get(`${baseURL}/get-user/${item.seller}`);
+                    sellerData[item.seller] = data.user;
+                })
+            );
+            setSellers(sellerData);
+        } catch (error) {
+            console.error('Error fetching sellers:', error);
+        }
+    };
 
-        fetchSackSellers();
-    }, [pickup.sacks]);
+
+    useFocusEffect(
+        useCallback(() => {
+            if (userId) {
+                fetchSackSellers();
+                const interval = setInterval(() => {
+                    fetchSackSellers();
+                }, 1500);
+                return () => clearInterval(interval);
+            }
+        }, [pickup.sacks])
+    );
 
     const handlePickupStatus = async () => {
         try {
@@ -82,9 +91,18 @@ const SeePickUp = () => {
             console.error("Error fetching sack statuses:", error);
         }
     };
-    useEffect(() => {
-        fetchAllSackStatuses();
-    }, [pickup.sacks]);
+    
+    useFocusEffect(
+        useCallback(() => {
+            if (userId) {
+                fetchAllSackStatuses();
+                const interval = setInterval(() => {
+                    fetchAllSackStatuses();
+                }, 1500);
+                return () => clearInterval(interval);
+            }
+        }, [pickup.sacks])
+    );
 
     const handleCompletePickUpStatus = () => {
         Alert.alert(
@@ -140,6 +158,7 @@ const SeePickUp = () => {
     };
 
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
+    console.log(pickup.sacks.filter(item => item.status !== "cancelled"), 'Log')
 
     return (
         <>
@@ -160,7 +179,7 @@ const SeePickUp = () => {
                     </TouchableOpacity>
                 </View>
                 <FlatList
-                    data={pickup.sacks}
+                    data={pickup.sacks.filter(item => item.status !== "cancelled")}
                     keyExtractor={(item) => item._id}
                     ListHeaderComponent={
                         <>

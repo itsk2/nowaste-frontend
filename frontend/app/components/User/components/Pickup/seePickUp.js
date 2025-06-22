@@ -154,7 +154,6 @@ const SeePickUp = () => {
     };
 
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
-
     return (
         <>
             <View style={styles.container}>
@@ -174,7 +173,7 @@ const SeePickUp = () => {
                     </TouchableOpacity>
                 </View>
                 <FlatList
-                    data={pickup.sacks}
+                    data={pickup.sacks.filter(item => item.status !== "cancelled")}
                     keyExtractor={(item) => item._id}
                     ListHeaderComponent={
                         <>

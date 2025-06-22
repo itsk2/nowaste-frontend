@@ -5,7 +5,7 @@
     "scheme": "nowaste",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/nw-bg.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
@@ -21,23 +21,23 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/nw-bg.png",
         "backgroundColor": "#ffffff"
       },
+      "googleServicesFile": "./google-services.json",
       "package": "com.kellyncodon.frontend",
       "config": {
         "googleMaps": {
           "apiKey": "AIzaSyAQ0HexX01OZ_JrbaWLWALOowguElQ6A6k"
         }
-      }
-      ,
+      },
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
       ]
     },
     "web": {
-      "favicon": "./assets/favicon.png"
+      "favicon": "./assets/nw-bg.png"
     },
     "extra": {
       "eas": {
@@ -46,4 +46,4 @@
     },
     "owner": "nowaste"
   }
-} 
+}

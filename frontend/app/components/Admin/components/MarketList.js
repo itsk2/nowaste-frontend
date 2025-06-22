@@ -109,6 +109,8 @@ export default function MarketList() {
         return acc;
     }, {});
 
+    // console.log(groupedItems,'Group Items')
+
     return (
         <ScrollView style={styles.container}>
             <Text style={styles.title}>Market Price List</Text>
@@ -179,13 +181,42 @@ export default function MarketList() {
                                         </Text>
                                     );
                                 })}
-                            </View>
-                            <View style={styles.actions}>
-                                <TouchableOpacity onPress={() => openModal(item)}><Text>✏️</Text></TouchableOpacity>
-                                <TouchableOpacity onPress={async () => {
-                                    await axios.delete(`${baseURL}/item/delete/${item._id}`);
-                                    fetchItems();
-                                }}><Text>🗑️</Text></TouchableOpacity>
+                                <View style={styles.actions}>
+                                    {item.isDeleted ? (
+                                        <TouchableOpacity
+                                            onPress={async () => {
+                                                try {
+                                                    await axios.put(`${baseURL}/item/restore/${item._id}`);
+                                                    fetchItems();
+                                                } catch (err) {
+                                                    console.error("Restore failed:", err.message);
+                                                    Alert.alert("Restore Failed", "Could not restore the item.");
+                                                }
+                                            }}
+                                        >
+                                            <Text>♻️</Text>
+                                        </TouchableOpacity>
+                                    ) : (
+                                        <>
+                                            <TouchableOpacity onPress={() => openModal(item)}>
+                                                <Text>✏️</Text>
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                onPress={async () => {
+                                                    try {
+                                                        await axios.delete(`${baseURL}/item/delete/${item._id}`);
+                                                        fetchItems();
+                                                    } catch (err) {
+                                                        console.error("Delete failed:", err.message);
+                                                        Alert.alert("Delete Failed", "Could not delete the item.");
+                                                    }
+                                                }}
+                                            >
+                                                <Text>🗑️</Text>
+                                            </TouchableOpacity>
+                                        </>
+                                    )}
+                                </View>
                             </View>
                         </View>
                     ))}

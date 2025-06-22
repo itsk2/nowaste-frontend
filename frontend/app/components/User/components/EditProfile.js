@@ -114,6 +114,9 @@ const EditProfile = () => {
                             touched,
                         }) => (
                             <View style={styles.form}>
+                                {user.user.role === 'vendor' && (
+                                    <Text style={{ marginTop: 10, fontSize: 9, marginBottom: 3 }}>If you want to change your stall credentials, proceed on notifying the admin.</Text>
+                                )}
                                 <View style={styles.headerWrapper}>
                                     <Text style={styles.header}>Edit Profile</Text>
                                 </View>

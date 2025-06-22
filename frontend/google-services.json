@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "851126160543",
+    "project_id": "nowaste-9fdc9",
+    "storage_bucket": "nowaste-9fdc9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:851126160543:android:29418c7c3ac79d6577e6aa",
+        "android_client_info": {
+          "package_name": "com.kellyncodon.frontend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAbtpoIrU7cOTAQFzvUxP2K6n_1ez42mH8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

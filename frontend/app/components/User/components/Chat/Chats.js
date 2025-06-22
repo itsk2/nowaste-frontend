@@ -7,8 +7,6 @@ import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
 import { FontAwesome } from '@expo/vector-icons';
-import Footer from '../../../Footer';
-import Constants from 'expo-constants';
 import { Ionicons } from '@expo/vector-icons';
 
 const Chats = () => {
@@ -16,7 +14,7 @@ const Chats = () => {
   const userId = user?.user?._id;
   const [rooms, setRooms] = useState([]);
   const [participantsInfo, setParticipantsInfo] = useState({});
-  const [lastMessages, setLastMessages] = useState({}); // store last message per room
+  const [lastMessages, setLastMessages] = useState({});
   const router = useRouter();
   const navigation = useNavigation();
 
@@ -42,7 +40,7 @@ const Chats = () => {
             const { data } = await axios.get(`${baseURL}/get-user/${otherUserId}`);
             info[otherUserId] = data.user;
           } catch (err) {
-            // console.error(`Failed to fetch user ${otherUserId}`, err);
+            console.error(`Failed to fetch user ${otherUserId}`, err);
           }
         }
       }));
@@ -87,6 +85,11 @@ const Chats = () => {
             <Text style={styles.name}>{receiver ? receiver.name : 'Unknown User'}</Text>
           </View>
           <Text style={{ color: '#4CAF50' }}>Stall #: {receiver ? receiver.stall.stallNumber : 'Unknown User'}</Text>
+          {lastMessages[item.id] && (
+            <Text style={{ color: '#ccc', fontSize: 13, marginTop: 4 }}>
+              {lastMessages[item.id]}
+            </Text>
+          )}
         </View>
       </TouchableOpacity>
     );
@@ -96,9 +99,8 @@ const Chats = () => {
     <>
       <View style={styles.container}>
         <View style={styles.headerContainer}>
-
           <View style={{ backgroundColor: '#2A4535', borderBottomRightRadius: 20, borderBottomLeftRadius: 20 }}>
-            <View style={{ padding: 20, flexDirection: 'row', }}>
+            <View style={{ padding: 20, flexDirection: 'row' }}>
               <View style={{ marginRight: 90 }}>
                 <TouchableOpacity style={styles.iconButton} onPress={() => navigation.goBack()}>
                   <Ionicons name="arrow-back-circle-sharp" size={28} color="#2BA84A" />
@@ -150,7 +152,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#2A4535',
     padding: 10,
     borderRadius: 20,
-    marginBottom: 7
+    marginBottom: 7,
   },
   avatar: {
     width: 56,

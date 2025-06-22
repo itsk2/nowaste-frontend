@@ -16,6 +16,9 @@ import { useMutation } from "@tanstack/react-query";
 import { loginUser } from "../(services)/api/Users/loginUserAPI";
 import { useDispatch, useSelector } from "react-redux";
 import { loginAction } from "../(redux)/authSlice";
+import { registerForPushNotificationsAsync } from "../../hooks/usePushNotifications";
+import { doc, setDoc } from 'firebase/firestore';
+import { db } from "../../firebase/firebaseConfig";
 
 const LoginSchema = Yup.object().shape({
     email: Yup.string().email("Invalid email").required("Required"),
@@ -32,6 +35,7 @@ export default function Login() {
     const [isLoading, setIsLoading] = useState(false);
 
     const user = useSelector((state) => state.auth.user);
+    const userId = user?.user?._id || user?._id
 
     useEffect(() => {
         if (!user) return;
@@ -87,7 +91,7 @@ export default function Login() {
                             onSubmit={(values) => {
                                 setIsLoading(true);
                                 mutation.mutateAsync(values)
-                                    .then((data) => {
+                                    .then(async (data) => {
                                         if (data?.user?.isDeleted) {
                                             setIsLoading(false);
                                             Alert.alert(
@@ -97,11 +101,20 @@ export default function Login() {
                                             );
                                             return;
                                         }
+
                                         dispatch(loginAction(data));
+
+                                        const token = await registerForPushNotificationsAsync(data.user._id);
+
+                                        if (token && data?.user?._id) {
+                                            await setDoc(doc(db, 'users', data.user._id), {
+                                                expoPushToken: token
+                                            }, { merge: true });
+                                        }
+
                                     })
                                     .catch((error) => {
                                         setIsLoading(false);
-
                                         const errorMessage =
                                             error?.response?.data?.message || "An unexpected error occurred.";
 
