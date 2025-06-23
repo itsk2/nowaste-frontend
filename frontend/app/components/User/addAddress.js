@@ -82,7 +82,7 @@ const UserAddress = () => {
         resizeMode="cover"
       >
         <View style={styles.header}>
-          <Text style={styles.headerTitle}>Add Your Stall Details</Text>
+          <Text style={styles.headerTitle}>Add Your Address</Text>
           <Text style={styles.subText}>
             To connect with local partners, reduce food waste, and make a positive impact on our environment.
           </Text>

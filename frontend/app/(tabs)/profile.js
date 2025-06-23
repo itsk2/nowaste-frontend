@@ -40,7 +40,7 @@ const Profile = () => {
     const fetchUser = async () => {
         try {
             const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
-            setUser(data.data.user);
+            setUser(data?.data?.user);
         } catch (error) {
             console.error("Error fetching user:", error);
         }
@@ -48,14 +48,14 @@ const Profile = () => {
 
     useFocusEffect(
         useCallback(() => {
-            if (user.user._id) {
+            if (user?.user?._id) {
                 fetchUser();
                 const interval = setInterval(() => {
                     fetchUser();
                 }, 3000);
                 return () => clearInterval(interval);
             }
-        }, [user.user._id])
+        }, [user?.user?._id])
     );
 
     return (
@@ -63,7 +63,11 @@ const Profile = () => {
             <View style={styles.headerContainer}>
                 <View style={styles.profileImageWrapper}>
                     {userData?.avatar?.url ? (
-                        <Image source={{ uri: userData.avatar.url }} style={styles.avatar} />
+                        <Image
+                            source={{ uri: userData.avatar.url }}
+                            style={styles.avatar}
+                            resizeMode="cover"
+                        />
                     ) : (
                         <View style={styles.placeholderAvatar} />
                     )}

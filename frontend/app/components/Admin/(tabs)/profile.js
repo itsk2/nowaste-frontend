@@ -63,7 +63,11 @@ const Profile = () => {
             <View style={styles.headerContainer}>
                 <View style={styles.profileImageWrapper}>
                     {userData?.avatar?.url ? (
-                        <Image source={{ uri: userData.avatar.url }} style={styles.avatar} />
+                        <Image
+                            source={{ uri: userData.avatar.url }}
+                            style={styles.avatar}
+                            resizeMode="cover"
+                        />
                     ) : (
                         <View style={styles.placeholderAvatar} />
                     )}
