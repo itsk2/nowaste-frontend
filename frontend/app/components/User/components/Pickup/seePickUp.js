@@ -154,7 +154,6 @@ const SeePickUp = () => {
     };
 
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
-
     return (
         <>
             <View style={styles.container}>
@@ -174,7 +173,7 @@ const SeePickUp = () => {
                     </TouchableOpacity>
                 </View>
                 <FlatList
-                    data={pickup.sacks}
+                    data={pickup.sacks.filter(item => item.status !== "cancelled")}
                     keyExtractor={(item) => item._id}
                     ListHeaderComponent={
                         <>
@@ -191,6 +190,21 @@ const SeePickUp = () => {
                                                 day: "numeric",
                                             })}{" "}
                                             {new Date(pickup.pickupTimestamp).toLocaleTimeString("en-US", {
+                                                timeZone: "UTC",
+                                                hour: "2-digit",
+                                                minute: "2-digit",
+                                                hour12: true,
+                                            })}
+                                        </Text>
+                                    )}
+                                    {pickupStatus === "completed" && (
+                                        <Text style={styles.text}>
+                                            Picked Up Completed Date: {new Date(new Date(pickup.pickedUpDate).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                                year: "numeric",
+                                                month: "long",
+                                                day: "numeric",
+                                            })}{" "}
+                                            {new Date(pickup.pickedUpDate).toLocaleTimeString("en-US", {
                                                 timeZone: "UTC",
                                                 hour: "2-digit",
                                                 minute: "2-digit",

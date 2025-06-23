@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList } from 'react-native';
+import { StyleSheet, Text, View, Image, TouchableOpacity, FlatList, Alert } from 'react-native';
 import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import React, { useCallback, useEffect, useState } from 'react';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
@@ -22,8 +22,18 @@ const SeeStall = () => {
   const fetchStoreSacks = async () => {
     try {
       const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${userData}`);
-      console.log("Fetched sacks:", data.sacks);
+      // console.log("Fetched sacks:", data.sacks);
       setStoreSacks(data.sacks);
+    } catch (error) {
+      console.error("Error fetching:", error);
+    }
+  };
+
+  const deleteSack = async (item) => {
+    try {
+      const { data } = await axios.delete(`${baseURL}/sack/delete-sack/${item._id}`);
+      Alert.alert("Success", "Sack deleted successfully.");
+      fetchStoreSacks();
     } catch (error) {
       console.error("Error fetching:", error);
     }
@@ -112,6 +122,27 @@ const SeeStall = () => {
                   <Text style={styles.cardInfoText}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
                   <Text style={styles.cardInfoText}>Spoilage: {new Date(item.dbSpoil).toLocaleDateString()}</Text>
                 </View>
+                {(item.status === 'posted' || item.status === 'spoiled') && (
+                  <TouchableOpacity
+                    style={styles.deleteButton}
+                    onPress={() =>
+                      Alert.alert(
+                        "Delete Sack",
+                        "Are you sure you want to delete this sack?",
+                        [
+                          { text: "Cancel", style: "cancel" },
+                          {
+                            text: "Delete",
+                            style: "destructive",
+                            onPress: () => deleteSack(item),
+                          },
+                        ]
+                      )
+                    }
+                  >
+                    <MaterialCommunityIcons name="delete" size={20} color="#fff" />
+                  </TouchableOpacity>
+                )}
               </View>
             )}
           />
@@ -197,7 +228,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center'
   },
-
+  deleteButton: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    backgroundColor: '#e53935',
+    padding: 6,
+    borderRadius: 20,
+    zIndex: 10,
+  },
   image: {
     width: 80,
     height: 80,

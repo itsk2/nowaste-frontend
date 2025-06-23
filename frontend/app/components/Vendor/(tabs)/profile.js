@@ -12,8 +12,8 @@ import Constants from "expo-constants";
 import { useFocusEffect, useNavigation, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { FontAwesome } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 import axios from "axios";
 import baseURL from "../../../../assets/common/baseURL";
 import { logoutAction } from "../../../(redux)/authSlice";
@@ -40,8 +40,7 @@ const Profile = () => {
                 status: newStatus,
             });
         } catch (error) {
-            // console.error("Error updating stall status:", error);
-            setStallStatus(stallStatus); // revert if failed
+            setStallStatus(stallStatus);
         }
     };
 
@@ -50,10 +49,9 @@ const Profile = () => {
             const data = await axios.get(`${baseURL}/get-user/${user?.user?._id}`);
             setUser(data.data.user);
         } catch (error) {
-            // console.error("Error fetching user:", error);
         }
     };
-
+    // console.log(userData,'UserData')
     useFocusEffect(
         useCallback(() => {
             if (user?.user?._id) {
@@ -65,6 +63,30 @@ const Profile = () => {
             }
         }, [user?.user?._id])
     );
+
+    const getAverageRating = () => {
+        const ratings = userData?.stall?.rating;
+        if (!ratings || ratings.length === 0) return 0;
+
+        const total = ratings.reduce((sum, item) => sum + item.value, 0);
+        return total / ratings.length;
+    };
+
+    const StarRatingDisplay = ({ rating }) => {
+        const stars = [];
+        for (let i = 1; i <= 5; i++) {
+            stars.push(
+                <FontAwesome
+                    key={i}
+                    name={i <= rating ? "star" : i - 0.5 <= rating ? "star-half-full" : "star-o"}
+                    size={18}
+                    color="#ffd700"
+                />
+            );
+        }
+        return <View style={{ flexDirection: "row" }}>{stars}</View>;
+    };
+
 
     return (
         <View style={styles.screen}>
@@ -89,6 +111,15 @@ const Profile = () => {
                         thumbColor={stallStatus ? "#5af58c" : "#f25f5f"}
                     />
                 </View>
+                {userData?.stall?.rating && (
+                    <View style={{ alignItems: 'center', marginTop: 10 }}>
+                        <Text style={{ color: '#fff' }}>Average Rating</Text>
+                        <StarRatingDisplay rating={getAverageRating()} />
+                        <Text style={{ color: '#ccc', fontSize: 12 }}>
+                            {getAverageRating().toFixed(1)} / 5 ({userData?.stall?.rating?.length} ratings)
+                        </Text>
+                    </View>
+                )}
             </View>
 
             <ScrollView contentContainerStyle={styles.bodyContainer}>
@@ -110,11 +141,29 @@ const Profile = () => {
                         }
                     />
                     <MenuItem
+                        iconLib={FontAwesome}
+                        icon="list-alt"
+                        label="Price List"
+                        onPress={() =>
+                            router.push({
+                                pathname: "/components/Vendor/components/MarketList",
+                            })
+                        }
+                    />
+                    <MenuItem
                         iconLib={AntDesign}
                         icon="notification"
                         label="Notifications"
                         onPress={() =>
                             navigation.navigate("components/Vendor/components/Notification/notification")
+                        }
+                    />
+                    <MenuItem
+                        iconLib={MaterialCommunityIcons}
+                        icon="star"
+                        label="Ratings"
+                        onPress={() =>
+                            navigation.navigate("components/Vendor/components/Rating")
                         }
                     />
                     <MenuItem icon="sign-out" label="Log out" onPress={handleLogout} />
@@ -139,7 +188,7 @@ const styles = StyleSheet.create({
     },
     headerContainer: {
         backgroundColor: "#1e463a",
-        paddingTop:40,
+        paddingTop: 40,
         paddingBottom: 60,
         alignItems: "center",
         borderBottomLeftRadius: 50,

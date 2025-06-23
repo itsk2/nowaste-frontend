@@ -118,7 +118,7 @@ const CreateSack = () => {
 
                 <Formik
                     initialValues={{
-                        description: '', kilo: '', dbSpoil: ''
+                        description: '', kilo: '', dbSpoil: '', status: ''
                     }}
                     onSubmit={async (values) => {
                         try {
@@ -186,19 +186,38 @@ const CreateSack = () => {
 
                             <View style={styles.dropdownWrapper}>
                                 <Picker
-                                    selectedValue={values.dbSpoil}
-                                    onValueChange={(itemValue) => setFieldValue('dbSpoil', itemValue)}
+                                    selectedValue={values.status}
+                                    onValueChange={(itemValue) => {
+                                        setFieldValue('status', itemValue);
+                                        if (itemValue === 'spoiled') {
+                                            setFieldValue('dbSpoil', '1');
+                                        } else {
+                                            setFieldValue('dbSpoil', '');
+                                        }
+                                    }}
                                     style={styles.dropdown}
                                 >
-                                    <Picker.Item label="Select days before spoiling" value="" enabled={false} />
-                                    <Picker.Item label="2 Days" value="2" />
-                                    <Picker.Item label="3 Days" value="3" />
-                                    <Picker.Item label="4 Days" value="4" />
+                                    <Picker.Item label="Select status" value="" enabled={false} />
+                                    <Picker.Item label="Good Alternative" value="posted" />
+                                    <Picker.Item label="Spoiled Alternative" value="spoiled" />
                                 </Picker>
-                                {errors.dbSpoil && touched.dbSpoil && (
-                                    <Text style={styles.errorText}>{errors.dbSpoil}</Text>
-                                )}
                             </View>
+
+
+                            {values.status === 'posted' && (
+                                <View style={styles.dropdownWrapper}>
+                                    <Picker
+                                        selectedValue={values.dbSpoil}
+                                        onValueChange={(itemValue) => setFieldValue('dbSpoil', itemValue)}
+                                        style={styles.dropdown}
+                                    >
+                                        <Picker.Item label="Select days before spoiling" value="" enabled={false} />
+                                        <Picker.Item label="2 Days" value="2" />
+                                        <Picker.Item label="3 Days" value="3" />
+                                        <Picker.Item label="4 Days" value="4" />
+                                    </Picker>
+                                </View>
+                            )}
 
                             <TouchableOpacity style={styles.submitButton} onPress={handleSubmit}>
                                 <Text style={styles.submitText}>Post Sack</Text>

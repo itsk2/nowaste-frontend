@@ -1,7 +1,7 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import React, { useCallback, useEffect, useState } from 'react';
 import Constants from 'expo-constants';
-import { useFocusEffect } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 import { getAllStalls } from '../../../(services)/api/Users/getAllStalls';
 import axios from 'axios';
 import baseURL from '../../../../assets/common/baseURL';
@@ -25,6 +25,7 @@ const AdminHome = () => {
     const [co2Data, setCo2Data] = useState([]);
     const [wasteData, setWasteData] = useState([]);
     const [wasteGeneration, setWasteGeneration] = useState([]);
+    const router = useRouter();
 
     const fetchPredictedWaste = async () => {
         try {
@@ -172,36 +173,6 @@ const AdminHome = () => {
         }, [sacks, pieData])
     );
 
-    const processChartData = () => {
-        if (!predictedWaste || predictedWaste.length === 0) return {};
-
-        const stallNumbers = [...new Set(predictedWaste.map(item => item.stallNumber))];
-        const groupedData = {};
-
-        stallNumbers.forEach(stall => {
-            groupedData[stall] = predictedWaste
-                .filter(item => item.stallNumber === stall)
-                .map(item => ({
-                    value: parseFloat(item.predicted_kilos) || 0,
-                    label: new Date(item.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) // Ensure valid label
-                }));
-        });
-
-        return groupedData;
-    };
-
-    const totalWaste = wasteData.reduce((sum, item) => sum + item.value, 0);
-    const totalCO2 = co2Data.reduce((sum, item) => sum + item.value, 0);
-
-    const generationTrend = wasteGeneration.map((item) => ({
-        value: item.yhat,
-        label: new Date(new Date(item.ds).getTime() - 24 * 60 * 60 * 1000)
-            .toLocaleDateString("en-US", { month: "short", day: "2-digit" }),
-    }));
-
-    const lowerBound = wasteGeneration.map((item) => item.yhat_lower);
-    const upperBound = wasteGeneration.map((item) => item.yhat_upper)
-
     return (
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ flexGrow: 1, paddingBottom: 20, }}>
             <View style={{ flex: 1, alignItems: 'center', }}>
@@ -213,22 +184,30 @@ const AdminHome = () => {
                 <View style={styles.statsContainer}>
                     {Object.entries(roleCounts).map(([role, count]) => {
                         let IconComponent;
+                        let routePath = "";
 
                         if (role === "farmer") {
                             IconComponent = <FontAwesome name="user" size={24} color="black" />;
+                            routePath = "/components/Admin/components/Users/Farmers/FarmersList";
                         } else if (role === "composter") {
                             IconComponent = <MaterialIcons name="takeout-dining" size={24} color="black" />;
+                            routePath = "/components/Admin/components/Users/Composters/CompostersList";
                         } else if (role === "vendor") {
                             IconComponent = <FontAwesome6 name="user-ninja" size={24} color="black" />;
+                            routePath = "/components/Admin/components/Users/Vendors/VendorsList";
                         }
 
                         return (
-                            <View key={role} style={styles.statBox}>
+                            <TouchableOpacity
+                                key={role}
+                                onPress={() => router.push(routePath)}
+                                style={styles.statBox}
+                            >
                                 {IconComponent}
                                 <Text style={styles.statText}>
                                     {role.charAt(0).toUpperCase() + role.slice(1)}/s: {count}
                                 </Text>
-                            </View>
+                            </TouchableOpacity>
                         );
                     })}
                     <View style={styles.statBox}>

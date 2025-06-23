@@ -39,7 +39,7 @@ const index = () => {
     const fetchStoreSacks = async () => {
       try {
         const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${userId}`);
-        console.log("Fetched sacks:", data.sacks);
+        // console.log("Fetched sacks:", data.sacks);
 
         const allSacks = data.sacks;
 
@@ -93,9 +93,9 @@ const index = () => {
 
     const fetchNotifications = async () => {
       try {
-        const { data } = await axios.get(`${baseURL}/notifications/get-notif`);
-        const spoiledNotifications = data.notifications.filter(notification => notification.type === 'trashed' || notification.type === 'pickup' || notification.type === 'spoiled');
-        // console.log(spoiledNotifications);
+        const { data } = await axios.get(`${baseURL}/notifications/get-notif/${userId}`);
+        const spoiledNotifications = data.notifications.filter(notification => notification.type === 'pickup' || notification.type === 'trashed' );
+        console.log(spoiledNotifications);
         setNotifications(spoiledNotifications);
       } catch (error) {
         console.error("Error fetching notifications:", error);
@@ -204,7 +204,7 @@ const index = () => {
         {/* Notifications Section */}
         <Text style={styles.sectionTitle}>Recent Notification at Stall</Text>
         <View>
-          {currentItems.map((notification, idx) => (
+          {notifications.map((notification, idx) => (
             <View style={styles.notificationCard} key={idx} // ✅ key moved here
             >
               <View style={styles.notificationLeft}>
@@ -222,7 +222,7 @@ const index = () => {
           ))}
 
           {/* Pagination Buttons */}
-          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, marginBottom: 20 }}>
             <TouchableOpacity
               onPress={() => setCurrentPage((prev) => Math.max(prev - 1, 0))}
               disabled={currentPage === 0}

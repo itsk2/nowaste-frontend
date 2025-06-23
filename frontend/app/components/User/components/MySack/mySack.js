@@ -16,6 +16,8 @@ import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 const MySack = () => {
     const { user } = useSelector((state) => state.auth);
+    const [showPickupModal, setShowPickupModal] = useState(false);
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
     const userId = user.user._id;
     const navigation = useNavigation();
     const [mySack, setMySacks] = useState([]);
@@ -25,8 +27,6 @@ const MySack = () => {
     const totalKilos = mySack.reduce((sum, item) => {
         return sum + item.sacks.reduce((sackSum, sack) => sackSum + Number(sack.kilo || 0), 0);
     }, 0);
-    const [showModal, setShowModal] = useState(false);
-
     const fetchMySacks = async () => {
         try {
             const { data } = await axios.get(`${baseURL}/sack/get-my-sacks/${userId}`);
@@ -42,22 +42,39 @@ const MySack = () => {
             if (userId) {
                 fetchMySacks();
             }
+            const interval = setInterval(() => {
+                fetchMySacks();
+            }, 1500);
+
+            return () => clearInterval(interval);
         }, [userId])
     );
 
     const handlePickUpSacks = async () => {
         try {
             await axios.post(`${baseURL}/sack/pick-up-sacks/${addToSackId}`, { mySack, totalKilos });
-            setShowModal(true);
-
+            setShowPickupModal(true);
             setTimeout(() => {
-                setShowModal(false);
+                setShowPickupModal(false);
                 navigation.goBack();
             }, 1500);
         } catch (error) {
-            // console.error("Error picking up sacks:", error);
+            // handle error
         }
     };
+
+    const handleDeleteMySackItem = async (addToSackId, sackId) => {
+        try {
+            await axios.delete(`${baseURL}/sack/delete-sack/${addToSackId}/${sackId}`);
+            setShowDeleteModal(true);
+            setTimeout(() => {
+                setShowDeleteModal(false);
+            }, 1500);
+        } catch (error) {
+            // handle error
+        }
+    };
+
 
     return (
         <>
@@ -124,7 +141,7 @@ const MySack = () => {
                                     <Text style={styles.cardText}>Posted: {new Date(item.createdAt).toLocaleDateString()}</Text>
                                     <Text style={styles.cardText}>Spoils: {new Date(sack.dbSpoil).toLocaleDateString()}</Text>
                                 </View>
-                                <TouchableOpacity style={styles.removeBtn}>
+                                <TouchableOpacity style={styles.removeBtn} onPress={() => handleDeleteMySackItem(item._id, item.sack.sackId)} >
                                     <FontAwesome name="trash" size={20} color="white" />
                                 </TouchableOpacity>
                             </View>
@@ -138,11 +155,12 @@ const MySack = () => {
                             </TouchableOpacity>
                         </View>
                     )}
+                    {/* Pickup Modal */}
                     <Modal
                         animationType="fade"
                         transparent={true}
-                        visible={showModal}
-                        onRequestClose={() => setShowModal(false)}
+                        visible={showPickupModal}
+                        onRequestClose={() => setShowPickupModal(false)}
                     >
                         <View style={styles.modalBackground}>
                             <View style={styles.modalCard}>
@@ -150,6 +168,23 @@ const MySack = () => {
                                     <Text style={styles.checkmark}>✓</Text>
                                 </View>
                                 <Text style={styles.modalTitle}>Pickup Requested</Text>
+                            </View>
+                        </View>
+                    </Modal>
+
+                    {/* Delete Modal */}
+                    <Modal
+                        animationType="fade"
+                        transparent={true}
+                        visible={showDeleteModal}
+                        onRequestClose={() => setShowDeleteModal(false)}
+                    >
+                        <View style={styles.modalBackground}>
+                            <View style={styles.modalCard}>
+                                <View style={[styles.checkmarkCircle, { backgroundColor: '#e53935' }]}>
+                                    <Text style={styles.checkmark}>✓</Text>
+                                </View>
+                                <Text style={[styles.modalTitle, { color: '#e53935' }]}>Sack Deleted</Text>
                             </View>
                         </View>
                     </Modal>

@@ -1,7 +1,7 @@
 import axios from 'axios';
 import baseURL from '../../../../assets/common/baseURL'
 
-const createSack = async ({ description, kilo, dbSpoil, userId, stallNumber, images }) => {
+const createSack = async ({ description, kilo, dbSpoil, userId, stallNumber, status, images }) => {
     try {
         const formData = new FormData();
         formData.append('description', description);
@@ -9,6 +9,7 @@ const createSack = async ({ description, kilo, dbSpoil, userId, stallNumber, ima
         formData.append('dbSpoil', dbSpoil);
         formData.append('seller', userId);
         formData.append('stallNumber', stallNumber);
+        formData.append('sackStatus', status);
 
         if (images) {
             const fileName = images.split('/').pop();
@@ -19,7 +20,6 @@ const createSack = async ({ description, kilo, dbSpoil, userId, stallNumber, ima
             });
         }
 
-        // console.log(formData)
 
         const response = await axios.post(`${baseURL}/sack/create-sack`, formData,
             {

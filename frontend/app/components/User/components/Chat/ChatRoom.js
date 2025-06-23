@@ -44,17 +44,19 @@ const ChatRoom = () => {
         return () => unsubscribe();
     }, [roomId]);
 
+    const receiver = participants.find(p => p._id === receiverId);
+    const receiverName = receiver?.name
+    const targetRole = receiver?.role
+    // console.log(receiver,'ROLE NI TAGATANGGAP')
     const handleSend = async () => {
         if (!inputText.trim()) return;
         try {
-            await sendMessage(roomId, userId, receiverId, inputText.trim());
+            await sendMessage(roomId, userId, receiverId, inputText.trim(), receiverName, targetRole);
             setInputText("");
         } catch (error) {
             // console.error("Failed to send message:", error);
         }
     };
-    const receiver = participants.find(p => p._id === receiverId);
-
     const renderItem = ({ item }) => {
         const isSender = item.senderId === userId;
         const sender = participants.find((p) => p._id === item.senderId);

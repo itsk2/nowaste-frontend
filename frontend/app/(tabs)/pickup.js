@@ -173,7 +173,7 @@ const Pickup = () => {
                                         <View style={styles.kiloSection}>
                                             <MaterialCommunityIcons name="sack" size={18} color="white" />
                                             <Text style={styles.infoText}>
-                                                {item.sacks.length}
+                                                {item.sacks.filter(s => s.status !== "cancelled").length}
                                             </Text>
                                         </View>
                                     </View>

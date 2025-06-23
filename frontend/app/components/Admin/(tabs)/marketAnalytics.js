@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
 import axios from 'axios';
 import baseURL from '../../../../assets/common/baseURL';
 import DashboardCard04 from '../components/Dashboard04';
 import DashboardCard05 from '../components/Dashboard05';
 import MarketDashboardCard01 from '../components/MarketDashboard01';
 import Dashboard01 from '../components/Dashboard01';
+import { router } from 'expo-router';
 
 const Dashboard = () => {
   const [allRatings, setAllRatings] = useState([]);
@@ -59,6 +60,9 @@ const Dashboard = () => {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>📉 Market Analytics</Text>
+      <TouchableOpacity style={styles.nextButton} onPress={() => router.push('/components/Admin/components/MarketList')}>
+        <Text style={styles.nextText}>Price List</Text>
+      </TouchableOpacity>
 
       {topSeller && (
         <View style={styles.topSellerCard}>
@@ -95,6 +99,18 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#1f2937',
     marginBottom: 16,
+  },
+  nextButton: {
+    backgroundColor: '#4eff56',
+    paddingVertical: 10,
+    paddingHorizontal: 32,
+    borderRadius: 8,
+  },
+  nextText: {
+    color: '#1D1D1D',
+    fontWeight: 'bold',
+    fontSize: 16,
+    textAlign: 'center'
   },
   topSellerCard: {
     backgroundColor: 'white',
