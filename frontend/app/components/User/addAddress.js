@@ -16,7 +16,27 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useFocusEffect, useNavigation, useRouter } from 'expo-router';
 import { addUserAddress } from '../../(services)/api/Users/addUserAddress';
 import axios from 'axios';
+import { Picker } from '@react-native-picker/picker';
 import baseURL from '../../../assets/common/baseURL';
+
+const barangayOptions = [
+  'Barangay Dolores',
+  'Barangay Muzon',
+  'Barangay San Isidro',
+  'Barangay San Juan',
+  'Barangay Santa Ana',
+  'Barangay Sta. Lucia',
+  'Barangay San Gabriel',
+  'Barangay San Andres',
+  'Barangay San Pedro',
+  'Barangay San Antonio',
+  'Barangay Bagong Pag-asa',
+  'Barangay Sta. Cruz',
+  'Barangay Sta. Catalina',
+  'Barangay Sta. Clara',
+  'Barangay Sta. Rosa',
+  'Barangay Sta. Teresita'
+];
 
 const UserAddress = () => {
   const { user } = useSelector((state) => state.auth);
@@ -137,13 +157,19 @@ const UserAddress = () => {
                       onBlur={handleBlur('street')}
                       value={values.street}
                     />
-                    <TextInput
-                      style={styles.input}
-                      placeholder="Baranggay"
-                      onChangeText={handleChange('baranggay')}
-                      onBlur={handleBlur('baranggay')}
-                      value={values.baranggay}
-                    />
+                    <View style={styles.pickerWrapper}>
+                      <Picker
+                        selectedValue={values.baranggay}
+                        onValueChange={handleChange('baranggay')}
+                        style={styles.picker}
+                        mode="dropdown"
+                      >
+                        <Picker.Item label="Select a baranggay" value="" />
+                        {barangayOptions.map((brgy) => (
+                          <Picker.Item key={brgy} label={brgy} value={brgy} />
+                        ))}
+                      </Picker>
+                    </View>
                     <TextInput
                       style={styles.input}
                       placeholder="City"
@@ -236,6 +262,22 @@ const styles = StyleSheet.create({
   },
   form: {
     marginTop: 10,
+  },
+  pickerWrapper: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 6,
+    marginBottom: 15,
+    overflow: 'hidden',
+  },
+  picker: {
+    height: 50,
+    backgroundColor: '#fff',
+  },
+  label: {
+    marginBottom: 4,
+    fontWeight: 'bold',
+    color: '#333',
   },
   input: {
     height: 50,

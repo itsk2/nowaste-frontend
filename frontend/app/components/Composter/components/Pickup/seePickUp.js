@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View, FlatList, Image, TouchableOpacity, Alert, Modal, TextInput } from 'react-native';
-import React, { useEffect, useState } from 'react';
-import { router, useLocalSearchParams, useNavigation } from 'expo-router';
+import React, { useCallback, useEffect, useState } from 'react';
+import { router, useFocusEffect, useLocalSearchParams, useNavigation } from 'expo-router';
 import { useSelector } from 'react-redux';
 import axios from 'axios';
 import baseURL from '../../../../../assets/common/baseURL';
@@ -91,7 +91,7 @@ const SeePickUp = () => {
             console.error("Error fetching sack statuses:", error);
         }
     };
-    
+
     useFocusEffect(
         useCallback(() => {
             if (userId) {
@@ -135,7 +135,7 @@ const SeePickUp = () => {
     };
 
     const handleRatingSubmit = async (selectedSackId) => {
-        console.log(selectedSackId)
+        // console.log(selectedSackId)
         try {
             const { data } = await axios.put(`${baseURL}/sack/rate-transaction/${selectedSackId}`, {
                 review,
@@ -158,7 +158,6 @@ const SeePickUp = () => {
     };
 
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
-    console.log(pickup.sacks.filter(item => item.status !== "cancelled"), 'Log')
 
     return (
         <>
@@ -219,10 +218,11 @@ const SeePickUp = () => {
                                         </Text>
                                     )}
                                 </View>
-
-                                <View style={{ height: 200, borderRadius: 16, overflow: 'hidden' }}>
-                                    <Map />
-                                </View>
+                                {pickupStatus !== "complete" && (
+                                    <View style={{ height: 200, borderRadius: 16, overflow: 'hidden' }}>
+                                        <Map />
+                                    </View>
+                                )}
                             </View>
                         </>
                     }

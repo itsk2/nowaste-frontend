@@ -13,11 +13,13 @@ const Pickup = () => {
     const userId = user?._id || user?.user?._id;
     const [mySack, setMySacks] = useState([]);
     const [sellers, setSellers] = useState({});
+    const [activeStatus, setActiveStatus] = useState('pending');
 
     const fetchMySacks = async () => {
         try {
             const response = await axios.get(`${baseURL}/sack/get-pickup-sacks/${userId}`);
             const pickUpSacks = response.data.pickUpSacks;
+
             if (!Array.isArray(pickUpSacks)) {
                 console.error("pickUpSacks is not an array:", pickUpSacks);
                 return;
@@ -28,11 +30,17 @@ const Pickup = () => {
             for (const sack of pickUpSacks) {
                 const pickupTimestamp = new Date(sack.pickupTimestamp);
 
-                const sackIds = sack.sacks.map(s => s.sackId);
-                if (pickupTimestamp.getTime() <= nowUTC8.getTime()) {
+                // Check status and time
+                if (
+                    ['pending', 'pickup'].includes(sack.status) &&
+                    pickupTimestamp.getTime() <= nowUTC8.getTime()
+                ) {
+                    const sackIds = sack.sacks.map(s => s.sackId);
+
                     await axios.delete(`${baseURL}/sack/delete-pickuped-sack/${sack._id}`, {
-                        data: { sackIds }
+                        data: { sackIds, status: 'posted' }
                     });
+
                     Alert.alert(
                         "You didn't pick up the stated sack/s",
                         "It will now again be redistributed.",
@@ -40,6 +48,7 @@ const Pickup = () => {
                     );
                 }
             }
+
             setMySacks(pickUpSacks);
         } catch (error) {
             console.error("Error fetching sacks:", error.response?.data || error.message);
@@ -79,6 +88,8 @@ const Pickup = () => {
             fetchSackSellers();
         }
     }, [mySack]);
+    const filteredSacks = mySack.filter((item) => item.status === activeStatus);
+
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
@@ -102,79 +113,114 @@ const Pickup = () => {
                     </TouchableOpacity>
                 </View>
             </View>
-
+            <View style={styles.tabContainer}>
+                {['pending', 'pickup', 'completed'].map((status) => (
+                    <TouchableOpacity
+                        key={status}
+                        style={[
+                            styles.tabButton,
+                            activeStatus === status && styles.activeTabButton
+                        ]}
+                        onPress={() => setActiveStatus(status)}
+                    >
+                        <Text style={[
+                            styles.tabText,
+                            activeStatus === status && styles.activeTabText
+                        ]}>
+                            {status.toUpperCase()}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
             <View style={styles.listContainer}>
-                <FlatList
-                    data={mySack}
-                    keyExtractor={(item) => item._id}
-                    renderItem={({ item, index }) => {
-                        return (
-                            <TouchableOpacity
-                                onPress={() =>
-                                    router.push({
-                                        pathname: "/components/Composter/components/Pickup/seePickUp",
-                                        params: { pickupData: JSON.stringify(item) },
-                                    })
-                                }
-                            >
-                                <View style={styles.pickupCard}>
-                                    <View style={styles.cardHeader}>
-                                        <Text style={styles.pickupLabel}>Pickup #: {index + 1}</Text>
-                                        <Text style={styles.statusPill}>{item.status}</Text>
-                                    </View>
+                {filteredSacks.length === 0 ? (
+                    <View style={styles.noPickupContainer}>
+                        <Image
+                            source={require('../../../../assets/no-pickup-sign.png')}
+                            style={{
+                                width: 200,
+                                height: 200,
+                                borderRadius: 10,
+                                marginBottom: 5,
+                                marginTop: 50,
+                            }}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.noPickupText}>No {activeStatus} pickups</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={filteredSacks}
+                        keyExtractor={(item) => item._id}
+                        renderItem={({ item, index }) => {
+                            return (
+                                <TouchableOpacity
+                                    onPress={() =>
+                                        router.push({
+                                            pathname: "/components/Composter/components/Pickup/seePickUp",
+                                            params: { pickupData: JSON.stringify(item) },
+                                        })
+                                    }
+                                >
+                                    <View style={styles.pickupCard}>
+                                        <View style={styles.cardHeader}>
+                                            <Text style={styles.pickupLabel}>Pickup #: {index + 1}</Text>
+                                            <Text style={styles.statusPill}>{item.status}</Text>
+                                        </View>
 
-                                    <View style={styles.cardContent}>
-                                        <View style={styles.imageContainer}>
-                                            <View style={styles.imagePlaceholder}>
-                                                <Image
-                                                    source={require('../../../../assets/newtaytay.jpg')}
-                                                    style={styles.image}
-                                                />
+                                        <View style={styles.cardContent}>
+                                            <View style={styles.imageContainer}>
+                                                <View style={styles.imagePlaceholder}>
+                                                    <Image
+                                                        source={require('../../../../assets/newtaytay.jpg')}
+                                                        style={styles.image}
+                                                    />
+                                                </View>
+                                            </View>
+
+                                            <View style={styles.detailsSection}>
+                                                <Text style={styles.pickupTitle}>New Taytay, Public Market</Text>
+                                                <Text style={styles.secondaryText}>Stall #2</Text>
+                                                <Text style={styles.secondaryText}>Location: Rizal Ave, Taytay, 1920 Metro Manila</Text>
+                                                <Text style={styles.timestamp}>
+                                                    <MaterialCommunityIcons name="clock-remove" size={18} color="white" />{" "}
+                                                    {new Date(new Date(item.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                                        year: "numeric",
+                                                        month: "long",
+                                                        day: "numeric",
+                                                    })} : {new Date(item.pickupTimestamp).toLocaleTimeString("en-US", {
+                                                        timeZone: "UTC",
+                                                        hour: "2-digit",
+                                                        minute: "2-digit",
+                                                        hour12: true,
+                                                    })}
+                                                </Text>
+                                            </View>
+
+                                            <View style={styles.kiloSection}>
+                                                <MaterialCommunityIcons name="sack" size={18} color="white" />
+                                                <Text style={styles.infoText}>
+                                                    {item.sacks.filter(s => s.status !== "cancelled").length}
+                                                </Text>
                                             </View>
                                         </View>
 
-                                        <View style={styles.detailsSection}>
-                                            <Text style={styles.pickupTitle}>New Taytay, Public Market</Text>
-                                            <Text style={styles.secondaryText}>Stall #2</Text>
-                                            <Text style={styles.secondaryText}>Location: Rizal Ave, Taytay, 1920 Metro Manila</Text>
-                                            <Text style={styles.timestamp}>
-                                                <MaterialCommunityIcons name="clock-remove" size={18} color="white" />{" "}
-                                                {new Date(new Date(item.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
-                                                    year: "numeric",
-                                                    month: "long",
-                                                    day: "numeric",
-                                                })} : {new Date(item.pickupTimestamp).toLocaleTimeString("en-US", {
-                                                    timeZone: "UTC",
-                                                    hour: "2-digit",
-                                                    minute: "2-digit",
-                                                    hour12: true,
-                                                })}
-                                            </Text>
-                                        </View>
-
-                                        <View style={styles.kiloSection}>
-                                            <MaterialCommunityIcons name="sack" size={18} color="white" />
-                                            <Text style={styles.infoText}>
-                                                {item.sacks.filter(s => s.status !== "cancelled").length}
-                                            </Text>
-                                        </View>
+                                        <TouchableOpacity style={styles.detailsButton}
+                                            onPress={() =>
+                                                router.push({
+                                                    pathname: "/components/Composter/components/Pickup/seePickUp",
+                                                    params: { pickupData: JSON.stringify(item) },
+                                                })
+                                            }
+                                        >
+                                            <Text style={styles.detailsButtonText}>View details</Text>
+                                        </TouchableOpacity>
                                     </View>
-
-                                    <TouchableOpacity style={styles.detailsButton}
-                                        onPress={() =>
-                                            router.push({
-                                                pathname: "/components/Composter/components/Pickup/seePickUp",
-                                                params: { pickupData: JSON.stringify(item) },
-                                            })
-                                        }
-                                    >
-                                        <Text style={styles.detailsButtonText}>View details</Text>
-                                    </TouchableOpacity>
-                                </View>
-                            </TouchableOpacity>
-                        );
-                    }}
-                />
+                                </TouchableOpacity>
+                            );
+                        }}
+                    />
+                )}
             </View>
         </View>
     );
@@ -224,7 +270,7 @@ const styles = StyleSheet.create({
     listContainer: {
         borderRadius: 15,
         padding: 10,
-        marginBottom: 90,
+        marginBottom: 130,
     },
     card: {
         backgroundColor: '#2a2e35',
@@ -307,19 +353,16 @@ const styles = StyleSheet.create({
         shadowRadius: 6,
         elevation: 4,
     },
-
     cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         marginBottom: 10,
     },
-
     pickupLabel: {
         color: '#E0E0E0',
         fontWeight: '600',
         fontSize: 14,
     },
-
     statusPill: {
         backgroundColor: '#F4A261',
         color: 'white',
@@ -373,5 +416,36 @@ const styles = StyleSheet.create({
     detailsButtonText: {
         color: 'white',
         fontWeight: 'bold',
+    },
+    tabContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-around',
+        marginVertical: 10,
+    },
+    tabButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 14,
+        backgroundColor: '#eee',
+        borderRadius: 20,
+    },
+    activeTabButton: {
+        backgroundColor: '#2BA84A',
+    },
+    tabText: {
+        color: '#555',
+        fontWeight: 'bold',
+    },
+    activeTabText: {
+        color: 'white',
+    },
+    noPickupContainer: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingTop: 50,
+    },
+    noPickupText: {
+        marginTop: 10,
+        fontSize: 16,
+        color: '#888',
     },
 });

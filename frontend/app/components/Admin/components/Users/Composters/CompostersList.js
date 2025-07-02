@@ -13,7 +13,8 @@ const CompostersList = () => {
   const navigation = useNavigation()
   const router = useRouter()
   const role = 'composter'
-  const fetchSellerCounts = async () => {
+
+  const fetchComposters = async () => {
     try {
       const response = await axios.get(`${baseURL}/get-all-users`);
       const composterUsers = response.data.users.filter(user => user.role === 'composter');
@@ -25,13 +26,31 @@ const CompostersList = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchSellerCounts();
+      fetchComposters();
       const interval = setInterval(() => {
-        fetchSellerCounts();
+        fetchComposters();
       }, 3000);
       return () => clearInterval(interval);
     }, [])
   );
+
+  const handleDeleteComposter = async (composterId) => {
+    try {
+      await axios.delete(`${baseURL}/delete-user/${composterId}`);
+      fetchComposters();
+    } catch (error) {
+      console.error("Error deleting farmer", error);
+    }
+  };
+  const handleRestoreComposter = async (composterId) => {
+    try {
+      await axios.put(`${baseURL}/restore-user/${composterId}`);
+      fetchComposters();
+    } catch (error) {
+      console.error("Error restoring farmer", error);
+    }
+  };
+
 
   // Pagination logic
   const totalPages = Math.ceil(composters.length / ITEMS_PER_PAGE);
@@ -78,17 +97,31 @@ const CompostersList = () => {
                 <Text style={styles.composterName}>{item.name}</Text>
                 <Text style={styles.composterEmail}>{item.email}</Text>
               </View>
-              <View>
-                <TouchableOpacity onPress={() =>
-                  router.push({
-                    pathname: '/components/Admin/components/Users/EditUser',
-                    params: { item: JSON.stringify(item) },
-                  })
-                }>
-                  <Feather name="edit" size={16} color="green" />
-                </TouchableOpacity>
+              <View style={{ alignItems: 'center' }}>
+                {!item.isDeleted && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/components/Admin/components/Users/EditUser',
+                        params: { item: JSON.stringify(item) },
+                      })
+                    }
+                  >
+                    <Feather name="edit" size={16} color="green" />
+                  </TouchableOpacity>
+                )}
+
                 <Text>----</Text>
-                <Feather name="delete" size={16} color="red" />
+
+                {item.isDeleted ? (
+                  <TouchableOpacity onPress={() => handleRestoreComposter(item._id)}>
+                    <Feather name="rotate-ccw" size={16} color="blue" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={() => handleDeleteComposter(item._id)}>
+                    <Feather name="trash" size={16} color="red" />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>

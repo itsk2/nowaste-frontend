@@ -11,6 +11,7 @@ const Pickup = () => {
     const { user } = useSelector((state) => state.auth);
     const sellerId = user.user._id;
     const [mySack, setMySacks] = useState([]);
+    const [filterStatus, setFilterStatus] = useState('pickup');
 
     const fetchMySacks = async () => {
         try {
@@ -59,9 +60,30 @@ const Pickup = () => {
                     </TouchableOpacity>
                 </View>
             </View>
+            <View style={styles.filterContainer}>
+                {['pickup', 'completed'].map(status => (
+                    <TouchableOpacity
+                        key={status}
+                        style={[
+                            styles.filterButton,
+                            filterStatus === status && styles.activeFilterButton
+                        ]}
+                        onPress={() => setFilterStatus(status)}
+                    >
+                        <Text
+                            style={[
+                                styles.filterButtonText,
+                                filterStatus === status && styles.activeFilterButtonText
+                            ]}
+                        >
+                            {status.charAt(0).toUpperCase() + status.slice(1)}
+                        </Text>
+                    </TouchableOpacity>
+                ))}
+            </View>
             <View style={styles.listContainer}>
                 <FlatList
-                    data={mySack}
+                    data={mySack.filter(pickup => pickup.status === filterStatus)}
                     keyExtractor={(item) => item._id}
                     renderItem={({ item, index }) => (
                         <TouchableOpacity
@@ -274,4 +296,26 @@ const styles = StyleSheet.create({
         fontWeight: 'bold',
         color: 'white',
     },
+    filterContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginBottom: 10,
+        gap: 10,
+    },
+    filterButton: {
+        paddingVertical: 6,
+        paddingHorizontal: 16,
+        backgroundColor: '#E0E0E0',
+        borderRadius: 20,
+    },
+    activeFilterButton: {
+        backgroundColor: '#2BA84A',
+    },
+    filterButtonText: {
+        color: '#000',
+        fontWeight: 'bold',
+    },
+    activeFilterButtonText: {
+        color: '#fff',
+    }
 });

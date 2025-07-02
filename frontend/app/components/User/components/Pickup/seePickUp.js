@@ -16,7 +16,8 @@ import Constants from 'expo-constants';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
-    const pickup = pickupData ? JSON.parse(pickupData) : [];
+    const parsedPickup = pickupData ? JSON.parse(pickupData) : null;
+    const [pickup, setPickup] = useState(parsedPickup);
     const [pickupStatus, setPickupStatus] = useState(pickup.status);
     const { user } = useSelector((state) => state.auth);
     useEffect(() => {
@@ -74,27 +75,44 @@ const SeePickUp = () => {
 
     const fetchAllSackStatuses = async () => {
         try {
-            const statuses = {};
-            await Promise.all(
+            const updatedSacks = await Promise.all(
                 pickup.sacks.map(async (item) => {
                     const response = await axios.get(`${baseURL}/sack/see-sacks`, {
                         params: { sackIds: item.sackId }
                     });
+
                     if (response.data.sacks.length > 0) {
-                        statuses[item.sackId] = response.data.sacks[0].status;
-                        console.log('Mapping status for sack:', item._id, item.sackId);
-                    } else {
-                        statuses[item.sackId] = "Not Found";
-                        console.log('Mapping status for sack:', item._id, item.sackId);
+                        const sack = response.data.sacks[0];
+                        return {
+                            ...item,
+                            status: sack.status,
+                            reviewed: sack.reviewed ?? false,
+                        };
                     }
+
+                    return { ...item, status: "Not Found", reviewed: false };
                 })
             );
-            // console.log(statuses, 'status')
+
+            // ✅ Reactively update the pickup state
+            setPickup((prev) => ({
+                ...prev,
+                sacks: updatedSacks,
+            }));
+
+            // Optional: update sack statuses separately
+            const statuses = {};
+            updatedSacks.forEach(item => {
+                statuses[item.sackId] = item.status;
+            });
             setSackStatuses(statuses);
+
         } catch (error) {
             console.error("Error fetching sack statuses:", error);
         }
     };
+
+
     // console.log(selectedSack, 'Selected sack')
     useEffect(() => {
         fetchAllSackStatuses();
@@ -131,7 +149,6 @@ const SeePickUp = () => {
     };
 
     const handleRatingSubmit = async (selectedSackId) => {
-        console.log(selectedSackId)
         try {
             const { data } = await axios.put(`${baseURL}/sack/rate-transaction/${selectedSackId}`, {
                 review,
@@ -139,6 +156,16 @@ const SeePickUp = () => {
             });
 
             setSubmitted(true);
+
+            // ✅ Update the reviewed field in pickup.sacks
+            setPickup(prev => ({
+                ...prev,
+                sacks: prev.sacks.map(sack =>
+                    sack.sackId === selectedSackId
+                        ? { ...sack, reviewed: true }
+                        : sack
+                )
+            }));
 
             setTimeout(() => {
                 setIsRatingModalVisible(false);
@@ -282,7 +309,7 @@ const SeePickUp = () => {
                                                 </Text>
                                             </View>
                                         </View>
-                                        {pickupStatus === "completed" && (
+                                        {pickupStatus === "completed" && !item.reviewed && (
                                             <TouchableOpacity
                                                 style={{ backgroundColor: '#AFE1AF', padding: 12, borderRadius: 10, width: '100%', height: 'auto' }}
                                                 onPress={() => {

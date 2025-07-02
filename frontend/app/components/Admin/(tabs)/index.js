@@ -211,8 +211,10 @@ const AdminHome = () => {
                         );
                     })}
                     <View style={styles.statBox}>
-                        <Entypo name="shop" size={24} color="black" />
-                        <Text style={styles.statText}>Stall/s: {numStalls}</Text>
+                        <TouchableOpacity onPress={() => router.push('components/Admin/components/Stalls/StallList')} >
+                            <Entypo name="shop" size={24} color="black" />
+                            <Text style={styles.statText}>Stall/s: {numStalls}</Text>
+                        </TouchableOpacity>
                     </View>
                 </View>
 

@@ -16,10 +16,13 @@ const index = () => {
   const userId = user?._id || user?.user?._id;
   const router = useRouter()
   const [monthlyWasteData, setMonthlyWasteData] = useState([]);
+  const [dailyWasteData, setDailyWasteData] = useState([]);
+  const [todaysCollected, setTodaysCollected] = useState(0);
   const [wasteCollected, setWasteCollected] = useState(0);
   const [monthlyWasteCollected, setMonthlyWasteCollected] = useState(0);
   const [activePickupRequest, setActivePickupRequest] = useState(0);
   const [notifications, setNotifications] = useState([]);
+  const [chartFilter, setChartFilter] = useState('daily');
 
   // Transform data for BarChart (dummy example for last 6 months)
   const prepareChartData = (pickups) => {
@@ -52,6 +55,33 @@ const index = () => {
     }));
   };
 
+  const prepareDailyChartData = (pickups) => {
+    const now = new Date();
+    const dailyDataMap = new Map();
+
+    // Get past 7 days
+    for (let i = 6; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(now.getDate() - i);
+      const label = date.toLocaleDateString('default', { weekday: 'short' }); // e.g., "Mon"
+      const key = date.toISOString().split('T')[0]; // YYYY-MM-DD
+      dailyDataMap.set(key, { label, value: 0 });
+    }
+
+    pickups.forEach(pickup => {
+      if (pickup.status === 'completed') {
+        const date = new Date(pickup.pickupTimestamp);
+        const key = date.toISOString().split('T')[0]; // Match date keys
+
+        if (dailyDataMap.has(key)) {
+          dailyDataMap.get(key).value += parseFloat(pickup.totalKilo || 0);
+        }
+      }
+    });
+
+    return Array.from(dailyDataMap.values());
+  };
+
   const fetchPickupSacks = async () => {
     try {
       const res = await axios.get(`${baseURL}/sack/get-pickup-sacks/${userId}`);
@@ -62,34 +92,53 @@ const index = () => {
 
       let total = 0;
       let thisMonthTotal = 0;
+      let todayTotal = 0;
 
       const now = new Date();
       const currentMonth = now.getMonth();
       const currentYear = now.getFullYear();
+      const today = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+      ).toLocaleDateString('en-CA');
 
       completedPickups.forEach(pickup => {
         const kilo = parseFloat(pickup.totalKilo || 0);
+        const pickupDate = new Date(pickup.pickupTimestamp);
+        const pickupDateStr = new Date(
+          pickupDate.getFullYear(),
+          pickupDate.getMonth(),
+          pickupDate.getDate()
+        ).toLocaleDateString('en-CA');
+
         total += kilo;
 
-        const pickupDate = new Date(pickup.pickupTimestamp);
         if (
-          pickupDate.getFullYear() === currentYear &&
-          pickupDate.getMonth() === currentMonth
+          pickupDate.getFullYear() === now.getFullYear() &&
+          pickupDate.getMonth() === now.getMonth()
         ) {
           thisMonthTotal += kilo;
         }
+
+        if (pickupDateStr === today) {
+          todayTotal += kilo;
+        }
+
+        console.log('pickupDateStr:', pickupDateStr, 'today:', today, 'kilo:', kilo);
+        console.log('Device now:', new Date().toString());
       });
 
       setWasteCollected(total);
       setMonthlyWasteCollected(thisMonthTotal);
-      setActivePickupRequest(requestedPickups.length)
+      setTodaysCollected(todayTotal);
+      setActivePickupRequest(requestedPickups.length);
       setMonthlyWasteData(prepareChartData(pickups));
-
+      setDailyWasteData(prepareDailyChartData(pickups));
     } catch (error) {
       console.error('Error getting Pickups:', error.message);
     }
   };
-
 
   const fetchSacks = async () => {
     try {
@@ -115,9 +164,11 @@ const index = () => {
       if (userId) {
         fetchSacks();
         fetchNotifications();
+        fetchPickupSacks()
         const interval = setInterval(() => {
           fetchSacks();
           fetchNotifications();
+          fetchPickupSacks()
         }, 2000);
         return () => clearInterval(interval);
       }
@@ -187,25 +238,68 @@ const index = () => {
         </View>
       </View>
 
-      {/* Chart */}
-      <View style={styles.chartCard}>
-        <Text style={styles.chartTitle}>Monthly Waste Collected (kg)</Text>
-        <BarChart
-          data={monthlyWasteData}
-          barWidth={16}
-          spacing={28}
-          height={220}
-          initialSpacing={10}
-          roundedTop
-          yAxisTextStyle={styles.axisText}
-          xAxisTextStyle={styles.axisText}
-          noOfSections={5}
-          maxValue={Math.max(...monthlyWasteData.map(d => d.value), 20)}
-          labelsExtraHeight={15}
-          frontColor="#2BA84A"
-          showVerticalLines
-        />
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginVertical: 10 }}>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            chartFilter === 'daily' && styles.filterButtonActive,
+          ]}
+          onPress={() => setChartFilter('daily')}
+        >
+          <Text style={chartFilter === 'daily' ? styles.filterTextActive : styles.filterText}>Daily</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[
+            styles.filterButton,
+            chartFilter === 'monthly' && styles.filterButtonActive,
+          ]}
+          onPress={() => setChartFilter('monthly')}
+        >
+          <Text style={chartFilter === 'monthly' ? styles.filterTextActive : styles.filterText}>Monthly</Text>
+        </TouchableOpacity>
       </View>
+
+      {/* Chart */}
+      {chartFilter === 'daily' ? (
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>Daily Waste Collected (kg)</Text>
+          <BarChart
+            data={dailyWasteData}
+            barWidth={16}
+            spacing={28}
+            height={220}
+            initialSpacing={10}
+            roundedTop
+            yAxisTextStyle={styles.axisText}
+            xAxisTextStyle={styles.axisText}
+            noOfSections={5}
+            maxValue={Math.max(...dailyWasteData.map(d => d.value), 20)}
+            labelsExtraHeight={15}
+            frontColor="#2BA84A"
+            showVerticalLines
+            width={270}
+          />
+        </View>
+      ) : (
+        <View style={styles.chartCard}>
+          <Text style={styles.chartTitle}>Monthly Waste Collected (kg)</Text>
+          <BarChart
+            data={monthlyWasteData}
+            barWidth={16}
+            spacing={28}
+            height={220}
+            initialSpacing={10}
+            roundedTop
+            yAxisTextStyle={styles.axisText}
+            xAxisTextStyle={styles.axisText}
+            noOfSections={5}
+            maxValue={Math.max(...monthlyWasteData.map(d => d.value), 20)}
+            labelsExtraHeight={15}
+            frontColor="#2BA84A"
+            showVerticalLines
+          />
+        </View>
+      )}
 
       {/* Stats */}
       <View style={styles.statsGrid}>
@@ -219,6 +313,12 @@ const index = () => {
           <Text style={styles.statLabel}>Monthly Average</Text>
           <Text style={styles.statValue}>
             {monthlyWasteCollected} <Text style={styles.unit}>kg</Text>
+          </Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statLabel}>Today's Collected</Text>
+          <Text style={styles.statValue}>
+            {todaysCollected} <Text style={styles.unit}>kg</Text>
           </Text>
         </View>
       </View>
@@ -419,6 +519,25 @@ const styles = StyleSheet.create({
   notificationTime: {
     fontSize: 12,
     color: '#fff',
+  },
+  filterButton: {
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    marginHorizontal: 5,
+    borderWidth: 1,
+    borderColor: '#2BA84A',
+    borderRadius: 20,
+  },
+  filterButtonActive: {
+    backgroundColor: '#2BA84A',
+  },
+  filterText: {
+    color: '#2BA84A',
+    fontWeight: 'bold',
+  },
+  filterTextActive: {
+    color: 'white',
+    fontWeight: 'bold',
   },
 });
 

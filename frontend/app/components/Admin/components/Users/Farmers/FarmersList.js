@@ -13,7 +13,7 @@ const FarmersList = () => {
   const navigation = useNavigation()
   const router = useRouter()
   const role = 'farmer'
-  const fetchSellerCounts = async () => {
+  const fetchFarmers = async () => {
     try {
       const response = await axios.get(`${baseURL}/get-all-users`);
       const farmerUsers = response.data.users.filter(user => user.role === 'farmer');
@@ -25,13 +25,30 @@ const FarmersList = () => {
 
   useFocusEffect(
     useCallback(() => {
-      fetchSellerCounts();
+      fetchFarmers();
       const interval = setInterval(() => {
-        fetchSellerCounts();
+        fetchFarmers();
       }, 3000);
       return () => clearInterval(interval);
     }, [])
   );
+
+  const handleDeleteFarmer = async (farmerId) => {
+    try {
+      await axios.delete(`${baseURL}/delete-user/${farmerId}`);
+      fetchFarmers();
+    } catch (error) {
+      console.error("Error deleting farmer", error);
+    }
+  };
+  const handleRestoreFarmer = async (farmerId) => {
+    try {
+      await axios.put(`${baseURL}/restore-user/${farmerId}`);
+      fetchFarmers();
+    } catch (error) {
+      console.error("Error restoring farmer", error);
+    }
+  };
 
   // Pagination logic
   const totalPages = Math.ceil(farmers.length / ITEMS_PER_PAGE);
@@ -78,17 +95,31 @@ const FarmersList = () => {
                 <Text style={styles.farmerName}>{item.name}</Text>
                 <Text style={styles.farmerEmail}>{item.email}</Text>
               </View>
-              <View>
-                <TouchableOpacity onPress={() =>
-                  router.push({
-                    pathname: '/components/Admin/components/Users/EditUser',
-                    params: { item: JSON.stringify(item) },
-                  })
-                }>
-                  <Feather name="edit" size={16} color="green" />
-                </TouchableOpacity>
+              <View style={{ alignItems: 'center' }}>
+                {!item.isDeleted && (
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: '/components/Admin/components/Users/EditUser',
+                        params: { item: JSON.stringify(item) },
+                      })
+                    }
+                  >
+                    <Feather name="edit" size={16} color="green" />
+                  </TouchableOpacity>
+                )}
+
                 <Text>----</Text>
-                <Feather name="delete" size={16} color="red" />
+
+                {item.isDeleted ? (
+                  <TouchableOpacity onPress={() => handleRestoreFarmer(item._id)}>
+                    <Feather name="rotate-ccw" size={16} color="blue" />
+                  </TouchableOpacity>
+                ) : (
+                  <TouchableOpacity onPress={() => handleDeleteFarmer(item._id)}>
+                    <Feather name="trash" size={16} color="red" />
+                  </TouchableOpacity>
+                )}
               </View>
             </View>
           </View>

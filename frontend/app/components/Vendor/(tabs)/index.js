@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { View, Text, ScrollView, Image, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { useEffect, useRef } from 'react';
 import axios from 'axios';
@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux';
 import baseURL from '../../../../assets/common/baseURL';
 import { BarChart } from 'react-native-gifted-charts';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import { useRouter } from 'expo-router';
+import { useFocusEffect, useRouter } from 'expo-router';
 const ITEMS_PER_PAGE = 5;
 
 const index = () => {
@@ -21,91 +21,127 @@ const index = () => {
   const [monthlyAverage, setMonthlyAverage] = useState(0);
   const [selectedMonthInfo, setSelectedMonthInfo] = useState(null);
   const [notifications, setNotifications] = useState([]);
+  const [dailyKilo, setDailyKilo] = useState(0);
   const router = useRouter();
+  const [viewMode, setViewMode] = useState('daily');
+  const [weeklyData, setWeeklyData] = useState([]);
 
+  useFocusEffect(
+    useCallback(() => {
+      const fetchSackCounts = async () => {
+        try {
+          const response = await axios.get(`${baseURL}/notifications/get-pickup-request/${userId}`);
+          console.log(response.data.pickupSacksCount, 'pickupSacksCount');
+          setPostedCount(response.data.postedSacksCount);
+          setPickupCount(response.data.pickupSacksCount);
+          setClaimedCount(response.data.claimedSacksCount);
+        } catch (error) {
+          // console.error('Error fetching sack status:', error);
+        }
+      };
 
-  useEffect(() => {
-    const fetchSackCounts = async () => {
-      try {
-        const response = await axios.get(`${baseURL}/notifications/get-pickup-request/${userId}`);
-        setPostedCount(response.data.postedSacksCount);
-        setPickupCount(response.data.pickupSacksCount);
-        setClaimedCount(response.data.claimedSacksCount);
-        // console.log(response)
-      } catch (error) {
-        // console.error('Error fetching sack status:', error);
-      }
-    };
-    const fetchStoreSacks = async () => {
-      try {
-        const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${userId}`);
-        // console.log("Fetched sacks:", data.sacks);
+      const fetchStoreSacks = async () => {
+        try {
+          const { data } = await axios.get(`${baseURL}/sack/get-store-sacks/${userId}`);
+          const allSacks = data.sacks;
 
-        const allSacks = data.sacks;
+          const today = new Date().toLocaleDateString('en-CA');
 
-        // Calculate total kilos
-        const totalKilo = allSacks.reduce((sum, sack) => {
-          return sum + parseFloat(sack.kilo || 0);
-        }, 0);
-        setTotalKilo(totalKilo);
+          const todaysSacks = allSacks.filter((sack) => {
+            const sackDateStr = new Date(sack.createdAt).toLocaleDateString('en-CA');
+            return sackDateStr === today;
+          });
 
-        // Get current month and year
-        const currentMonth = new Date().getMonth();
-        const currentYear = new Date().getFullYear();
+          const todayTotal = todaysSacks.reduce((sum, sack) => sum + parseFloat(sack.kilo || 0), 0);
+          setDailyKilo(todayTotal);
 
-        // Filter sacks for current month
-        const currentMonthSacks = allSacks.filter((sack) => {
-          const sackDate = new Date(sack.createdAt);
-          return sackDate.getMonth() === currentMonth && sackDate.getFullYear() === currentYear;
-        });
+          const totalKilo = allSacks.reduce((sum, sack) => sum + parseFloat(sack.kilo || 0), 0);
+          setTotalKilo(totalKilo);
 
-        // Calculate monthly total
-        const monthlyTotal = currentMonthSacks.reduce((sum, sack) => {
-          return sum + parseFloat(sack.kilo || 0);
-        }, 0);
+          const currentMonth = new Date().getMonth();
+          const currentYear = new Date().getFullYear();
 
-        const monthlyTotals = Array(12).fill(0);
+          const currentMonthSacks = allSacks.filter((sack) => {
+            const sackDate = new Date(sack.createdAt);
+            return sackDate.getMonth() === currentMonth && sackDate.getFullYear() === currentYear;
+          });
 
-        allSacks.forEach((sack) => {
-          const sackDate = new Date(sack.createdAt);
-          const month = sackDate.getMonth(); // 0 = January
-          monthlyTotals[month] += parseFloat(sack.kilo || 0);
-        });
+          const monthlyTotal = currentMonthSacks.reduce((sum, sack) => sum + parseFloat(sack.kilo || 0), 0);
+          setMonthlyAverage(monthlyTotal);
 
-        const currentMonthIndex = new Date().getMonth(); // 0 = January
+          const monthlyTotals = Array(12).fill(0);
+          allSacks.forEach((sack) => {
+            const sackDate = new Date(sack.createdAt);
+            const month = sackDate.getMonth();
+            monthlyTotals[month] += parseFloat(sack.kilo || 0);
+          });
 
-        const graphData = monthlyTotals
-          .slice(0, currentMonthIndex + 1)
-          .map((value, index) => ({
+          const currentMonthIndex = new Date().getMonth();
+          const graphData = monthlyTotals.slice(0, currentMonthIndex + 1).map((value, index) => ({
             value,
             label: new Date(0, index).toLocaleString('default', { month: 'short' }),
             frontColor: '#2BA84A',
           }));
+          const last7Days = [...Array(7)].map((_, i) => {
+            const d = new Date();
+            d.setDate(d.getDate() - i);
+            return d;
+          });
 
-        setMonthlyData(graphData);
+          const dailyMap = {
+            Sun: 0, Mon: 0, Tue: 0, Wed: 0, Thu: 0, Fri: 0, Sat: 0
+          };
 
-        setMonthlyAverage(monthlyTotal);
+          allSacks.forEach(sack => {
+            const date = new Date(sack.createdAt);
+            const isRecent = last7Days.some(d =>
+              d.toDateString() === date.toDateString()
+            );
 
-      } catch (error) {
-        // console.error("Error fetching:", error);
-      }
-    };
+            if (isRecent) {
+              const day = date.toLocaleDateString('en-US', { weekday: 'short' });
+              dailyMap[day] += parseFloat(sack.kilo || 0);
+            }
+          });
 
-    const fetchNotifications = async () => {
-      try {
-        const { data } = await axios.get(`${baseURL}/notifications/get-notif/${userId}`);
-        const spoiledNotifications = data.notifications.filter(notification => notification.type === 'pickup' || notification.type === 'trashed' );
-        console.log(spoiledNotifications);
-        setNotifications(spoiledNotifications);
-      } catch (error) {
-        console.error("Error fetching notifications:", error);
-      }
-    };
+          // Ensure ordered by day
+          const orderedDays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+          const weeklyGraphData = orderedDays.map(day => ({
+            label: day,
+            value: dailyMap[day],
+            frontColor: '#2BA84A',
+          }));
 
-    fetchNotifications();
-    fetchSackCounts();
-    fetchStoreSacks();
-  }, [user?.user?._id]);
+          setWeeklyData(weeklyGraphData);
+          setMonthlyData(graphData);
+        } catch (error) {
+          // console.error("Error fetching store sacks:", error);
+        }
+      };
+
+      const fetchNotifications = async () => {
+        try {
+          const { data } = await axios.get(`${baseURL}/notifications/get-notif/${userId}`);
+          const spoiledNotifications = data.notifications.filter(notification =>
+            notification.type === 'pickup' || notification.type === 'trashed'
+          );
+          console.log(spoiledNotifications);
+          setNotifications(spoiledNotifications);
+        } catch (error) {
+          // console.error("Error fetching notifications:", error);
+        }
+      };
+      const fetchAll = () => {
+        fetchSackCounts();
+        fetchStoreSacks();
+        fetchNotifications();
+      };
+      fetchAll();
+      const interval = setInterval(fetchAll, 2000);
+      return () => clearInterval(interval);
+    }, [user?.user?._id])
+  );
+
   const handleBarPress = (item) => {
     setSelectedMonthInfo(`Month: ${item.label}, Total: ${item.value} kg`);
   };
@@ -117,7 +153,6 @@ const index = () => {
       useNativeDriver: true,
     }).start();
   }, [fadeAnim]);
-
 
   const timeAgo = (dateStr) => {
     const seconds = Math.floor((new Date() - new Date(dateStr)) / 1000);
@@ -158,10 +193,44 @@ const index = () => {
         </View>
       </View>
       <View style={{ padding: 10 }}>
-        <Text style={styles.sectionTitle}>Monthly Waste</Text>
+        <View style={{ flexDirection: 'row', justifyContent: 'center' }}>
+          <TouchableOpacity
+            onPress={() => setViewMode('daily')}
+            style={{
+              backgroundColor: viewMode === 'daily' ? '#2BA84A' : '#ccc',
+              paddingVertical: 6,
+              paddingHorizontal: 16,
+              borderTopLeftRadius: 8,
+              borderBottomLeftRadius: 8,
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Daily</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => setViewMode('monthly')}
+            style={{
+              backgroundColor: viewMode === 'monthly' ? '#2BA84A' : '#ccc',
+              paddingVertical: 6,
+              paddingHorizontal: 16,
+              borderTopRightRadius: 8,
+              borderBottomRightRadius: 8,
+            }}
+          >
+            <Text style={{ color: '#fff', fontWeight: 'bold' }}>Monthly</Text>
+          </TouchableOpacity>
+        </View>
+        <Text style={{
+          fontSize: 16,
+          fontWeight: 'bold',
+          marginBottom: 5,
+          color: 'black',
+          marginTop: 10
+        }}>
+          {viewMode === 'monthly' ? 'Monthly Waste' : 'Daily Waste (Last 7 Days)'}
+        </Text>
         <View style={{ marginVertical: 10, padding: 10, backgroundColor: '#1A2F23', borderRadius: 10 }}>
           <BarChart
-            data={monthlyData}
+            data={viewMode === 'daily' ? weeklyData : monthlyData}
             barWidth={24}
             spacing={14}
             roundedTop
@@ -182,12 +251,21 @@ const index = () => {
 
         <View style={styles.statsContainer}>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Total Kilo Distributed</Text>
+            <Text style={styles.statLabel}>Total</Text>
+            <Text style={styles.statLabel}>Kilo Distributed</Text>
             <Text style={styles.statValue}>{totalKilo} <Text style={styles.unit}>kg</Text></Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Monthly Waste</Text>
+            <Text style={styles.statLabel}>Monthly</Text>
+            <Text style={styles.statLabel}>Waste</Text>
             <Text style={styles.statValue}>{monthlyAverage} <Text style={styles.unit}>kg</Text></Text>
+          </View>
+          <View style={styles.statCard}>
+            <Text style={styles.statLabel}>Today's</Text>
+            <Text style={styles.statLabel}>Produced</Text>
+            <Text style={styles.statValue}>
+              {dailyKilo} <Text style={styles.unit}>kg</Text>
+            </Text>
           </View>
         </View>
         <View style={styles.statsContainer}>
@@ -204,9 +282,8 @@ const index = () => {
         {/* Notifications Section */}
         <Text style={styles.sectionTitle}>Recent Notification at Stall</Text>
         <View>
-          {notifications.map((notification, idx) => (
-            <View style={styles.notificationCard} key={idx} // ✅ key moved here
-            >
+          {notifications.slice(0, 5).map((notification, idx) => (
+            <View style={styles.notificationCard} key={idx}>
               <View style={styles.notificationLeft}>
                 <View style={styles.notificationIcon}>
                   <Text style={styles.iconText}>🔔</Text>
@@ -300,7 +377,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 4,
-    width: 170,
+    width: 'auto',
     alignItems: 'center'
   },
   statLabel: {
