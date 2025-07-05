@@ -89,7 +89,7 @@ const Pickup = () => {
         }
     }, [mySack]);
     const filteredSacks = mySack.filter((item) => item.status === activeStatus);
-
+    // console.log(filteredSacks, 'filteredSacks')
     return (
         <View style={styles.container}>
             <View style={styles.headerContainer}>
@@ -180,20 +180,38 @@ const Pickup = () => {
 
                                             <View style={styles.detailsSection}>
                                                 <Text style={styles.pickupTitle}>New Taytay, Public Market</Text>
-                                                <Text style={styles.secondaryText}>Stall #2</Text>
                                                 <Text style={styles.secondaryText}>Location: Rizal Ave, Taytay, 1920 Metro Manila</Text>
                                                 <Text style={styles.timestamp}>
                                                     <MaterialCommunityIcons name="clock-remove" size={18} color="white" />{" "}
-                                                    {new Date(new Date(item.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
-                                                        year: "numeric",
-                                                        month: "long",
-                                                        day: "numeric",
-                                                    })} : {new Date(item.pickupTimestamp).toLocaleTimeString("en-US", {
-                                                        timeZone: "UTC",
-                                                        hour: "2-digit",
-                                                        minute: "2-digit",
-                                                        hour12: true,
-                                                    })}
+                                                    {item.status !== "completed" && item.pickupTimestamp && (
+                                                        <Text style={styles.text}>
+                                                            {new Date(new Date(item.pickupTimestamp).getTime() - 8 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            })} : {new Date(item.pickupTimestamp).toLocaleTimeString("en-US", {
+                                                                timeZone: "UTC",
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                                hour12: true,
+                                                            })}
+                                                        </Text>
+                                                    )}
+                                                    {item.status === "completed" && item.pickedUpDate && (
+                                                        <Text style={styles.text}>
+                                                            Picked Up Completed Date: {new Date(item.pickedUpDate).toLocaleDateString("en-US", {
+                                                                year: "numeric",
+                                                                month: "long",
+                                                                day: "numeric",
+                                                            })}{" "}
+                                                            {new Date(item.pickedUpDate).toLocaleTimeString("en-US", {
+                                                                timeZone: "UTC",
+                                                                hour: "2-digit",
+                                                                minute: "2-digit",
+                                                                hour12: true,
+                                                            })}
+                                                        </Text>
+                                                    )}
                                                 </Text>
                                             </View>
 

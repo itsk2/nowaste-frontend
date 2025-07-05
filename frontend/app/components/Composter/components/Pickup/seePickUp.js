@@ -26,6 +26,7 @@ const SeePickUp = () => {
     const [submitted, setSubmitted] = useState(false);
     const [showModal, setShowModal] = useState(false);
     const [completeModal, setCompleteModal] = useState(false);
+    const [claimModal, setClaimModal] = useState(false);
     const [selectedSack, setSelectedSack] = useState(null);
 
     const fetchSackSellers = async () => {
@@ -42,7 +43,6 @@ const SeePickUp = () => {
             console.error('Error fetching sellers:', error);
         }
     };
-
 
     useFocusEffect(
         useCallback(() => {
@@ -134,6 +134,35 @@ const SeePickUp = () => {
         );
     };
 
+    const handleClaimedSack = (sackId) => {
+        Alert.alert(
+            "Claim Sack",
+            "Are you sure you want to claim this item?",
+            [
+                {
+                    text: "Proceed",
+                    onPress: async () => {
+                        try {
+                            await axios.put(`${baseURL}/sack/claim-sack/${sackId}`);
+                            setClaimModal(true);
+
+                            setTimeout(() => {
+                                setClaimModal(false);
+                            }, 2000);
+                        } catch (error) {
+                            console.error("Error claim sack:", error.message);
+                            Alert.alert("Error", "Failed to claim the sack.");
+                        }
+                    }
+                },
+                {
+                    text: "Dismiss",
+                    style: "cancel"
+                }
+            ]
+        );
+    };
+
     const handleRatingSubmit = async (selectedSackId) => {
         // console.log(selectedSackId)
         try {
@@ -189,7 +218,7 @@ const SeePickUp = () => {
                                     <Text style={styles.text}>Status: {pickupStatus}</Text>
                                     {pickupStatus !== "completed" && (
                                         <Text style={styles.text}>
-                                            Pickup Time: {new Date(new Date(pickup.pickupTimestamp).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                            Pickup Time: {new Date(new Date(pickup.pickupTimestamp).getTime() - 8 * 60 * 60 * 1000).toLocaleDateString("en-US", {
                                                 year: "numeric",
                                                 month: "long",
                                                 day: "numeric",
@@ -204,7 +233,7 @@ const SeePickUp = () => {
                                     )}
                                     {pickupStatus === "completed" && (
                                         <Text style={styles.text}>
-                                            Picked Up Completed Date: {new Date(new Date(pickup.pickedUpDate).getTime() - 24 * 60 * 60 * 1000).toLocaleDateString("en-US", {
+                                            Picked Up Completed Date: {new Date(new Date(pickup.pickedUpDate).getTime() - 8 * 60 * 60 * 1000).toLocaleDateString("en-US", {
                                                 year: "numeric",
                                                 month: "long",
                                                 day: "numeric",
@@ -239,10 +268,25 @@ const SeePickUp = () => {
                                     padding: 15,
                                     marginVertical: 8,
                                 }}>
-                                    <Image
-                                        source={{ uri: sellers[item.seller]?.stall?.stallImage?.url || "https://via.placeholder.com/150" }}
-                                        style={styles.stallImage}
-                                    />
+                                    <View>
+                                        <Image
+                                            source={{ uri: sellers[item.seller]?.stall?.stallImage?.url || "https://via.placeholder.com/150" }}
+                                            style={styles.stallImage}
+                                        />
+                                        {sackStatus !== "claimed" && pickupStatus === "pickup" && (
+                                            <TouchableOpacity
+                                                style={{
+                                                    marginTop: 10,
+                                                    padding: 8,
+                                                    borderRadius: 8,
+                                                    alignItems: 'center',
+                                                }}
+                                                onPress={() => handleClaimedSack(item.sackId)}
+                                            >
+                                                <Text style={{ color: 'white', fontWeight: 'bold', marginRight: 20, color: '#90EE90' }}>✅ Claim</Text>
+                                            </TouchableOpacity>
+                                        )}
+                                    </View>
 
                                     <View style={styles.sackInfo}>
                                         <Text style={styles.textWhite}>Stall #: {item.stallNumber}</Text>
@@ -453,6 +497,7 @@ const SeePickUp = () => {
                                     </View>
                                 </View>
                             </Modal>
+
                             {/* Completion Modal */}
                             <Modal
                                 animationType="fade"
@@ -469,6 +514,7 @@ const SeePickUp = () => {
                                     </View>
                                 </View>
                             </Modal>
+
                             {/* Completion Modal */}
                             <Modal
                                 animationType="fade"
@@ -482,6 +528,23 @@ const SeePickUp = () => {
                                             <Text style={styles.checkmark}>✓</Text>
                                         </View>
                                         <Text style={styles.modalTitle}>Pickup Waste Completed!!</Text>
+                                    </View>
+                                </View>
+                            </Modal>
+
+                            {/* Cancellation Modal */}
+                            <Modal
+                                animationType="fade"
+                                transparent={true}
+                                visible={claimModal}
+                                onRequestClose={() => setClaimModal(false)}
+                            >
+                                <View style={styles.modalBackground}>
+                                    <View style={styles.modalCard}>
+                                        <View style={styles.checkmarkCircle}>
+                                            <Text style={styles.checkmark}>✅</Text>
+                                        </View>
+                                        <Text style={styles.modalTitle}>Sack Successfully Claimed!</Text>
                                     </View>
                                 </View>
                             </Modal>

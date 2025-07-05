@@ -119,7 +119,7 @@ const SeeStall = () => {
                             />
                         )}
                         <View style={{ backgroundColor: '#295F39', padding: 15, borderRadius: 12, width: '100%', marginBottom: 20 }}>
-                            <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>{stallData?.stallName}</Text>
+                            <Text style={{ fontSize: 18, color: 'white', fontWeight: 'bold' }}>{stallData?.storeType}</Text>
                             <Text style={{ fontSize: 14, color: '#C8E6C9' }}>{stallData?.stallDescription}</Text>
                             <Text style={{ fontSize: 14, color: '#C8E6C9' }}>📍 {stallData?.stallAddress}</Text>
                             <Text style={{ fontSize: 14, color: '#C8E6C9' }}>🔢 Stall #{stallData?.stallNumber}</Text>
