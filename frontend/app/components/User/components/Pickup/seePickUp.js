@@ -13,6 +13,7 @@ import Foundation from '@expo/vector-icons/Foundation';
 import { generateRoomId } from '../../../../../utils/generateRoom';
 import Map from '../map';
 import Constants from 'expo-constants';
+import BuildingMapModal from './BuildingMapModal';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
@@ -20,6 +21,7 @@ const SeePickUp = () => {
     const [pickup, setPickup] = useState(parsedPickup);
     const [pickupStatus, setPickupStatus] = useState(pickup.status);
     const { user } = useSelector((state) => state.auth);
+    const [showBuildingMapModal, setshowBuildingMapModal] = useState(false);
 
     useEffect(() => {
         if (!user) {
@@ -30,6 +32,7 @@ const SeePickUp = () => {
     const [sackStatuses, setSackStatuses] = useState({});
     const [sellers, setSellers] = useState({});
     const userId = user?.user?._id;
+    const userRole = user?.user?.role || user?.role;
     const [review, setReview] = useState('');
     const [rating, setRating] = useState(0);
     const [submitted, setSubmitted] = useState(false);
@@ -144,7 +147,7 @@ const SeePickUp = () => {
                     text: "Proceed",
                     onPress: async () => {
                         try {
-                            const response = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`);
+                            const response = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`, { role: userRole });
                             setCompleteModal(true);
 
                             setTimeout(() => {
@@ -178,7 +181,7 @@ const SeePickUp = () => {
                             setClaimModal(true);
 
                             setTimeout(() => {
-                                setClaimModal(false); 
+                                setClaimModal(false);
                             }, 2000);
                         } catch (error) {
                             console.error("Error claim sack:", error.message);
@@ -227,6 +230,10 @@ const SeePickUp = () => {
     };
 
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
+    const normalize = (str) => str?.replace(/[-\s]/g, '').toLowerCase();
+    const highlightedStalls = pickup?.sacks
+        ?.filter(s => s.status !== "cancelled")
+        .map(s => normalize(s.stallNumber));
     return (
         <>
             <View style={styles.container}>
@@ -251,6 +258,15 @@ const SeePickUp = () => {
                     ListHeaderComponent={
                         <>
                             <View style={styles.pickupCard}>
+                                {pickupStatus !== "completed" && (
+                                    <TouchableOpacity
+                                        onPress={() => setshowBuildingMapModal(true)}
+                                    >
+                                        <Text style={{ color: '#90EE90', fontWeight: 'bold', alignSelf: 'flex-end' }}>
+                                            🏢 Map
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                                 <View style={styles.sackContainer}>
                                     <MaterialCommunityIcons name="sack" size={30} color="white" style={styles.sackImage} />
                                     <Text style={styles.sackWeight}>{pickup.totalKilo} KG</Text>
@@ -325,7 +341,6 @@ const SeePickUp = () => {
                                             </TouchableOpacity>
                                         )}
                                     </View>
-
                                     <View style={styles.sackInfo}>
                                         <Text style={styles.textWhite}>Stall #: {item.stallNumber}</Text>
                                         <View style={{ backgroundColor: '#3D5A48', padding: 10 }}>
@@ -419,6 +434,13 @@ const SeePickUp = () => {
                                             <FontAwesome name="comments" size={24} color="#fff" />
                                         </TouchableOpacity>
                                     </View>
+                                    {/* Building Map Modal */}
+                                    <BuildingMapModal
+                                        visible={showBuildingMapModal}
+                                        onClose={() => setshowBuildingMapModal(false)}
+                                        highlightedStalls={highlightedStalls}
+                                        normalize={normalize}
+                                    />
                                 </View>
                             </View>
                         )

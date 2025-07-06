@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { FontAwesome } from '@expo/vector-icons';
 import Map from '../../../User/components/map';
+import BuildingMapModal from '../../../User/components/Pickup/BuildingMapModal';
 
 const SeePickUp = () => {
     const { pickupData } = useLocalSearchParams();
@@ -19,7 +20,8 @@ const SeePickUp = () => {
     const { user } = useSelector((state) => state.auth);
     const [sackStatuses, setSackStatuses] = useState({});
     const [sellers, setSellers] = useState({});
-    const userId = user.user._id;
+    const userId = user?.user?._id;
+    const userRole = user?.user?.role || user?.role;
     const navigation = useNavigation()
     const [review, setReview] = useState('');
     const [rating, setRating] = useState(0);
@@ -28,6 +30,7 @@ const SeePickUp = () => {
     const [completeModal, setCompleteModal] = useState(false);
     const [claimModal, setClaimModal] = useState(false);
     const [selectedSack, setSelectedSack] = useState(null);
+    const [showBuildingMapModal, setshowBuildingMapModal] = useState(false);
 
     const fetchSackSellers = async () => {
         try {
@@ -113,7 +116,7 @@ const SeePickUp = () => {
                     text: "Proceed",
                     onPress: async () => {
                         try {
-                            const response = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`);
+                            const response = await axios.put(`${baseURL}/sack/complete-pickup/${pickup._id}`, { role: userRole });
                             setCompleteModal(true);
 
                             setTimeout(() => {
@@ -187,7 +190,10 @@ const SeePickUp = () => {
     };
 
     const [isRatingModalVisible, setIsRatingModalVisible] = useState(false);
-
+    const normalize = (str) => str?.replace(/[-\s]/g, '').toLowerCase();
+    const highlightedStalls = pickup?.sacks
+        ?.filter(s => s.status !== "cancelled")
+        .map(s => normalize(s.stallNumber));
     return (
         <>
             <View style={styles.container}>
@@ -212,6 +218,15 @@ const SeePickUp = () => {
                     ListHeaderComponent={
                         <>
                             <View style={styles.pickupCard}>
+                                {pickupStatus !== "completed" && (
+                                    <TouchableOpacity
+                                        onPress={() => setshowBuildingMapModal(true)}
+                                    >
+                                        <Text style={{ color: '#90EE90', fontWeight: 'bold', alignSelf: 'flex-end' }}>
+                                            🏢 Map
+                                        </Text>
+                                    </TouchableOpacity>
+                                )}
                                 <View style={styles.sackContainer}>
                                     <MaterialCommunityIcons name="sack" size={30} color="white" style={styles.sackImage} />
                                     <Text style={styles.sackWeight}>{pickup.totalKilo} KG</Text>
@@ -381,6 +396,12 @@ const SeePickUp = () => {
                                             <FontAwesome name="comments" size={24} color="#fff" />
                                         </TouchableOpacity>
                                     </View>
+                                    <BuildingMapModal
+                                        visible={showBuildingMapModal}
+                                        onClose={() => setshowBuildingMapModal(false)}
+                                        highlightedStalls={highlightedStalls}
+                                        normalize={normalize}
+                                    />
                                 </View>
                             </View>
                         )

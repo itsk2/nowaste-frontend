@@ -123,6 +123,7 @@ const SeeStall = () => {
                             <Text style={{ fontSize: 14, color: '#C8E6C9' }}>{stallData?.stallDescription}</Text>
                             <Text style={{ fontSize: 14, color: '#C8E6C9' }}>📍 {stallData?.stallAddress}</Text>
                             <Text style={{ fontSize: 14, color: '#C8E6C9' }}>🔢 Stall #{stallData?.stallNumber}</Text>
+                            <Text style={{ fontSize: 14, color: '#C8E6C9' }}>🏪 Type: {stallData?.storeType}</Text>
                         </View>
                     </View>
                 }
